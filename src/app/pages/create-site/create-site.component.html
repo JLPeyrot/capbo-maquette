@@ -1,0 +1,150 @@
+<div class="create-site-container">
+  <!-- FORMULAIRE -->
+  <form [formGroup]="siteForm" (ngSubmit)="onSubmit()" class="site-form">
+    <!-- INFORMATIONS GÉNÉRALES -->
+    <mat-card class="form-section">
+      <mat-card-header>
+        <mat-card-title>
+          <!-- Bouton retour (visible uniquement en mode focus) -->
+          <button *ngIf="isFocusMode" 
+            mat-icon-button 
+            class="back-btn-integrated" 
+            (click)="onGoBack()" 
+            aria-label="Retour">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          
+          <mat-icon>info</mat-icon>
+          {{ isEditMode ? 'Modifier le site' : 'Informations générales' }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom du site *</mat-label>
+            <input matInput formControlName="name" placeholder="Ex: Magasin Paris Centre">
+            <mat-error *ngIf="siteForm.get('name')?.invalid && siteForm.get('name')?.touched">
+              Le nom du site est obligatoire
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Adresse *</mat-label>
+            <input matInput formControlName="address" placeholder="Ex: 123 Rue de Paris">
+            <mat-error *ngIf="siteForm.get('address')?.invalid && siteForm.get('address')?.touched">
+              L'adresse est obligatoire
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Type de site *</mat-label>
+            <mat-select formControlName="type">
+              <mat-option *ngFor="let type of siteTypes" [value]="type.id">
+                {{type.name}}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="siteForm.get('type')?.invalid && siteForm.get('type')?.touched">
+              Le type de site est obligatoire
+            </mat-error>
+          </mat-form-field>
+          
+          <div class="half-width status-toggle">
+            <span class="status-label">Statut du site:</span>
+            <mat-slide-toggle formControlName="is_active" color="primary">
+              {{ siteForm.get('is_active')?.value ? 'Actif' : 'Inactif' }}
+            </mat-slide-toggle>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- LOCALISATION -->
+    <mat-card class="form-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>location_on</mat-icon>
+          Localisation
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Ville *</mat-label>
+            <input matInput formControlName="city" placeholder="Ex: Paris">
+            <mat-error *ngIf="siteForm.get('city')?.invalid && siteForm.get('city')?.touched">
+              La ville est obligatoire
+            </mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Code postal *</mat-label>
+            <input matInput formControlName="postal_code" placeholder="Ex: 75001">
+            <mat-error *ngIf="siteForm.get('postal_code')?.invalid && siteForm.get('postal_code')?.touched">
+              Le code postal doit contenir 5 chiffres
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Pays *</mat-label>
+            <mat-select formControlName="country">
+              <mat-option *ngFor="let country of countries" [value]="country.id">
+                {{country.name}} ({{country.code}})
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="siteForm.get('country')?.invalid && siteForm.get('country')?.touched">
+              Le pays est obligatoire
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- CONTACT -->
+    <mat-card class="form-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>contact_phone</mat-icon>
+          Informations de contact
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Téléphone</mat-label>
+            <input matInput formControlName="phone" placeholder="Ex: +33 1 23 45 67 89">
+            <mat-error *ngIf="siteForm.get('phone')?.invalid && siteForm.get('phone')?.touched">
+              Le format du numéro de téléphone est invalide
+            </mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" placeholder="Ex: contact.paris@example.com">
+            <mat-error *ngIf="siteForm.get('email')?.invalid && siteForm.get('email')?.touched">
+              L'adresse email est invalide
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- ACTIONS -->
+    <div class="form-actions">
+      <button mat-button type="button" (click)="onGoBack()" class="cancel-btn">
+        <mat-icon>cancel</mat-icon>
+        Annuler
+      </button>
+      
+      <button mat-raised-button color="primary" type="submit" [disabled]="siteForm.invalid" class="save-btn">
+        <mat-icon>save</mat-icon>
+        {{ isEditMode ? 'Mettre à jour le site' : 'Enregistrer le site' }}
+      </button>
+    </div>
+  </form>
+</div>

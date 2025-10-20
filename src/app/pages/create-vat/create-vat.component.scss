@@ -1,0 +1,280 @@
+/* ===== CONTAINER PRINCIPAL ===== */
+.create-vat-container {
+  /* SUPPRESSION du height fixe et de l'overflow */
+  min-height: 100vh; /* Hauteur minimum au lieu de fixe */
+  /* overflow-y: auto; SUPPRIMÉ */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  /* Amélioration du scroll - UN SEUL SCROLL géré par le parent */
+  scroll-behavior: smooth;
+}
+
+/* ===== FORMULAIRE ===== */
+.vat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-section {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  mat-card-header {
+    background: linear-gradient(135deg, #1976d2, #1565c0);
+    color: white;
+    padding: 20px 24px;
+    border-bottom: none;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      color: white;
+      margin: 0;
+
+      .back-btn-integrated {
+        color: rgba(255, 255, 255, 0.9);
+        margin-right: 8px;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+          transform: scale(1.1);
+        }
+      }
+
+      .mat-icon {
+        color: #ffeb3b;
+        font-size: 20px;
+      }
+    }
+  }
+
+  .translation-toggle-header {
+    margin-left: auto;
+    
+    ::ng-deep .mat-slide-toggle {
+      color: white !important;
+      
+      .mat-slide-toggle-label {
+        color: white !important;
+        font-size: 14px;
+      }
+      
+      .mat-slide-toggle-content {
+        color: white !important;
+      }
+      
+      .mdc-label {
+        color: white !important;
+      }
+      
+      .mat-slide-toggle-bar {
+        background-color: rgba(255, 255, 255, 0.3) !important;
+      }
+      
+      &.mat-checked .mat-slide-toggle-bar {
+        background-color: #ff9800 !important; /* Orange */
+      }
+      
+      .mat-slide-toggle-thumb {
+        background-color: white !important;
+      }
+      
+      &.mat-checked .mat-slide-toggle-thumb {
+        background-color: white !important;
+      }
+    }
+    
+    /* Sélecteurs supplémentaires pour forcer la couleur blanche */
+    ::ng-deep mat-slide-toggle {
+      color: white !important;
+      
+      * {
+        color: white !important;
+      }
+    }
+  }
+
+  mat-card-content {
+    padding: 24px;
+    background: white;
+  }
+}
+    
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  .full-width {
+    width: 100%;
+  }
+  
+  .half-width {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 250px;
+  }
+  
+  .status-toggle {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    
+    .status-label {
+      margin-right: 16px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 32px;
+  margin-bottom: 32px;
+  
+  .cancel-btn {
+    color: #666;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+  }
+  
+  .save-btn {
+    min-width: 160px;
+    height: 48px;
+    font-weight: 500;
+  }
+  
+  button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 20px;
+  }
+}
+
+/* ===== CHAMPS MULTILINGUES AVEC DROPDOWN ===== */
+.multilingual-field {
+  width: 100%;
+  
+  .field-title {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .multilingual-input-container {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    width: 100%; // Assure que le conteneur prend toute la largeur
+    
+    .multilingual-input {
+      flex: 1 1 auto; // flex-grow: 1, flex-shrink: 1, flex-basis: auto
+      min-width: 0; // Permet au flex item de se rétrécir si nécessaire
+      width: calc(100% - 166px); // Force la largeur : 100% moins dropdown (150px) et gap (16px)
+      max-width: none; // Supprime toute limitation de largeur maximale
+      
+      .required-icon {
+        color: #f44336;
+        font-size: 16px;
+      }
+    }
+    
+    .language-dropdown {
+      width: 150px !important;
+      min-width: 150px !important;
+      max-width: 150px !important;
+      flex: 0 0 150px; // flex-grow: 0, flex-shrink: 0, flex-basis: 150px
+    }
+  }
+}
+
+// Mode sombre pour les champs multilingues
+.dark-mode {
+  .multilingual-field {
+    .field-title {
+      color: #e0e0e0;
+    }
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .create-vat-container {
+    padding: 12px;
+    
+    .vat-form {
+      .form-row {
+        flex-direction: column;
+        
+        .half-width {
+          width: 100%;
+        }
+      }
+      
+      .form-actions {
+        flex-direction: column-reverse;
+        
+        button {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+/* Dark theme support */
+:host-context(.dark-theme) {
+  .create-vat-container {
+    .form-section {
+      background-color: #2d2d2d;
+      color: #ffffff;
+      
+      mat-card-title {
+        color: #ffffff;
+        
+        mat-icon {
+          color: #7986cb;
+        }
+      }
+    }
+    
+    .form-row {
+      .status-toggle {
+        .status-label {
+          color: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+    
+    .form-actions {
+      .save-btn {
+        background-color: #7986cb;
+      }
+    }
+  }
+}

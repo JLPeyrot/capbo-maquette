@@ -120,6 +120,10 @@
                 <mat-icon matListItemIcon>local_offer</mat-icon>
                 <div matListItemTitle>Tarification</div>
               </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('attributes')">
+                <mat-icon matListItemIcon>label</mat-icon>
+                <div matListItemTitle>Attributs</div>
+              </mat-list-item>
             </div>
           </div>
 
@@ -336,7 +340,14 @@
 
       <!-- PAGE ARTICLES LIST (en mode focus) -->
       <div *ngSwitchCase="'articles-list'" class="page-container">
-        <app-articles-list (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode"></app-articles-list>
+        <app-articles-list (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode" [hideActiveToggle]="assortmentsMode"></app-articles-list>
+      </div>
+
+
+
+      <!-- PAGE ATTRIBUTES LIST (en mode focus) -->
+      <div *ngSwitchCase="'attributes-list'" class="page-container">
+        <app-attributes-list (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode" (createAttribute)="navigateTo('create-attribute')"></app-attributes-list>
       </div>
 
       <!-- PAGE CREATE ARTICLE (en mode focus) -->
@@ -344,16 +355,12 @@
         <app-create-article (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode"></app-create-article>
       </div>
 
+      <!-- PAGE CREATE ATTRIBUTE (en mode focus) -->
+      <div *ngSwitchCase="'create-attribute'" class="page-container">
+        <app-create-attribute (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode"></app-create-attribute>
+      </div>
     </div>
 
   </div>
-
-  <!-- POPUP D'ALERTE -->
-  <app-alert-popup 
-    *ngIf="showAlert"
-    [data]="alertData"
-    (close)="onCloseAlert()"
-    (dontShowAgain)="onDontShowAlertAgain()">
-  </app-alert-popup>
 
 </div>

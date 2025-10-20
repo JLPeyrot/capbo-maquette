@@ -5,17 +5,16 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MaterialModule } from '../../shared/material-module';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 
 export interface Article {
   id: string;
   reference: string;
-  designation: string;
+  designationCourte: string;
+  designationLongue: string;
   famille: string;
   sousFamille: string;
-  marque: string;
-  prixVente: number;
   prixAchat: number;
-  stock: number;
   stockMinimum: number;
   statut: 'actif' | 'inactif' | 'suspendu';
   dateCreation: Date;
@@ -27,9 +26,8 @@ export interface Article {
 export interface ArticleFilters {
   search: string;
   famille: string;
-  marque: string;
   statut: string;
-  stockFaible: boolean;
+  articlesActifs: boolean;
 }
 
 @Component({
@@ -41,7 +39,9 @@ export interface ArticleFilters {
 })
 export class ArticlesListComponent implements OnInit, OnDestroy {
   @Input() isFocusMode: boolean = false; // NOUVEAU : Input pour le mode focus
+  @Input() hideActiveToggle: boolean = false; // NOUVEAU : Masquer la case "Articles actifs uniquement" selon le contexte
   @Output() goBack = new EventEmitter<void>(); // NOUVEAU : Output pour le retour
+  @Output() createArticle = new EventEmitter<void>(); // NOUVEAU : Output pour créer un article
   
   private destroy$ = new Subject<void>();
 
@@ -53,9 +53,8 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   filters: ArticleFilters = {
     search: '',
     famille: '',
-    marque: '',
     statut: '',
-    stockFaible: false
+    articlesActifs: false
   };
 
   // Pagination
@@ -70,7 +69,6 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   
   // Options pour les filtres
   famillesOptions: string[] = [];
-  marquesOptions: string[] = [];
   statutsOptions = [
     { value: '', label: 'Tous les statuts' },
     { value: 'actif', label: 'Actif' },
@@ -82,17 +80,31 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'select',
     'reference',
-    'designation', 
+    'designationCourte',
+    'designationLongue',
     'famille',
-    'marque',
-    'stock',
-    'prixVente',
     'statut',
     'actions'
   ];
 
-  constructor() {}
+  constructor(private paginatorIntl: MatPaginatorIntl) {
+    // Configuration des labels français pour le paginator
+    this.paginatorIntl.itemsPerPageLabel = 'Éléments par page :';
+    this.paginatorIntl.nextPageLabel = 'Page suivante';
+    this.paginatorIntl.previousPageLabel = 'Page précédente';
+    this.paginatorIntl.firstPageLabel = 'Première page';
+    this.paginatorIntl.lastPageLabel = 'Dernière page';
+    this.paginatorIntl.getRangeLabel = (page: number, pageSize: number, length: number) => {
+      if (length === 0 || pageSize === 0) {
+        return `0 sur ${length}`;
+      }
+      const startIndex = page * pageSize;
+      const endIndex = startIndex < length ? Math.min(startIndex + pageSize, length) : startIndex + pageSize;
+      return `${startIndex + 1} - ${endIndex} sur ${length}`;
+    };
+  }
 
+  // Lifecycle hooks
   ngOnInit(): void {
     this.loadArticles();
   }
@@ -107,6 +119,21 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
    */
   goBackToDashboard(): void {
     this.goBack.emit();
+  }
+
+  /**
+   * Navigation vers la création d'article
+   */
+  onCreateArticle(): void {
+    this.createArticle.emit();
+  }
+
+  /**
+   * Importer des articles
+   */
+  onImportArticles(): void {
+    console.log('Import articles clicked');
+    // TODO: Implémenter la logique d'import
   }
 
   /**
@@ -150,19 +177,15 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
 
     return Array.from({ length: 20 }, (_, i) => {
       const famille = familles[Math.floor(Math.random() * familles.length)];
-      const marque = marques[Math.floor(Math.random() * marques.length)];
-      const stock = Math.floor(Math.random() * 50);
       
       return {
         id: `ART-${String(i + 1).padStart(6, '0')}`,
         reference: `REF-${String(i + 1).padStart(3, '0')}`,
-        designation: `Article jardinage ${i + 1}`,
+        designationCourte: `Article ${i + 1}`,
+        designationLongue: `Article de jardinage complet numéro ${i + 1} avec description détaillée`,
         famille,
         sousFamille: 'Sous-famille',
-        marque,
-        prixVente: Math.round((Math.random() * 100 + 5) * 100) / 100,
         prixAchat: Math.round((Math.random() * 50 + 2) * 100) / 100,
-        stock,
         stockMinimum: Math.floor(Math.random() * 15 + 5),
         statut: statuts[Math.floor(Math.random() * statuts.length)],
         dateCreation: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
@@ -178,7 +201,6 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
    */
   private extractFilterOptions(): void {
     this.famillesOptions = [...new Set(this.articles.map(a => a.famille))].sort();
-    this.marquesOptions = [...new Set(this.articles.map(a => a.marque))].sort();
   }
 
   /**
@@ -187,15 +209,15 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   applyFilters(): void {
     this.filteredArticles = this.articles.filter(article => {
       const matchSearch = !this.filters.search || 
-        article.designation.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        article.designationCourte.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        article.designationLongue.toLowerCase().includes(this.filters.search.toLowerCase()) ||
         article.reference.toLowerCase().includes(this.filters.search.toLowerCase());
       
       const matchFamille = !this.filters.famille || article.famille === this.filters.famille;
-      const matchMarque = !this.filters.marque || article.marque === this.filters.marque;
       const matchStatut = !this.filters.statut || article.statut === this.filters.statut;
-      const matchStockFaible = !this.filters.stockFaible || article.stock <= article.stockMinimum;
+      const matchArticlesActifs = !this.filters.articlesActifs || article.statut === 'actif';
 
-      return matchSearch && matchFamille && matchMarque && matchStatut && matchStockFaible;
+      return matchSearch && matchFamille && matchStatut && matchArticlesActifs;
     });
 
     this.totalArticles = this.filteredArticles.length;
@@ -209,9 +231,8 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
     this.filters = {
       search: '',
       famille: '',
-      marque: '',
       statut: '',
-      stockFaible: false
+      articlesActifs: false
     };
     this.applyFilters();
   }

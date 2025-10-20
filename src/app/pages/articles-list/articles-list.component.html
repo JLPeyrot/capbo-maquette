@@ -20,13 +20,13 @@
       </div>
       
       <div class="header-actions">
-        <button mat-raised-button color="primary" class="action-btn">
+        <button mat-raised-button color="primary" class="action-btn" (click)="onCreateArticle()">
           <mat-icon>add</mat-icon>
           Nouvel Article
         </button>
-        <button mat-stroked-button class="action-btn" [disabled]="selectedArticles.length === 0">
-          <mat-icon>file_download</mat-icon>
-          Exporter ({{selectedArticles.length}})
+        <button mat-raised-button color="accent" class="action-btn" (click)="onImportArticles()">
+          <mat-icon>upload</mat-icon>
+          Importer
         </button>
       </div>
     </div>
@@ -53,6 +53,7 @@
           <input matInput 
             placeholder="Référence, désignation..." 
             [(ngModel)]="filters.search"
+            name="search"
             (ngModelChange)="applyFilters()">
           <mat-icon matSuffix 
             *ngIf="filters.search" 
@@ -63,7 +64,7 @@
         <!-- Filtre famille -->
         <mat-form-field appearance="outline" class="filter-field">
           <mat-label>Famille</mat-label>
-          <mat-select [(ngModel)]="filters.famille" (ngModelChange)="applyFilters()">
+          <mat-select [(ngModel)]="filters.famille" name="famille" (ngModelChange)="applyFilters()">
             <mat-option value="">Toutes les familles</mat-option>
             <mat-option *ngFor="let famille of famillesOptions" [value]="famille">
               {{famille}}
@@ -71,21 +72,12 @@
           </mat-select>
         </mat-form-field>
 
-        <!-- Filtre marque -->
-        <mat-form-field appearance="outline" class="filter-field">
-          <mat-label>Marque</mat-label>
-          <mat-select [(ngModel)]="filters.marque" (ngModelChange)="applyFilters()">
-            <mat-option value="">Toutes les marques</mat-option>
-            <mat-option *ngFor="let marque of marquesOptions" [value]="marque">
-              {{marque}}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+
 
         <!-- Filtre statut -->
         <mat-form-field appearance="outline" class="filter-field">
           <mat-label>Statut</mat-label>
-          <mat-select [(ngModel)]="filters.statut" (ngModelChange)="applyFilters()">
+          <mat-select [(ngModel)]="filters.statut" name="statut" (ngModelChange)="applyFilters()">
             <mat-option *ngFor="let statut of statutsOptions" [value]="statut.value">
               {{statut.label}}
             </mat-option>
@@ -97,12 +89,14 @@
       <!-- Deuxième ligne de filtres -->
       <div class="filters-row secondary-filters">
         
-        <!-- Checkbox stock faible -->
+        <!-- Checkbox articles actifs -->
         <mat-checkbox 
-          [(ngModel)]="filters.stockFaible" 
+          *ngIf="!hideActiveToggle"
+          [(ngModel)]="filters.articlesActifs" 
+          name="articlesActifs"
           (ngModelChange)="applyFilters()"
-          class="stock-filter">
-          Stock faible uniquement
+          class="actifs-filter">
+          Articles actifs uniquement
         </mat-checkbox>
 
         <div class="filter-actions">
@@ -143,16 +137,8 @@
         </div>
         <div class="bulk-buttons">
           <button mat-stroked-button>
-            <mat-icon>edit</mat-icon>
-            Modifier
-          </button>
-          <button mat-stroked-button>
-            <mat-icon>content_copy</mat-icon>
-            Dupliquer
-          </button>
-          <button mat-stroked-button color="warn">
-            <mat-icon>delete</mat-icon>
-            Supprimer
+            <mat-icon>file_download</mat-icon>
+            Exporter
           </button>
         </div>
       </div>
@@ -194,19 +180,32 @@
             </td>
           </ng-container>
 
-          <!-- Colonne désignation -->
-          <ng-container matColumnDef="designation">
-            <th mat-header-cell *matHeaderCellDef class="designation-column">
+          <!-- Colonne désignation courte -->
+          <ng-container matColumnDef="designationCourte">
+            <th mat-header-cell *matHeaderCellDef class="designation-courte-column">
               <div class="header-content">
-                <span>Désignation</span>
+                <span>Désignation courte</span>
                 <mat-icon class="sort-icon">swap_vert</mat-icon>
               </div>
             </th>
-            <td mat-cell *matCellDef="let article" class="designation-column">
+            <td mat-cell *matCellDef="let article" class="designation-courte-column">
               <div class="designation-cell">
-                <span class="designation-text">{{article.designation}}</span>
+                <span class="designation-text">{{article.designationCourte}}</span>
                 <span class="subfamily-text">{{article.sousFamille}}</span>
               </div>
+            </td>
+          </ng-container>
+
+          <!-- Colonne désignation longue -->
+          <ng-container matColumnDef="designationLongue">
+            <th mat-header-cell *matHeaderCellDef class="designation-longue-column">
+              <div class="header-content">
+                <span>Désignation longue</span>
+                <mat-icon class="sort-icon">swap_vert</mat-icon>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let article" class="designation-longue-column">
+              <span class="designation-longue-text">{{article.designationLongue}}</span>
             </td>
           </ng-container>
 
@@ -223,57 +222,7 @@
             </td>
           </ng-container>
 
-          <!-- Colonne marque -->
-          <ng-container matColumnDef="marque">
-            <th mat-header-cell *matHeaderCellDef class="marque-column">
-              <div class="header-content">
-                <span>Marque</span>
-                <mat-icon class="sort-icon">swap_vert</mat-icon>
-              </div>
-            </th>
-            <td mat-cell *matCellDef="let article" class="marque-column">
-              <span class="marque-text">{{article.marque}}</span>
-            </td>
-          </ng-container>
 
-          <!-- Colonne stock -->
-          <ng-container matColumnDef="stock">
-            <th mat-header-cell *matHeaderCellDef class="stock-column">
-              <div class="header-content">
-                <span>Stock</span>
-                <mat-icon class="sort-icon">swap_vert</mat-icon>
-              </div>
-            </th>
-            <td mat-cell *matCellDef="let article" class="stock-column">
-              <div class="stock-cell">
-                <span [class]="'stock-value ' + (article.stock <= article.stockMinimum ? 'stock-low' : 'stock-ok')">
-                  {{article.stock}}
-                </span>
-                <span class="stock-min">Min: {{article.stockMinimum}}</span>
-                <mat-icon *ngIf="article.stock <= article.stockMinimum" 
-                  class="warning-icon" 
-                  matTooltip="Stock faible">
-                  warning
-                </mat-icon>
-              </div>
-            </td>
-          </ng-container>
-
-          <!-- Colonne prix -->
-          <ng-container matColumnDef="prixVente">
-            <th mat-header-cell *matHeaderCellDef class="prix-column">
-              <div class="header-content">
-                <span>Prix Vente</span>
-                <mat-icon class="sort-icon">swap_vert</mat-icon>
-              </div>
-            </th>
-            <td mat-cell *matCellDef="let article" class="prix-column">
-              <div class="prix-cell">
-                <span class="prix-vente">{{article.prixVente | currency:'EUR':'symbol':'1.2-2'}}</span>
-                <span class="prix-achat">Achat: {{article.prixAchat | currency:'EUR':'symbol':'1.2-2'}}</span>
-              </div>
-            </td>
-          </ng-container>
 
           <!-- Colonne statut -->
           <ng-container matColumnDef="statut">
@@ -295,24 +244,24 @@
               <div class="action-buttons">
                 <!-- Boutons actions rapides -->
                 <button mat-icon-button 
-                  matTooltip="Tarifs" 
+                  matTooltip="Éditer" 
                   (click)="openTarifs(article)"
                   class="action-btn tarifs-btn">
-                  <mat-icon>local_offer</mat-icon>
+                  <mat-icon>edit</mat-icon>
                 </button>
                 
                 <button mat-icon-button 
-                  matTooltip="Assortiment" 
+                  matTooltip="Détail" 
                   (click)="openAssortiment(article)"
                   class="action-btn assortiment-btn">
-                  <mat-icon>view_module</mat-icon>
+                  <mat-icon>visibility</mat-icon>
                 </button>
                 
                 <button mat-icon-button 
-                  matTooltip="Réassort" 
+                  matTooltip="Activer/Désactiver" 
                   (click)="openReassort(article)"
                   class="action-btn reassort-btn">
-                  <mat-icon>autorenew</mat-icon>
+                  <mat-icon>toggle_on</mat-icon>
                 </button>
 
                 <!-- Menu d'actions supplémentaires -->
@@ -321,21 +270,16 @@
                 </button>
                 <mat-menu #moreMenu="matMenu">
                   <button mat-menu-item>
-                    <mat-icon>edit</mat-icon>
-                    <span>Modifier</span>
+                    <mat-icon>local_offer</mat-icon>
+                    <span>Tarifs</span>
                   </button>
                   <button mat-menu-item>
-                    <mat-icon>content_copy</mat-icon>
-                    <span>Dupliquer</span>
+                    <mat-icon>view_module</mat-icon>
+                    <span>Assortiments</span>
                   </button>
                   <button mat-menu-item>
-                    <mat-icon>visibility</mat-icon>
-                    <span>Détails</span>
-                  </button>
-                  <mat-divider></mat-divider>
-                  <button mat-menu-item class="delete-item">
-                    <mat-icon>delete</mat-icon>
-                    <span>Supprimer</span>
+                    <mat-icon>autorenew</mat-icon>
+                    <span>Réassort</span>
                   </button>
                 </mat-menu>
               </div>

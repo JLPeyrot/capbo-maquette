@@ -1,0 +1,85 @@
+<div class="create-attribute-container" [class.focus-mode]="isFocusMode">
+  <mat-toolbar class="top-navbar" *ngIf="isFocusMode">
+    <button mat-icon-button (click)="goBackToDashboard()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="spacer"></span>
+    <span class="page-title">Créer un Attribut</span>
+    <span class="spacer"></span>
+  </mat-toolbar>
+
+  <div class="page-content">
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>tune</mat-icon>
+          Nouveau Attribut
+        </mat-card-title>
+        <mat-card-subtitle class="form-subtitle">Renseignez les informations ci-dessous</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="attributeForm" (ngSubmit)="onSubmit()" class="attribute-form">
+
+          <div class="form-row">
+             <mat-form-field appearance="outline" class="form-field">
+               <mat-label>Libellé</mat-label>
+               <input matInput formControlName="libelle" placeholder="Libellé de l'attribut" />
+               <mat-error *ngIf="attributeForm.get('libelle')?.hasError('required')">Le libellé est requis</mat-error>
+             </mat-form-field>
+
+             <mat-form-field appearance="outline" class="form-field">
+               <mat-label>Type d'attribut</mat-label>
+               <mat-select formControlName="typeAttribut">
+                 <mat-option *ngFor="let ta of typesAttribut" [value]="ta">{{ ta }}</mat-option>
+               </mat-select>
+               <mat-error *ngIf="attributeForm.get('typeAttribut')?.hasError('required')">Le type d'attribut est requis</mat-error>
+             </mat-form-field>
+
+             <mat-form-field appearance="outline" class="form-field">
+               <mat-label>Type des valeurs d'attribut</mat-label>
+               <mat-select formControlName="type">
+                 <mat-option *ngFor="let t of types" [value]="t">{{ t }}</mat-option>
+               </mat-select>
+               <mat-error *ngIf="attributeForm.get('type')?.hasError('required')">Le type est requis</mat-error>
+             </mat-form-field>
+           </div>
+
+          <div class="form-row toggles-row">
+            <mat-slide-toggle formControlName="enum">Valeurs prédéfinies</mat-slide-toggle>
+            <mat-form-field appearance="outline" class="form-field" *ngIf="attributeForm.get('enum')?.value">
+               <mat-label>Ajouter une valeur</mat-label>
+               <input matInput type="number" inputmode="decimal" step="any" formControlName="enumInput" placeholder="0.00" (keyup.enter)="addEnumValue()" />
+             </mat-form-field>
+            <button mat-raised-button color="primary" type="button" *ngIf="attributeForm.get('enum')?.value" (click)="addEnumValue()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div class="enum-values" *ngIf="attributeForm.get('enum')?.value && enumValues.length">
+            <ul>
+              <li *ngFor="let v of enumValues">{{ v }}</li>
+            </ul>
+          </div>
+
+          <div class="form-row toggles-row">
+            <mat-slide-toggle formControlName="declinable">Déclinable</mat-slide-toggle>
+            <mat-slide-toggle formControlName="optionnel">Optionnel</mat-slide-toggle>
+            <mat-slide-toggle formControlName="valeursMultiples">Valeur multiples</mat-slide-toggle>
+          </div>
+
+          <div class="form-actions">
+            <button mat-stroked-button type="button" (click)="goBackToDashboard()">
+              <mat-icon>close</mat-icon>
+              Annuler
+            </button>
+            <button mat-raised-button color="primary" type="submit">
+              <mat-icon>save</mat-icon>
+              Créer l'attribut
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

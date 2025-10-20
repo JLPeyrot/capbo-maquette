@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 // Layout
 import { MatCardModule } from '@angular/material/card';
@@ -36,6 +37,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
+// Chips
+import { MatChipsModule } from '@angular/material/chips';
+
 const MaterialModules = [
   MatToolbarModule,
   MatSidenavModule,
@@ -48,6 +52,7 @@ const MaterialModules = [
   MatInputModule,
   MatSelectModule,
   MatSlideToggleModule,
+  MatCheckboxModule,
   MatCardModule,
   MatDividerModule,
   MatGridListModule,
@@ -58,7 +63,8 @@ const MaterialModules = [
   MatSnackBarModule,
   MatTooltipModule,
   MatProgressSpinnerModule,
-  MatProgressBarModule
+  MatProgressBarModule,
+  MatChipsModule
 ];
 
 @NgModule({

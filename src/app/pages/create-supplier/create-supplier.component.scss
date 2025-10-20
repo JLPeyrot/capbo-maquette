@@ -1,0 +1,186 @@
+.create-supplier-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  scroll-behavior: smooth;
+  
+  .supplier-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    
+    .form-section {
+      margin-bottom: 32px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e0e0e0;
+      
+      mat-card-header {
+        background: linear-gradient(135deg, #1976d2, #1565c0);
+        color: white;
+        padding: 20px 24px;
+        
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 18px;
+          font-weight: 500;
+          margin: 0;
+          
+          .back-btn-integrated {
+            color: rgba(255, 255, 255, 0.9);
+            margin-right: 8px;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.1);
+              color: white;
+              transform: scale(1.1);
+            }
+          }
+          
+          mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+            color: #ffeb3b;
+          }
+        }
+      }
+      
+      mat-card-content {
+        padding: 24px;
+        background: white;
+      }
+    }
+    
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 16px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .full-width {
+        width: 100%;
+      }
+      
+      .half-width {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 250px;
+      }
+      
+      .status-toggle {
+        display: flex;
+        align-items: center;
+        padding: 14px 0;
+        
+        .status-label {
+          margin-right: 16px;
+          color: rgba(0, 0, 0, 0.6);
+        }
+      }
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 16px;
+      padding: 24px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-top: 32px;
+      margin-bottom: 32px;
+      
+      .cancel-btn {
+        color: #666;
+        
+        &:hover {
+          background: rgba(0, 0, 0, 0.04);
+        }
+      }
+      
+      .save-btn {
+        min-width: 160px;
+        height: 48px;
+        font-weight: 500;
+      }
+      
+      button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 44px;
+        padding: 0 20px;
+      }
+    }
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .create-supplier-container {
+    padding: 12px;
+    
+    .supplier-form {
+      .form-row {
+        flex-direction: column;
+        
+        .half-width {
+          width: 100%;
+        }
+      }
+      
+      .form-actions {
+        flex-direction: column-reverse;
+        
+        button {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+/* Dark theme support */
+:host-context(.dark-theme) {
+  .create-supplier-container {
+    .supplier-form {
+      .form-section {
+        background-color: #2d2d2d;
+        color: #ffffff;
+        
+        mat-card-title {
+          color: #ffffff;
+          
+          mat-icon {
+            color: #7986cb;
+          }
+        }
+      }
+      
+      .form-row {
+        .status-toggle {
+          .status-label {
+            color: rgba(255, 255, 255, 0.7);
+          }
+        }
+      }
+      
+      .form-actions {
+        .save-btn {
+          background-color: #7986cb;
+        }
+      }
+    }
+  }
+}

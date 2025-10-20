@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Frontend Angular application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    container_name: capbo-frontend
+    restart: unless-stopped
+    networks:
+      - capbo-network
+    # Uncomment if you have environment variables
+    # environment:
+    #   - NODE_ENV=production
+    #   - API_URL=http://backend:8080
+
+  # Uncomment and configure if you have a backend service
+  # backend:
+  #   image: your-backend-image:latest
+  #   ports:
+  #     - "8080:8080"
+  #   container_name: capbo-backend
+  #   restart: unless-stopped
+  #   networks:
+  #     - capbo-network
+  #   environment:
+  #     - DATABASE_URL=postgresql://user:password@db:5432/capbo
+
+  # Uncomment if you need a database
+  # db:
+  #   image: postgres:15-alpine
+  #   container_name: capbo-db
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: capbo
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - capbo-network
+  #   ports:
+  #     - "5432:5432"
+
+networks:
+  capbo-network:
+    driver: bridge
+
+# Uncomment if you need persistent volumes
+# volumes:
+#   postgres_data:

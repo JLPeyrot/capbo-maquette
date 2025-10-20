@@ -1,0 +1,249 @@
+<div class="page-container">
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-left">
+      <button mat-icon-button (click)="onGoBack()" class="back-btn" *ngIf="!isFocusMode">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      
+      <div class="header-text">
+        <h1 class="page-title">
+          <mat-icon class="title-icon">business</mat-icon>
+          Gestion des groupes de sites
+        </h1>
+        <p class="page-subtitle">Consultation et gestion de vos groupes de sites</p>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="onCreateGroupSites()" class="create-btn">
+        <mat-icon>add</mat-icon>
+        Nouveau groupe
+      </button>
+    </div>
+  </div>
+
+  <!-- FILTRES DE RECHERCHE -->
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>filter_list</mat-icon>
+        Filtres de recherche
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- Filtres principaux -->
+      <div class="filters-row primary-filters">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Rechercher</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput 
+            [(ngModel)]="filters.search" 
+            (ngModelChange)="applyFilters()"
+            placeholder="Rechercher un groupe de sites"
+            autocomplete="off">
+        </mat-form-field>
+      </div>
+      
+      <!-- Filtres secondaires -->
+      <div class="filters-row secondary-filters">
+        
+        <div class="filter-actions">
+          <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
+            <mat-icon>clear_all</mat-icon>
+            Réinitialiser
+          </button>
+          
+          <!-- Résultats -->
+          <div class="results-count">
+            <span class="count-badge">{{totalGroupSites}}</span>
+            groupe(s) trouvé(s)
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  
+  <!-- TABLEAU DES GROUPES DE SITES -->
+  <div class="table-card">
+    <!-- Affichage du chargement -->
+    <div class="loading-container" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Chargement des groupes de sites...</p>
+    </div>
+    
+    <!-- Tableau des groupes de sites -->
+    <div class="table-container" *ngIf="!isLoading">
+      <!-- Actions groupées (visible si sélection) -->
+      <div class="bulk-actions" *ngIf="selectedGroupSites.length > 0">
+        <div class="selection-info">
+          <mat-icon>check_circle</mat-icon>
+          <span>{{selectedGroupSites.length}} groupe(s) sélectionné(s)</span>
+        </div>
+        
+        <div class="bulk-buttons">
+          <button mat-stroked-button>
+            <mat-icon>file_download</mat-icon>
+            Exporter
+          </button>
+        </div>
+      </div>
+      
+      <!-- Tableau -->
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="getPagedData()" class="group-sites-table">
+          <!-- Colonne sélection -->
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef class="select-column">
+              <mat-checkbox 
+                [checked]="isAllSelected()"
+                [indeterminate]="selectedGroupSites.length > 0 && !isAllSelected()"
+                (change)="masterToggle()">
+              </mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let group" class="select-column">
+              <mat-checkbox 
+                [checked]="isSelected(group)"
+                (change)="toggleSelection(group)">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+
+          <!-- Colonne nom -->
+          <ng-container matColumnDef="nom">
+            <th mat-header-cell *matHeaderCellDef class="name-column">
+              <div class="header-content">
+                <span>Nom du groupe</span>
+                <mat-icon class="sort-icon">swap_vert</mat-icon>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let group" class="name-column">
+              <div class="name-cell">
+                <span class="name-text">{{group.nom}}</span>
+                <span class="id-text">ID: {{group.id}}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Colonne type de groupe -->
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef class="type-column">
+              <div class="header-content">
+                <span>Type de groupe</span>
+                <mat-icon class="sort-icon">swap_vert</mat-icon>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let group" class="type-column">
+              <span class="type-badge" [class]="'type-' + group.type.toLowerCase()">{{group.type}}</span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne nombre de sites -->
+          <ng-container matColumnDef="sites_count">
+            <th mat-header-cell *matHeaderCellDef class="count-column">
+              <div class="header-content">
+                <span>Nb. sites</span>
+                <mat-icon class="sort-icon">swap_vert</mat-icon>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let group" class="count-column">
+              <span class="count-badge">{{group.sites.length}}</span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne liste des sites -->
+          <ng-container matColumnDef="sites_list">
+            <th mat-header-cell *matHeaderCellDef class="sites-column">
+              <div class="header-content">
+                <span>Sites associés</span>
+                <mat-icon class="sort-icon">swap_vert</mat-icon>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let group" class="sites-column">
+              <div class="sites-list">
+                <span class="sites-text" [matTooltip]="getSitesNames(group.sites)">
+                  {{getSitesNames(group.sites)}}
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Colonne statut -->
+          <ng-container matColumnDef="is_active">
+            <th mat-header-cell *matHeaderCellDef class="status-column">
+              <div class="header-content">
+                <span>Statut</span>
+                <mat-icon class="sort-icon">swap_vert</mat-icon>
+              </div>
+            </th>
+            <td mat-cell *matCellDef="let group" class="status-column">
+              <span [class]="'status-chip ' + getStatusClass(group.is_active)">
+                <mat-icon *ngIf="group.is_active">check_circle</mat-icon>
+                <mat-icon *ngIf="!group.is_active">cancel</mat-icon>
+                {{getStatusLabel(group.is_active)}}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne actions -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="actions-column">Actions</th>
+            <td mat-cell *matCellDef="let group" class="actions-column">
+              <div class="action-buttons">
+                <!-- Boutons actions rapides -->
+                <button mat-icon-button 
+                  matTooltip="Éditer" 
+                  (click)="onEditGroupSites(group.id)"
+                  class="action-btn edit-btn">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                
+                <button mat-icon-button 
+                  matTooltip="Voir les détails" 
+                  (click)="onViewGroupSites(group.id)"
+                  class="action-btn view-btn">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                
+                <button mat-icon-button 
+                  matTooltip="Supprimer" 
+                  (click)="onDeleteGroupSites(group.id)"
+                  class="action-btn delete-btn">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Définition des lignes -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let group; columns: displayedColumns;"
+              [class.selected-row]="isSelected(group)"></tr>
+        </table>
+      </div>
+      
+      <!-- Message si aucun résultat -->
+      <div class="no-results" *ngIf="filteredGroupSites.length === 0 && !isLoading">
+        <mat-icon>search_off</mat-icon>
+        <p>Aucun groupe de sites ne correspond à vos critères de recherche</p>
+        <button mat-stroked-button color="primary" (click)="resetFilters()">
+          <mat-icon>refresh</mat-icon>
+          Réinitialiser les filtres
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- PAGINATION -->
+  <div class="pagination-container" *ngIf="!isLoading && filteredGroupSites.length > 0">
+    <mat-paginator 
+      [length]="totalGroupSites"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      [pageIndex]="currentPage"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  </div>
+</div>

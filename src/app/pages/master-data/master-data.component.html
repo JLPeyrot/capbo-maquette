@@ -1,0 +1,147 @@
+<div class="master-data-container">
+  <div class="master-data-form">
+    <!-- En-tête -->
+    <div class="form-section">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <button mat-icon-button class="back-btn-integrated" (click)="goBack.emit()" *ngIf="isFocusMode">
+              <mat-icon>arrow_back</mat-icon>
+            </button>
+            <mat-icon>settings</mat-icon>
+            Données de Base
+          </mat-card-title>
+          <mat-card-subtitle>Consultation et gestion de vos données de base</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+    </div>
+
+    <!-- Onglets de configuration -->
+    <div class="form-section">
+      <mat-card>
+        <mat-card-content>
+          <mat-tab-group>
+            <!-- Onglet Format des codes articles -->
+            <mat-tab label="Format des codes articles">
+              <div class="tab-content">
+                <form [formGroup]="articleCodeForm" (ngSubmit)="onSave()">
+                  
+                  <!-- Préfixe, Séparateur et Suffixe -->
+                  <div class="form-row">
+                    <div class="third-width">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Préfixe</mat-label>
+                        <input 
+                          matInput 
+                          formControlName="prefix"
+                          placeholder="Ex: ART, PROD"
+                          maxlength="10">
+                        <mat-icon matSuffix>label</mat-icon>
+                        <mat-hint>Préfixe du code article (optionnel)</mat-hint>
+                        <mat-error *ngIf="hasFieldError('prefix', 'required')">
+                          Le préfixe est requis
+                        </mat-error>
+                        <mat-error *ngIf="hasFieldError('prefix', 'maxlength')">
+                          {{ getFieldError('prefix') }}
+                        </mat-error>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="third-width">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Séparateur</mat-label>
+                        <mat-select formControlName="separator">
+                          <mat-option *ngFor="let sep of separators" [value]="sep.value">
+                            {{ sep.label }}
+                          </mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix>more_horiz</mat-icon>
+                        <mat-hint>Caractère de séparation entre les éléments</mat-hint>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="third-width">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Suffixe</mat-label>
+                        <input 
+                          matInput 
+                          formControlName="suffix"
+                          placeholder="Ex: V1, NEW"
+                          maxlength="10">
+                        <mat-icon matSuffix>label_outline</mat-icon>
+                        <mat-hint>Suffixe du code article (optionnel)</mat-hint>
+                        <mat-error *ngIf="hasFieldError('suffix', 'maxlength')">
+                          {{ getFieldError('suffix') }}
+                        </mat-error>
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <!-- Aperçu du format -->
+                  <div class="form-row">
+                    <div class="full-width">
+                      <div class="format-preview">
+                        <mat-icon>visibility</mat-icon>
+                        <div class="preview-content">
+                          <span class="preview-label">Aperçu du format :</span>
+                          <span class="preview-example">{{ generateExample() }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <mat-divider></mat-divider>
+
+                  <!-- Actions -->
+                  <div class="form-actions">
+                    <button 
+                      mat-stroked-button 
+                      type="button" 
+                      class="cancel-btn"
+                      (click)="onReset()"
+                      [disabled]="isSaving">
+                      <mat-icon>refresh</mat-icon>
+                      Réinitialiser
+                    </button>
+                    
+                    <button 
+                      mat-raised-button 
+                      color="primary" 
+                      type="submit"
+                      class="save-btn"
+                      [disabled]="articleCodeForm.invalid || isSaving">
+                      <mat-icon *ngIf="!isSaving">save</mat-icon>
+                      <mat-progress-spinner 
+                        *ngIf="isSaving" 
+                        diameter="20" 
+                        mode="indeterminate">
+                      </mat-progress-spinner>
+                      {{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+            </mat-tab>
+
+            <!-- Onglet pour futures configurations -->
+            <mat-tab label="Autres paramètres" disabled>
+              <div class="tab-content">
+                <div class="coming-soon">
+                  <mat-icon>construction</mat-icon>
+                  <p>Autres paramètres de configuration à venir...</p>
+                </div>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+    <p>Chargement de la configuration...</p>
+  </div>
+</div>
