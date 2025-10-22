@@ -112,17 +112,36 @@
                 <mat-icon matListItemIcon>inventory</mat-icon>
                 <div matListItemTitle>Articles</div>
               </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('assortments')">
-                <mat-icon matListItemIcon>view_module</mat-icon>
-                <div matListItemTitle>Assortiments</div>
-              </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('pricing')">
                 <mat-icon matListItemIcon>local_offer</mat-icon>
                 <div matListItemTitle>Tarification</div>
               </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('attributes')">
-                <mat-icon matListItemIcon>label</mat-icon>
-                <div matListItemTitle>Attributs</div>
+            </div>
+          </div>
+
+          <!-- ASSORTIMENTS -->
+          <div class="menu-group">
+            <button mat-button class="group-header" (click)="toggleGroup('assortments')">
+              <mat-icon>view_module</mat-icon>
+              <span>ASSORTIMENTS</span>
+              <mat-icon class="expand-icon" [class.expanded]="expandedGroups.assortments">expand_more</mat-icon>
+            </button>
+            <div class="submenu" [class.expanded]="expandedGroups.assortments">
+              <mat-list-item class="submenu-item" (click)="navigateTo('create-assortments')">
+                <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
+                <div matListItemTitle>Création d'assortiments</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('assortment-trunk')">
+                <mat-icon matListItemIcon>account_tree</mat-icon>
+                <div matListItemTitle>Troncs d'Assortiment</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('reception-trunk')">
+                <mat-icon matListItemIcon>inbox</mat-icon>
+                <div matListItemTitle>Réception Tronc</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('trunk-selection')">
+                <mat-icon matListItemIcon>add_box</mat-icon>
+                <div matListItemTitle>Ajout Assortiments</div>
               </mat-list-item>
             </div>
           </div>
@@ -340,14 +359,7 @@
 
       <!-- PAGE ARTICLES LIST (en mode focus) -->
       <div *ngSwitchCase="'articles-list'" class="page-container">
-        <app-articles-list (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode" [hideActiveToggle]="assortmentsMode"></app-articles-list>
-      </div>
-
-
-
-      <!-- PAGE ATTRIBUTES LIST (en mode focus) -->
-      <div *ngSwitchCase="'attributes-list'" class="page-container">
-        <app-attributes-list (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode" (createAttribute)="navigateTo('create-attribute')"></app-attributes-list>
+        <app-articles-list (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode"></app-articles-list>
       </div>
 
       <!-- PAGE CREATE ARTICLE (en mode focus) -->
@@ -355,12 +367,61 @@
         <app-create-article (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode"></app-create-article>
       </div>
 
-      <!-- PAGE CREATE ATTRIBUTE (en mode focus) -->
-      <div *ngSwitchCase="'create-attribute'" class="page-container">
-        <app-create-attribute (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode"></app-create-attribute>
+      <!-- PAGE SUPPLIERS -->
+      <div *ngSwitchCase="'suppliers'" class="page-container">
+        <app-suppliers></app-suppliers>
       </div>
+
+      <!-- PAGE ASSORTMENT TRUNK -->
+      <div *ngSwitchCase="'assortment-trunk'" class="page-container">
+        <app-assortment-trunk></app-assortment-trunk>
+      </div>
+
+      <!-- PAGE RECEPTION TRUNK -->
+      <div *ngSwitchCase="'reception-trunk'" class="page-container">
+        <app-reception-trunk></app-reception-trunk>
+      </div>
+
+      <!-- PAGE TRUNK SELECTION -->
+      <div *ngSwitchCase="'trunk-selection'" class="page-container">
+        <app-trunk-selection></app-trunk-selection>
+      </div>
+
+      <!-- PAGE ADD ASSORTMENTS (mode normal avec navigation) -->
+      <div *ngSwitchCase="'add-assortments'" class="page-container">
+        <app-add-assortments [isFocusMode]="isFocusMode"></app-add-assortments>
+      </div>
+
+      <!-- PAGE TRUNK LIST -->
+      <div *ngSwitchCase="'trunk-list'" class="page-container">
+        <app-trunk-list></app-trunk-list>
+      </div>
+
+      <!-- PAGE CREATE ASSORTMENTS -->
+      <div *ngSwitchCase="'create-assortments'" class="page-container">
+        <app-create-assortments></app-create-assortments>
+      </div>
+
+      <!-- PAGE ENRICHMENT ASSORTMENT -->
+      <div *ngSwitchCase="'enrichment-assortment'" class="page-container">
+        <app-enrichment-assortment></app-enrichment-assortment>
+      </div>
+
+      <!-- PAGE TRUNK ASSORTMENTS -->
+      <div *ngSwitchCase="'trunk-assortments'" class="page-container">
+        <app-trunk-assortments></app-trunk-assortments>
+      </div>
+
     </div>
 
   </div>
+
+  <!-- POPUP D'ALERTE -->
+  <app-alert-popup 
+    *ngIf="showAlert"
+    [data]="alertData"
+    (close)="onCloseAlert()"
+    (dontShowAgain)="onDontShowAlertAgain()">
+  </app-alert-popup>
 
 </div>

@@ -28,7 +28,7 @@
         <textarea 
           matInput 
           [(ngModel)]="aiInput"
-          placeholder="Ex: T-shirt manches courtes bleu marine taille M, 100% coton bio, marque EcoWear"
+          placeholder="Ex: T-shirt manches courtes bleu marine taille M, 100% coton bio, marque EcoWear, référence fournisseur ECO-TS-001"
           rows="4"
           [disabled]="isAiProcessing">
         </textarea>
@@ -78,16 +78,17 @@
           <mat-icon>info</mat-icon>
           Informations Générales
         </mat-card-title>
-        <div class="translation-toggle-header">
-          <mat-slide-toggle 
-            [(ngModel)]="translationsEnabled" 
-            [ngModelOptions]="{standalone: true}"
-            color="primary">
-            {{ translationsEnabled ? 'Désactiver les traductions' : 'Activer les traductions' }}
-          </mat-slide-toggle>
-        </div>
       </mat-card-header>
       <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom de l'article *</mat-label>
+            <input matInput formControlName="name" placeholder="Ex: T-shirt manches courtes">
+            <mat-error *ngIf="articleForm.get('name')?.invalid && articleForm.get('name')?.touched">
+              Le nom de l'article est obligatoire
+            </mat-error>
+          </mat-form-field>
+        </div>
         
         <div class="form-row">
           <mat-form-field appearance="outline" class="half-width">
@@ -98,96 +99,24 @@
             </button>
           </mat-form-field>
           
-          <div class="half-width ean-codes-section">
-            <h4 class="field-title">Codes EAN/GTIN</h4>
-            <div formArrayName="ean" class="ean-codes-container">
-              <div *ngFor="let eanControl of eanArray.controls; let i = index" class="ean-code-row">
-                <mat-form-field appearance="outline" class="ean-input">
-                  <mat-label>Code EAN {{i + 1}}</mat-label>
-                  <input matInput [formControlName]="i" placeholder="Code-barres international"
-                         [class.invalid-ean]="eanControl.value && !validateEanCode(eanControl.value)">
-                  <mat-error *ngIf="eanControl.value && !validateEanCode(eanControl.value)">
-                    Code EAN invalide (8, 13 ou 14 chiffres requis)
-                  </mat-error>
-                </mat-form-field>
-                <button mat-icon-button type="button" 
-                        (click)="removeEanCode(i)" 
-                        [disabled]="eanArray.length === 1"
-                        matTooltip="Supprimer ce code EAN"
-                        class="remove-ean-btn">
-                  <mat-icon>remove_circle_outline</mat-icon>
-                </button>
-              </div>
-              <button mat-stroked-button type="button" 
-                      (click)="addEanCode()" 
-                      class="add-ean-btn">
-                <mat-icon>add</mat-icon>
-                Ajouter un code EAN
-              </button>
-            </div>
-          </div>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Code EAN/GTIN</mat-label>
+            <input matInput formControlName="ean" placeholder="Code-barres international">
+          </mat-form-field>
         </div>
         
-        <!-- Description courte multilingue -->
         <div class="form-row">
-          <div class="multilingual-field">
-            <h4 class="field-title">Description courte</h4>
-            <div formGroupName="shortDescription" class="multilingual-input-container" *ngIf="!translationsEnabled">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Description courte</mat-label>
-                <input matInput formControlName="fr" 
-                       placeholder="Description en une ligne">
-                <mat-icon matSuffix class="required-icon">star</mat-icon>
-              </mat-form-field>
-            </div>
-            <div formGroupName="shortDescription" class="multilingual-input-container" *ngIf="translationsEnabled">
-              <mat-form-field appearance="outline" class="multilingual-input">
-                <mat-label>Description courte ({{getSelectedLanguage().name}})</mat-label>
-                <input matInput [formControlName]="selectedLanguage" 
-                       [placeholder]="'Description en une ligne en ' + getSelectedLanguage().name.toLowerCase()">
-                <mat-icon matSuffix *ngIf="getSelectedLanguage().required" class="required-icon">star</mat-icon>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="language-dropdown">
-                <mat-label>Langue</mat-label>
-                <mat-select [(value)]="selectedLanguage">
-                  <mat-option *ngFor="let lang of languages" [value]="lang.code">
-                    {{lang.flag}} {{lang.name}}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-          </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description courte</mat-label>
+            <input matInput formControlName="shortDescription" placeholder="Description en une ligne">
+          </mat-form-field>
         </div>
         
-        <!-- Description détaillée multilingue -->
         <div class="form-row">
-          <div class="multilingual-field">
-            <h4 class="field-title">Description détaillée</h4>
-            <div formGroupName="longDescription" class="multilingual-input-container" *ngIf="!translationsEnabled">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Description détaillée</mat-label>
-                <textarea matInput formControlName="fr" rows="3"
-                         placeholder="Description complète du produit"></textarea>
-                <mat-icon matSuffix class="required-icon">star</mat-icon>
-              </mat-form-field>
-            </div>
-            <div formGroupName="longDescription" class="multilingual-input-container" *ngIf="translationsEnabled">
-              <mat-form-field appearance="outline" class="multilingual-input">
-                <mat-label>Description détaillée ({{getSelectedLanguage().name}})</mat-label>
-                <textarea matInput [formControlName]="selectedLanguage" rows="3"
-                         [placeholder]="'Description complète du produit en ' + getSelectedLanguage().name.toLowerCase()"></textarea>
-                <mat-icon matSuffix *ngIf="getSelectedLanguage().required" class="required-icon">star</mat-icon>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="language-dropdown">
-                <mat-label>Langue</mat-label>
-                <mat-select [(value)]="selectedLanguage">
-                  <mat-option *ngFor="let lang of languages" [value]="lang.code">
-                    {{lang.flag}} {{lang.name}}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-          </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description détaillée</mat-label>
+            <textarea matInput formControlName="longDescription" rows="3" placeholder="Description complète du produit"></textarea>
+          </mat-form-field>
         </div>
       </mat-card-content>
     </mat-card>
@@ -201,82 +130,41 @@
         </mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <!-- Level 1 -->
-        <div class="form-row" *ngIf="categoryLevels[1]?.length">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Niveau 1</mat-label>
-            <mat-select formControlName="categoryLevel1" (selectionChange)="onCategoryLevelChange(1, $event.value)">
-              <mat-option *ngFor="let category of categoryLevels[1]" [value]="category.id">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Catégorie *</mat-label>
+            <mat-select formControlName="category" (selectionChange)="onCategoryChange($event)">
+              <mat-option *ngFor="let category of categories" [value]="category.id">
                 {{category.name}}
               </mat-option>
             </mat-select>
+            <mat-error *ngIf="articleForm.get('category')?.invalid && articleForm.get('category')?.touched">
+              La catégorie est obligatoire
+            </mat-error>
           </mat-form-field>
-        </div>
-
-        <!-- Level 2 -->
-        <div class="form-row" *ngIf="categoryLevels[2]?.length">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Niveau 2</mat-label>
-            <mat-select formControlName="categoryLevel2" (selectionChange)="onCategoryLevelChange(2, $event.value)">
-              <mat-option *ngFor="let category of categoryLevels[2]" [value]="category.id">
-                {{category.name}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <!-- Level 3 -->
-        <div class="form-row" *ngIf="categoryLevels[3]?.length">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Niveau 3</mat-label>
-            <mat-select formControlName="categoryLevel3" (selectionChange)="onCategoryLevelChange(3, $event.value)">
-              <mat-option *ngFor="let category of categoryLevels[3]" [value]="category.id">
-                {{category.name}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <!-- Level 4 -->
-        <div class="form-row" *ngIf="categoryLevels[4]?.length">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Niveau 4</mat-label>
-            <mat-select formControlName="categoryLevel4" (selectionChange)="onCategoryLevelChange(4, $event.value)">
-              <mat-option *ngFor="let category of categoryLevels[4]" [value]="category.id">
-                {{category.name}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <!-- Level 5 -->
-        <div class="form-row" *ngIf="categoryLevels[5]?.length">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Niveau 5</mat-label>
-            <mat-select formControlName="categoryLevel5" (selectionChange)="onCategoryLevelChange(5, $event.value)">
-              <mat-option *ngFor="let category of categoryLevels[5]" [value]="category.id">
-                {{category.name}}
+          
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Sous-catégorie</mat-label>
+            <mat-select formControlName="subcategory" [disabled]="!selectedSubcategories.length">
+              <mat-option *ngFor="let subcategory of selectedSubcategories" [value]="subcategory.id">
+                {{subcategory.name}}
               </mat-option>
             </mat-select>
           </mat-form-field>
         </div>
         
-        <!-- Niveau 4 dropdown - appears after selecting first 3 category levels -->
-        <div class="form-row" *ngIf="articleForm.get('categoryLevel1')?.value && articleForm.get('categoryLevel2')?.value && articleForm.get('categoryLevel3')?.value">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Niveau 4</mat-label>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Marque</mat-label>
             <mat-select formControlName="brand">
               <mat-option *ngFor="let brand of brands" [value]="brand.id">
                 {{brand.name}}
               </mat-option>
             </mat-select>
           </mat-form-field>
-        </div>
-        
-        <!-- Niveau 5 dropdown - appears after selecting first 3 category levels AND Niveau 4 -->
-        <div class="form-row" *ngIf="articleForm.get('categoryLevel1')?.value && articleForm.get('categoryLevel2')?.value && articleForm.get('categoryLevel3')?.value && articleForm.get('brand')?.value">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Niveau 5</mat-label>
+          
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Collection/Saison</mat-label>
             <mat-select formControlName="collection">
               <mat-option *ngFor="let collection of collections" [value]="collection.id">
                 {{collection.name}}
@@ -287,153 +175,96 @@
       </mat-card-content>
     </mat-card>
 
-
-
-    <!-- COMPOSITION PRODUIT -->
-    <mat-card class="form-section composition-section">
+    <!-- CARACTÉRISTIQUES PHYSIQUES -->
+    <mat-card class="form-section">
       <mat-card-header>
         <mat-card-title>
-          <mat-icon>inventory_2</mat-icon>
-          Composition du Produit
+          <mat-icon>palette</mat-icon>
+          Caractéristiques Physiques
         </mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <!-- Toggle pour activer/désactiver la composition -->
-        <div class="composition-toggle">
-          <mat-slide-toggle 
-            formControlName="isComposed" 
-            color="primary"
-            (change)="onCompositionToggle($event)">
-            Ce produit est composé d'autres articles
-          </mat-slide-toggle>
-          <p class="composition-help-text">
-            <mat-icon class="help-icon">info</mat-icon>
-            Activez cette option si votre produit est un ensemble composé de plusieurs articles distincts.
-          </p>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Couleur principale</mat-label>
+            <mat-select formControlName="color">
+              <mat-option *ngFor="let color of colors" [value]="color.id">
+                <span class="color-option">
+                  <span class="color-dot" [style.background-color]="color.hex"></span>
+                  {{color.name}}
+                </span>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Taille</mat-label>
+            <mat-select formControlName="size">
+              <mat-option *ngFor="let size of sizes" [value]="size.id">
+                {{size.name}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
-
-        <!-- Section de composition (visible uniquement si activée) -->
-        <div *ngIf="isCompositionEnabled" class="composition-content">
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Matière/Composition</mat-label>
+            <input matInput formControlName="material" placeholder="Ex: 100% coton bio">
+          </mat-form-field>
           
-          <!-- Instructions d'utilisation -->
-          <div class="composition-instructions">
-            <div class="instruction-card">
-              <mat-icon class="instruction-icon">help_outline</mat-icon>
-              <div class="instruction-content">
-                <h4>Comment composer votre produit :</h4>
-                <ol>
-                  <li>Recherchez les articles qui composent votre produit</li>
-                  <li>Cliquez sur un article pour l'ajouter à la composition</li>
-                  <li>Définissez la quantité nécessaire de chaque article</li>
-                  <li>Supprimez les articles non désirés avec le bouton corbeille</li>
-                </ol>
-              </div>
-            </div>
-          </div>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Poids (grammes)</mat-label>
+            <input matInput type="number" formControlName="weight" placeholder="Poids en grammes">
+            <span matSuffix>g</span>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
 
-          <!-- Recherche d'articles -->
-          <div class="article-search">
-            <mat-form-field appearance="outline" class="search-field">
-              <mat-label>Rechercher un article à ajouter</mat-label>
-              <input 
-                matInput 
-                [(ngModel)]="articleSearchQuery"
-                (input)="onArticleSearch()"
-                placeholder="Tapez le nom, la référence, ou une description..."
-                [ngModelOptions]="{standalone: true}">
-              <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
-            
-            <!-- Message d'aide pour la recherche -->
-            <div *ngIf="articleSearchQuery.length === 0" class="search-help">
-              <mat-icon class="search-help-icon">search</mat-icon>
-              <p>Commencez à taper pour rechercher des articles existants</p>
-            </div>
-            
-            <!-- Message si aucun résultat -->
-            <div *ngIf="articleSearchQuery.length > 0 && searchResults.length === 0 && !isSearching" class="no-results">
-              <mat-icon class="no-results-icon">search_off</mat-icon>
-              <p>Aucun article trouvé pour "{{articleSearchQuery}}"</p>
-            </div>
-            
-            <!-- Résultats de recherche -->
-            <div *ngIf="searchResults.length > 0" class="search-results">
-              <div 
-                *ngFor="let article of searchResults" 
-                class="search-result-item"
-                (click)="addToComposition(article)">
-                <div class="article-info">
-                  <img *ngIf="article.imageUrl" [src]="article.imageUrl" [alt]="article.name" class="article-thumbnail">
-                  <div class="article-details">
-                    <h4>{{article.name}}</h4>
-                    <p class="article-ref">Réf: {{article.reference}}</p>
-                    <p *ngIf="article.price" class="article-price">{{article.price | currency:'EUR'}}</p>
-                  </div>
-                </div>
-                <button mat-icon-button color="primary" matTooltip="Ajouter à la composition">
-                  <mat-icon>add</mat-icon>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Articles sélectionnés dans la composition -->
-          <div class="composition-items" *ngIf="compositionItems.length > 0">
-            <h3>Articles de la composition</h3>
-            
-            <div class="composition-list">
-              <div 
-                *ngFor="let item of compositionItems; let i = index" 
-                class="composition-item">
-                
-                <div class="item-info">
-                  <img *ngIf="item.articleImageUrl" [src]="item.articleImageUrl" [alt]="item.articleName" class="item-thumbnail">
-                  <div class="item-details">
-                    <h4>{{item.articleName}}</h4>
-                    <p class="item-ref">Réf: {{item.articleReference}}</p>
-                  </div>
-                </div>
-                
-                <div class="item-quantity">
-                  <mat-form-field appearance="outline" class="quantity-field">
-                    <mat-label>Quantité</mat-label>
-                    <input 
-                      matInput 
-                      type="number" 
-                      min="1"
-                      [(ngModel)]="item.quantity"
-                      (ngModelChange)="updateCompositionQuantity(item, $event)"
-                      [ngModelOptions]="{standalone: true}">
-                  </mat-form-field>
-                </div>
-                
-                <div class="item-actions">
-                  <button 
-                    mat-icon-button 
-                    color="warn" 
-                    (click)="removeFromComposition(item)"
-                    matTooltip="Supprimer de la composition">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Résumé de la composition -->
-            <div class="composition-summary">
-              <mat-divider></mat-divider>
-              <div class="summary-content">
-                <p><strong>Total des articles:</strong> {{getTotalCompositionItems()}}</p>
-              </div>
-            </div>
-          </div>
+    <!-- FOURNISSEUR -->
+    <mat-card class="form-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>business</mat-icon>
+          Informations Fournisseur
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Fournisseur principal *</mat-label>
+            <mat-select formControlName="supplier">
+              <mat-option *ngFor="let supplier of suppliers" [value]="supplier.id">
+                {{supplier.name}}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="articleForm.get('supplier')?.invalid && articleForm.get('supplier')?.touched">
+              Le fournisseur est obligatoire
+            </mat-error>
+          </mat-form-field>
           
-          <!-- Message si aucun article sélectionné -->
-          <div *ngIf="compositionItems.length === 0" class="no-composition-items">
-            <mat-icon class="empty-icon">inventory</mat-icon>
-            <p>Aucun article ajouté à la composition</p>
-            <p class="help-text">Utilisez la recherche ci-dessus pour ajouter des articles</p>
-          </div>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Référence fournisseur</mat-label>
+            <input matInput formControlName="supplierReference" placeholder="Référence chez le fournisseur">
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Conditionnement</mat-label>
+            <mat-select formControlName="packaging">
+              <mat-option value="unit">À l'unité</mat-option>
+              <mat-option value="box">Par carton</mat-option>
+              <mat-option value="pallet">Par palette</mat-option>
+              <mat-option value="lot">Par lot</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Quantité par conditionnement</mat-label>
+            <input matInput type="number" formControlName="packagingQuantity" placeholder="Nombre d'unités">
+          </mat-form-field>
         </div>
       </mat-card-content>
     </mat-card>

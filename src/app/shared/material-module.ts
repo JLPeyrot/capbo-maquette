@@ -15,8 +15,10 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTabsModule } from '@angular/material/tabs';
 
 // Layout
 import { MatCardModule } from '@angular/material/card';
@@ -51,8 +53,10 @@ const MaterialModules = [
   MatFormFieldModule,
   MatInputModule,
   MatSelectModule,
+  MatAutocompleteModule,
   MatSlideToggleModule,
   MatCheckboxModule,
+  MatTabsModule,
   MatCardModule,
   MatDividerModule,
   MatGridListModule,

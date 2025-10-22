@@ -1,14 +1,5 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
-import { CreateArticleComponent } from './pages/create-article/create-article.component';
-import { AttributesListComponent } from './pages/attributes-list/attributes-list.component';
-
-
-import { CreateSiteComponent } from './pages/create-site/create-site.component';
-import { SitesListComponent } from './pages/sites-list/sites-list.component';
-import { GroupSitesListComponent } from './pages/group-sites-list/group-sites-list.component';
-import { CreateGroupSitesComponent } from './pages/create-group-sites/create-group-sites.component';
-import { CategoriesListComponent } from './pages/categories-list/categories-list.component';
 
 export const routes: Routes = [
   {
@@ -21,43 +12,40 @@ export const routes: Routes = [
   },
   {
     path: 'create-article',
-    component: CreateArticleComponent
+    component: MainLayoutComponent
   },
   {
-    path: 'sites-list',
-    component: SitesListComponent
+    path: 'reception-trunk',
+    component: MainLayoutComponent
   },
   {
-    path: 'group-sites-list',
-    component: GroupSitesListComponent
+    path: 'trunk-selection',
+    component: MainLayoutComponent
   },
   {
-    path: 'create-site',
-    component: CreateSiteComponent
+    path: 'assortment-trunk',
+    component: MainLayoutComponent
   },
   {
-    path: 'create-group-sites',
-    component: CreateGroupSitesComponent
+    path: 'add-assortments',
+    component: MainLayoutComponent
   },
   {
-    path: 'edit-site/:id',
-    component: CreateSiteComponent
+    path: 'trunk-list',
+    component: MainLayoutComponent
   },
   {
-    path: 'edit-group-sites/:id',
-    component: CreateGroupSitesComponent
+    path: 'create-assortments',
+    component: MainLayoutComponent
   },
   {
-    path: 'categories',
-    component: CategoriesListComponent
+    path: 'enrichment-assortment',
+    component: MainLayoutComponent
   },
   {
-    path: 'attributes-list',
-    component: AttributesListComponent
+    path: 'trunk-assortments/:id',
+    component: MainLayoutComponent
   },
-
-
-  // Ajoutez d'autres routes ici
   {
     path: '**',
     redirectTo: ''

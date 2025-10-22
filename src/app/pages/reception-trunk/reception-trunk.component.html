@@ -1,0 +1,156 @@
+<div class="page-container">
+  <div class="content-wrapper">
+    <!-- En-tête de page -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <mat-icon class="page-icon">inventory_2</mat-icon>
+          <div class="title-content">
+            <h1>Réception d'un tronc d'assortiment</h1>
+            <p class="page-subtitle">Gérer la réception et l'affectation des articles</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button mat-raised-button class="action-btn save-btn">
+            <mat-icon>save</mat-icon>
+            Sauvegarder
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- SECTION ONGLETS -->
+    <mat-card class="tabs-card">
+      <mat-card-header>
+        <mat-card-title class="tabs-title">
+          <mat-icon>tab</mat-icon>
+          Types d'articles
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="tabs-container">
+          <mat-tab-group [(selectedIndex)]="selectedTabIndex" (selectedTabChange)="onTabChange($event)">
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon>lock</mat-icon>
+                <span>Fermé</span>
+              </ng-template>
+              <div class="tab-content">
+                <ng-container *ngTemplateOutlet="tabContentTemplate"></ng-container>
+              </div>
+            </mat-tab>
+            
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon>settings</mat-icon>
+                <span>Mixte</span>
+              </ng-template>
+              <div class="tab-content">
+                <ng-container *ngTemplateOutlet="tabContentTemplate"></ng-container>
+              </div>
+            </mat-tab>
+            
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon>check_circle</mat-icon>
+                <span>Ouvert</span>
+              </ng-template>
+              <div class="tab-content">
+                <ng-container *ngTemplateOutlet="tabContentTemplate"></ng-container>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  <!-- Template pour le contenu des onglets -->
+    <ng-template #tabContentTemplate>
+      <!-- SECTION FILTRES ET ACTIONS -->
+      <mat-card class="filters-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>filter_list</mat-icon>
+            Filtres et Actions
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="filters-content">
+          <div class="filters-row">
+            <mat-form-field class="filter-field" appearance="outline">
+            <mat-label>Rechercher un article</mat-label>
+            <input matInput [(ngModel)]="filterText" placeholder="Nom, référence, code-barres...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+            <div class="action-buttons">
+              <div class="selection-counter">
+                <mat-icon>check_circle</mat-icon>
+                <span>{{ getTotalSelectedCount() }} article(s) sélectionné(s)</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- SECTION TABLEAU -->
+      <mat-card class="table-card">
+        <mat-card-header>
+          <mat-card-title class="table-title">
+            <mat-icon>list_alt</mat-icon>
+            Articles du Tronc
+          </mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content class="table-content">
+          <div class="table-container">
+            <table mat-table [dataSource]="filteredArticles" class="articles-table">
+            <!-- Colonne de sélection -->
+            <ng-container matColumnDef="checkbox">
+              <th mat-header-cell *matHeaderCellDef>
+                <mat-checkbox 
+                  (change)="$event ? masterToggle() : null"
+                  [checked]="areAllSelected()"
+                  [indeterminate]="isIndeterminate()"
+                  [disabled]="isCheckboxDisabled()">
+                </mat-checkbox>
+              </th>
+              <td mat-cell *matCellDef="let article">
+                <div class="checkbox-container">
+                  <mat-checkbox 
+                    (click)="$event.stopPropagation()"
+                    [(ngModel)]="article.checked"
+                    [disabled]="isCheckboxDisabled()">
+                  </mat-checkbox>
+                </div>
+              </td>
+            </ng-container>
+
+        <!-- Colonne Référence -->
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef>Référence article</th>
+          <td mat-cell *matCellDef="let article">{{ article.reference }}</td>
+        </ng-container>
+
+        <!-- Colonne Libellé -->
+        <ng-container matColumnDef="libelle">
+          <th mat-header-cell *matHeaderCellDef>Libellé article</th>
+          <td mat-cell *matCellDef="let article">{{ article.libelle }}</td>
+        </ng-container>
+
+        <!-- Colonne Famille / Sous-famille -->
+        <ng-container matColumnDef="famille">
+          <th mat-header-cell *matHeaderCellDef>Famille / Sous-famille</th>
+          <td mat-cell *matCellDef="let article">{{ article.famille }} / {{ article.sousFamille }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <!-- Informations de sélection -->
+    <div class="selection-info" *ngIf="getTotalSelectedCount() > 0">
+      <p>{{ getTotalSelectedCount() }} article(s) sélectionné(s) sur {{ filteredArticles.length }}</p>
+    </div>
+          </mat-card-content>
+        </mat-card>
+  </ng-template>
+</div>

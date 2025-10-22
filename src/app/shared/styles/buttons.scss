@@ -1,0 +1,192 @@
+// STYLES PARTAGÉS POUR LES BOUTONS DE LA SECTION ASSORTIMENTS
+
+// Bouton orange principal
+.assortment-btn-primary {
+  background-color: #ff8c00 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 12px 20px !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  text-transform: none !important;
+  min-height: 40px !important;
+  transition: all 0.2s ease !important;
+  
+  &:hover:not([disabled]) {
+    background-color: #e67e00 !important;
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3) !important;
+  }
+  
+  &:active {
+    background-color: #cc6600 !important;
+  }
+  
+  &:disabled {
+    background-color: #cccccc !important;
+    color: #666666 !important;
+    box-shadow: none !important;
+  }
+  
+  mat-icon {
+    color: white !important;
+    margin-right: 8px !important;
+    font-size: 18px !important;
+  }
+}
+
+// Bouton orange secondaire (pour actions moins importantes)
+.assortment-btn-secondary {
+  background-color: #ff6b35 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 10px 16px !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  text-transform: none !important;
+  min-height: 36px !important;
+  transition: all 0.2s ease !important;
+  
+  &:hover:not([disabled]) {
+    background-color: #e55a2b !important;
+    box-shadow: 0 2px 6px rgba(255, 107, 53, 0.3) !important;
+  }
+  
+  &:active {
+    background-color: #cc4d24 !important;
+  }
+  
+  &:disabled {
+    background-color: #cccccc !important;
+    color: #666666 !important;
+    box-shadow: none !important;
+  }
+  
+  mat-icon {
+    color: white !important;
+    margin-right: 6px !important;
+    font-size: 16px !important;
+  }
+}
+
+// Bouton outline orange
+.assortment-btn-outline {
+  background-color: transparent !important;
+  color: #ff8c00 !important;
+  border: 2px solid #ff8c00 !important;
+  border-radius: 6px !important;
+  padding: 10px 16px !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  text-transform: none !important;
+  min-height: 36px !important;
+  transition: all 0.2s ease !important;
+  
+  &:hover:not([disabled]) {
+    background-color: #ff8c00 !important;
+    color: white !important;
+    box-shadow: 0 2px 6px rgba(255, 140, 0, 0.3) !important;
+    
+    mat-icon {
+      color: white !important;
+    }
+  }
+  
+  &:active {
+    background-color: #e67e00 !important;
+    border-color: #e67e00 !important;
+  }
+  
+  &:disabled {
+    background-color: transparent !important;
+    color: #cccccc !important;
+    border-color: #cccccc !important;
+    box-shadow: none !important;
+  }
+  
+  mat-icon {
+    color: #ff8c00 !important;
+    margin-right: 6px !important;
+    font-size: 16px !important;
+    transition: color 0.2s ease !important;
+  }
+}
+
+// Bouton d'action (pour les actions dans les tableaux)
+.assortment-action-btn {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 6px !important;
+  padding: 0 !important;
+  transition: all 0.2s ease !important;
+  
+  mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+  
+  &.view-btn {
+    color: #1976d2 !important;
+    background-color: transparent !important;
+    
+    &:hover {
+      background-color: #e3f2fd !important;
+    }
+  }
+  
+  &.edit-btn {
+    color: #388e3c !important;
+    background-color: transparent !important;
+    
+    &:hover {
+      background-color: #e8f5e8 !important;
+    }
+  }
+  
+  &.delete-btn {
+    color: #f44336 !important;
+    background-color: transparent !important;
+    
+    &:hover {
+      background-color: #ffebee !important;
+    }
+  }
+  
+  &.orange-action {
+    color: #ff8c00 !important;
+    background-color: transparent !important;
+    
+    &:hover {
+      background-color: rgba(255, 140, 0, 0.1) !important;
+    }
+  }
+}
+
+// Styles spéciaux pour les gros boutons
+.assortment-btn-large {
+  min-width: 180px !important;
+  height: 48px !important;
+  font-size: 16px !important;
+  padding: 14px 24px !important;
+  
+  mat-icon {
+    font-size: 20px !important;
+    margin-right: 10px !important;
+  }
+}
+
+// Styles pour les boutons compacts
+.assortment-btn-compact {
+  min-width: 100px !important;
+  height: 32px !important;
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+  
+  mat-icon {
+    font-size: 14px !important;
+    margin-right: 4px !important;
+  }
+}

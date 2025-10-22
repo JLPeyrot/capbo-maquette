@@ -2,3 +2,6 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// Import des styles partagés pour les boutons
+@import './app/shared/styles/buttons.scss';

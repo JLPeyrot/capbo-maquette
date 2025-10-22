@@ -47,7 +47,7 @@
         gap: 12px;
         font-size: 28px;
         font-weight: 300;
-        color: #1976d2;
+        color: #64b5f6;
         margin: 0 0 8px 0;
         margin-left: 48px; /* Espace pour le bouton de retour */
 
@@ -55,7 +55,7 @@
           font-size: 32px;
           width: 32px;
           height: 32px;
-          color: #1976d2;
+          color: #64b5f6;
         }
       }
 
@@ -843,7 +843,7 @@
       border-bottom-color: #555;
 
       .mat-mdc-header-cell {
-        color: #fff;
+        color: #1976d2;
       }
     }
 
@@ -860,7 +860,7 @@
       }
 
       .mat-mdc-cell {
-        color: #fff;
+        color: #1976d2;
       }
     }
 
@@ -869,7 +869,7 @@
     }
 
     .designation-cell .designation-text {
-      color: #fff;
+      color: #1976d2;
     }
 
     .designation-cell .subfamily-text,
@@ -885,7 +885,7 @@
 
     .famille-chip {
       background: #1976d2;
-      color: #fff;
+      color: white;
     }
 
     .prix-cell .prix-vente {
@@ -895,27 +895,27 @@
     .statut-chip {
       &.statut-actif {
         background: #2e7d32;
-        color: #fff;
+        color: #1976d2;
       }
 
       &.statut-inactif {
         background: #c62828;
-        color: #fff;
+        color: #1976d2;
       }
 
       &.statut-suspendu {
         background: #f57c00;
-        color: #fff;
+        color: #1976d2;
       }
     }
   }
 
   .bulk-actions {
-    background: linear-gradient(90deg, #1976d2 0%, #1565c0 100%);
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
     border-bottom-color: #555;
 
     .selection-info {
-      color: #fff;
+      color: #1976d2;
     }
   }
 

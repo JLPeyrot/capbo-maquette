@@ -5,28 +5,21 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MaterialModule } from '../../shared/material-module';
+import { Router, ActivatedRoute } from '@angular/router';
 
-// AJOUT DE L'IMPORT
+// Import des composants de pages
 import { ArticlesListComponent } from '../../pages/articles-list/articles-list.component';
 import { CreateArticleComponent } from '../../pages/create-article/create-article.component';
-import { AttributesListComponent } from '../../pages/attributes-list/attributes-list.component';
-import { CreateAttributeComponent } from '../../pages/create-attribute/create-attribute.component';
-import { SitesListComponent } from '../../pages/sites-list/sites-list.component';
-import { CreateSiteComponent } from '../../pages/create-site/create-site.component';
-import { GroupSitesListComponent } from '../../pages/group-sites-list/group-sites-list.component';
-import { CreateGroupSitesComponent } from '../../pages/create-group-sites/create-group-sites.component';
-import { UsersListComponent } from '../../pages/users-list/users-list.component';
-import { CreateUserComponent } from '../../pages/create-user/create-user.component';
-import { SuppliersListComponent } from '../../pages/suppliers-list/suppliers-list.component';
-import { CreateSupplierComponent } from '../../pages/create-supplier/create-supplier.component';
-import { CategoriesListComponent } from '../../pages/categories-list/categories-list.component';
-import { VatsListComponent } from '../../pages/vats-list/vats-list.component';
-import { CreateVatComponent } from '../../pages/create-vat/create-vat.component';
-import { CurrenciesListComponent } from '../../pages/currencies-list/currencies-list.component';
-import { CreateCurrencyComponent } from '../../pages/create-currency/create-currency.component';
-import { MasterDataComponent } from '../../pages/master-data/master-data.component';
-
-import { AlertPopupComponent } from '../../shared/components/alert-popup/alert-popup.component';
+import { SuppliersComponent } from '../../pages/suppliers/suppliers.component';
+import { AssortmentTrunkComponent } from '../../pages/assortment-trunk/assortment-trunk.component';
+import { ReceptionTrunkComponent } from '../../pages/reception-trunk/reception-trunk.component';
+import { AddAssortmentsComponent } from '../../pages/add-assortments/add-assortments.component';
+import { TrunkSelectionComponent } from '../../pages/trunk-selection/trunk-selection.component';
+import { TrunkListComponent } from '../../pages/trunk-list/trunk-list.component';
+import { CreateAssortmentsComponent } from '../../pages/create-assortments/create-assortments.component';
+import { EnrichmentAssortmentComponent } from '../../pages/enrichment-assortment/enrichment-assortment.component';
+import { TrunkAssortmentsComponent } from '../../pages/trunk-assortments/trunk-assortments.component';
+import { AlertPopupComponent, AlertData } from '../../shared/components/alert-popup/alert-popup.component';
 
 interface Notification {
   id: number;
@@ -42,6 +35,7 @@ interface ExpandedGroups {
   purchases: boolean;
   inventory: boolean;
   products: boolean;
+  assortments: boolean;
   returns: boolean;
   finance: boolean;
   admin: boolean;
@@ -56,23 +50,15 @@ interface ExpandedGroups {
     FormsModule,
     ArticlesListComponent,  // Import de la liste d'articles
     CreateArticleComponent,  // AJOUT de l'import du composant création
-    AttributesListComponent,  // Import de la liste d'attributs
-    CreateAttributeComponent, // Import du composant de création d'attribut
-    SitesListComponent,     // Import de la liste des sites
-    CreateSiteComponent,    // Import du composant de création de site
-    GroupSitesListComponent, // Import de la liste des groupes de sites
-    CreateGroupSitesComponent, // Import du composant de création de groupe de sites
-    UsersListComponent,     // Import de la liste des utilisateurs
-    CreateUserComponent,    // Import du composant de création d'utilisateur
-    SuppliersListComponent, // Import de la liste des fournisseurs
-    CreateSupplierComponent, // Import du composant de création de fournisseur
-    CategoriesListComponent, // Import de la liste des catégories
-    VatsListComponent, // Import de la liste des TVA
-    CreateVatComponent, // Import du composant de création de TVA
-    CurrenciesListComponent, // Import de la liste des devises
-    CreateCurrencyComponent, // Import du composant de création de devise
-    MasterDataComponent, // Import du composant de données de base
-
+    SuppliersComponent,
+    AssortmentTrunkComponent,
+    ReceptionTrunkComponent,
+    AddAssortmentsComponent,  // Import du composant ajout assortiments
+    TrunkSelectionComponent,  // Import du composant sélection de tronc
+    TrunkListComponent,  // Import du composant liste des troncs
+    CreateAssortmentsComponent,
+    EnrichmentAssortmentComponent,
+    TrunkAssortmentsComponent,
     AlertPopupComponent  // NOUVEAU
   ],
   templateUrl: './main-layout.html',
@@ -90,40 +76,18 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     sales: false,
     purchases: false,
     inventory: false,
-    products: false,
+    products: true,
+    assortments: false,
     returns: false,
     finance: false,
     admin: false
   };
   
   // AJOUT : État de navigation
-  currentView: 'dashboard' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'sites-list' | 'create-site' | 'edit-site' | 'group-sites-list' | 'create-group-sites' | 'edit-group-sites' | 'users-list' | 'create-user' | 'edit-user' | 'suppliers-list' | 'create-supplier' | 'edit-supplier' | 'categories-list' | 'vats-list' | 'create-vat' | 'edit-vat' | 'currencies-list' | 'create-currency' | 'edit-currency' | 'master-data' | 'attributes-list' | 'create-attribute' = 'dashboard';
+  currentView: 'dashboard' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'assortment-trunk' | 'reception-trunk' | 'trunk-selection' | 'add-assortments' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' = 'dashboard';
   
   // NOUVEAU : Mode focus
   isFocusMode: boolean = false;
-  
-  // NOUVEAU : ID du site en cours d'édition
-  editingSiteId: string | null = null;
-  
-  // NOUVEAU : ID du groupe de sites en cours d'édition
-  editingGroupSitesId: string | null = null;
-  
-  // NOUVEAU : ID de l'utilisateur en cours d'édition
-  editingUserId: string | null = null;
-  
-  // NOUVEAU : ID du fournisseur en cours d'édition
-  editingSupplierId: string | null = null;
-  
-  // NOUVEAU : ID de la TVA en cours d'édition
-  editingVatId: string | null = null;
-  
-  // NOUVEAU : ID de la devise en cours d'édition
-  editingCurrencyId: string | null = null;
-  
-  // NOUVEAU : ID de l'attribut en cours d'édition
-  editingAttributeId: string | null = null;
-  
-
   
   // Responsive
   isMobile: boolean = false;
@@ -135,8 +99,15 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   selectedLanguage: string = 'fr';
   userName: string = 'Sébastien';
   notificationCount: number = 5;
-  // Mode Assortiments (pour masquer la case "Articles actifs uniquement" dans la liste Articles)
-  assortmentsMode: boolean = false;
+
+  // NOUVEAU : Gestion du popup d'alerte
+  showAlert: boolean = false;
+  alertData: AlertData = {
+    title: 'Information Importante',
+    message: 'Attention, les tarifs passent sur le plan SOLDES à partir du mercredi 25 juin sur tous les magasins.',
+    type: 'warning',
+    showDontShowAgain: true
+  };
 
   // Mock data pour les notifications
   recentNotifications: Notification[] = [
@@ -183,7 +154,9 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   ];
 
   constructor(
-    private breakpointObserver: BreakpointObserver
+    private breakpointObserver: BreakpointObserver,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -198,12 +171,88 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     // Charger les préférences utilisateur
     this.loadUserPreferences();
 
+    // NOUVEAU : Afficher l'alerte au démarrage (si pas déjà masquée)
+    this.checkAndShowAlert();
 
+    // NOUVEAU : Écouter les changements de route
+    this.router.events.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.updateCurrentViewFromRoute();
+    });
+
+    // Initialiser la vue basée sur la route actuelle
+    this.updateCurrentViewFromRoute();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * NOUVELLE : Vérifier et afficher l'alerte de démarrage
+   */
+  private checkAndShowAlert(): void {
+    const alertDismissed = localStorage.getItem('alert-tarifs-soldes-dismissed');
+    
+    // Si l'alerte n'a pas été masquée définitivement, l'afficher
+    if (!alertDismissed) {
+      // Petit délai pour que l'interface soit chargée
+      setTimeout(() => {
+        this.showAlert = true;
+      }, 1000);
+    }
+  }
+
+  /**
+   * NOUVELLE : Fermer le popup d'alerte
+   */
+  onCloseAlert(): void {
+    this.showAlert = false;
+  }
+
+  /**
+   * NOUVELLE : Masquer définitivement l'alerte
+   */
+  onDontShowAlertAgain(): void {
+    localStorage.setItem('alert-tarifs-soldes-dismissed', 'true');
+    this.showAlert = false;
+  }
+
+  /**
+   * NOUVELLE : Mettre à jour la vue basée sur la route actuelle
+   */
+  private updateCurrentViewFromRoute(): void {
+    const url = this.router.url;
+    console.log('Route actuelle:', url);
+    
+    if (url.includes('/trunk-selection')) {
+      this.currentView = 'trunk-selection';
+      this.isFocusMode = false;
+    } else if (url.includes('/trunk-assortments')) {
+      this.currentView = 'trunk-assortments';
+      this.isFocusMode = false;
+    } else if (url.includes('/assortment-trunk')) {
+      this.currentView = 'assortment-trunk';
+      this.isFocusMode = false;
+    } else if (url.includes('/add-assortments')) {
+      this.currentView = 'add-assortments';
+      this.isFocusMode = false;
+    } else if (url.includes('/reception-trunk')) {
+      this.currentView = 'reception-trunk';
+      this.isFocusMode = false;
+    } else if (url.includes('/create-assortments')) {
+      this.currentView = 'create-assortments';
+      this.isFocusMode = false;
+    } else if (url.includes('/enrichment-assortment')) {
+      this.currentView = 'enrichment-assortment';
+      this.isFocusMode = false;
+    } else if (url.includes('/create-article')) {
+      this.currentView = 'create-article';
+      this.isFocusMode = true;
+    } else {
+      this.currentView = 'dashboard';
+      this.isFocusMode = false;
+    }
   }
 
   /**
@@ -247,111 +296,47 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       case 'articles':
         this.currentView = 'articles-list';
         this.isFocusMode = true; // MODIFIÉ : Liste en mode focus maintenant
-        // S'assurer que le mode Assortiments est désactivé
-        this.assortmentsMode = false;
-        break;
-      case 'assortments':
-        this.currentView = 'articles-list';
-        this.isFocusMode = true; // Afficher liste articles en mode focus
-        // Activer le mode Assortiments
-        this.assortmentsMode = true;
         break;
       case 'create-article':
         this.currentView = 'create-article';
         this.isFocusMode = true; // Création = mode focus
         break;
-      case 'attributes':
-        this.currentView = 'attributes-list';
-        this.isFocusMode = true; // Liste des attributs en mode focus
-        break;
-      case 'create-attribute':
-        this.currentView = 'create-attribute';
-        this.isFocusMode = true; // Création d'attribut en mode focus
-        break;
- 
-       case 'sites-list':
-        this.currentView = 'sites-list';
-        this.isFocusMode = true; // Liste des sites en mode focus
-        break;
-      case 'group-sites-list':
-        this.currentView = 'group-sites-list';
-        this.isFocusMode = true; // Liste des groupes de sites en mode focus
-        break;
-      case 'create-site':
-        this.currentView = 'create-site';
-        this.isFocusMode = true; // Création de site en mode focus
-        break;
-      case 'create-group-sites':
-        this.currentView = 'create-group-sites';
-        this.isFocusMode = true; // Création de groupe de sites en mode focus
-        break;
-      case 'edit-site':
-        this.currentView = 'edit-site';
-        this.isFocusMode = true; // Édition de site en mode focus
-        break;
-      case 'edit-group-sites':
-        this.currentView = 'edit-group-sites';
-        this.isFocusMode = true; // Édition de groupe de sites en mode focus
-        break;
       case 'suppliers':
-        this.currentView = 'suppliers-list';
-        this.isFocusMode = true; // Liste des fournisseurs en mode focus
+        this.currentView = 'suppliers';
+        this.isFocusMode = false;
         break;
-      case 'create-supplier':
-        this.currentView = 'create-supplier';
-        this.isFocusMode = true; // Création de fournisseur en mode focus
+      case 'assortment-trunk':
+        this.currentView = 'assortment-trunk';
+        this.isFocusMode = false;
         break;
-      case 'edit-supplier':
-        this.currentView = 'edit-supplier';
-        this.isFocusMode = true; // Édition de fournisseur en mode focus
+      case 'trunk-list':
+        this.currentView = 'trunk-list';
+        this.isFocusMode = false;
         break;
-      case 'users':
-        this.currentView = 'users-list';
-        this.isFocusMode = true; // Liste des utilisateurs en mode focus
+      case 'reception-trunk':
+        this.currentView = 'reception-trunk';
+        this.isFocusMode = false;
         break;
-      case 'create-user':
-        this.currentView = 'create-user';
-        this.isFocusMode = true; // Création d'utilisateur en mode focus
+      case 'trunk-selection':
+        this.currentView = 'trunk-selection';
+        this.isFocusMode = false;
         break;
-      case 'edit-user':
-        this.currentView = 'edit-user';
-        this.isFocusMode = true; // Édition d'utilisateur en mode focus
+      case 'add-assortments':
+        this.currentView = 'add-assortments';
+        this.isFocusMode = false; // Désactiver le mode focus pour permettre la navigation
         break;
-      case 'categories':
-        this.currentView = 'categories-list';
-        this.isFocusMode = true; // Liste des catégories en mode focus
+      case 'create-assortments':
+        this.currentView = 'create-assortments';
+        this.isFocusMode = false;
         break;
-      case 'vats':
-        this.currentView = 'vats-list';
-        this.isFocusMode = true; // Liste des TVA en mode focus
+      case 'enrichment-assortment':
+        this.currentView = 'enrichment-assortment';
+        this.isFocusMode = false;
         break;
-      case 'create-vat':
-        this.currentView = 'create-vat';
-        this.isFocusMode = true; // Création de TVA en mode focus
-        break;
-      case 'edit-vat':
-        this.currentView = 'edit-vat';
-        this.isFocusMode = true; // Édition de TVA en mode focus
-        break;
-      case 'currencies':
-        this.currentView = 'currencies-list';
-        this.isFocusMode = true; // Liste des devises en mode focus
-        break;
-      case 'create-currency':
-        this.currentView = 'create-currency';
-        this.isFocusMode = true; // Création de devise en mode focus
-        break;
-      case 'edit-currency':
-        this.currentView = 'edit-currency';
-        this.isFocusMode = true; // Édition de devise en mode focus
-        break;
-      case 'master-data':
-        this.currentView = 'master-data';
-        this.isFocusMode = true; // Données de base en mode focus
-        break;
+      case 'dashboard':
       default:
         this.currentView = 'dashboard';
-        this.isFocusMode = false; // Dashboard = mode normal
+        this.isFocusMode = false;
         break;
     }
   }
@@ -362,73 +347,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   exitFocusMode(): void {
     this.isFocusMode = false;
     this.currentView = 'dashboard';
-    // Nettoyer le mode Assortiments
-    this.assortmentsMode = false;
   }
-
-  /**
-   * Navigation vers l'édition d'un site avec ID
-   */
-  navigateToEditSite(siteId: string): void {
-    console.log('Navigation vers édition du site:', siteId);
-    this.closeMenu();
-    this.currentView = 'edit-site';
-    this.isFocusMode = true;
-    // Stocker l'ID du site pour le passer au composant
-    this.editingSiteId = siteId;
-  }
-
-  /**
-   * NOUVELLE : Navigation vers l'édition d'un fournisseur
-   */
-  navigateToEditSupplier(supplierId: string): void {
-    this.editingSupplierId = supplierId;
-    this.currentView = 'edit-supplier';
-    this.isFocusMode = true;
-    console.log('Navigation vers édition fournisseur:', supplierId);
-  }
-
-  /**
-   * NOUVELLE : Navigation vers l'édition d'un utilisateur
-   */
-  navigateToEditUser(userId: string): void {
-    this.editingUserId = userId;
-    this.currentView = 'edit-user';
-    this.isFocusMode = true;
-    console.log('Navigation vers édition utilisateur:', userId);
-  }
-
-  /**
-   * NOUVELLE : Navigation vers l'édition d'une TVA
-   */
-  navigateToEditVat(vatId: string): void {
-    this.editingVatId = vatId;
-    this.currentView = 'edit-vat';
-    this.isFocusMode = true;
-    console.log('Navigation vers édition TVA:', vatId);
-  }
-
-  /**
-   * NOUVELLE : Navigation vers l'édition d'une devise
-   */
-  navigateToEditCurrency(currencyId: string): void {
-    this.editingCurrencyId = currencyId;
-    this.currentView = 'edit-currency';
-    this.isFocusMode = true;
-    console.log('Navigation vers édition devise:', currencyId);
-  }
-
-  /**
-   * NOUVELLE : Navigation vers l'édition d'un groupe de sites
-   */
-  navigateToEditGroupSites(groupSitesId: string): void {
-    this.editingGroupSitesId = groupSitesId;
-    this.currentView = 'edit-group-sites';
-    this.isFocusMode = true;
-    console.log('Navigation vers édition groupe de sites:', groupSitesId);
-  }
-
-
 
   /**
    * Fermeture du menu avec Escape (sauf en mode focus)
@@ -439,15 +358,6 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       if (this.isFocusMode) {
         // En mode focus, Escape fait sortir du mode focus
         this.exitFocusMode();
-        
-        // Réinitialiser les IDs d'édition
-        if (this.currentView === 'edit-site' || this.currentView === 'edit-supplier' || this.currentView === 'edit-user' || this.currentView === 'edit-vat' || this.currentView === 'edit-group-sites') {
-          this.editingSiteId = null;
-          this.editingSupplierId = null;
-          this.editingUserId = null;
-          this.editingVatId = null;
-          this.editingGroupSitesId = null;
-        }
       } else if (this.isMenuOpen) {
         // Sinon, ferme le menu
         this.closeMenu();

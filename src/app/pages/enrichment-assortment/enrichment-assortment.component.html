@@ -1,0 +1,424 @@
+<div class="page-container">
+  <div class="content-wrapper">
+    
+    <!-- En-tête de page -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <button mat-icon-button (click)="goBack()" class="back-btn-integrated">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <mat-icon class="page-icon">inventory_2</mat-icon>
+          <div>
+            <h1>Enrichissement d'un assortiment</h1>
+            <p class="subtitle">Complétez les informations nécessaires avant rattachement à un tronc</p>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button mat-raised-button class="assortment-btn-secondary" (click)="saveDraft()">
+            <mat-icon>save</mat-icon>
+            Sauvegarder le brouillon
+          </button>
+          <button mat-raised-button class="assortment-btn-primary" (click)="validateAssortment()" 
+                  [disabled]="!isCompletelyValid()">
+            <mat-icon>check</mat-icon>
+            Valider l'assortiment
+          </button>
+        </div>
+      </div>
+      
+      <!-- Barre de progression -->
+      <div class="progress-section">
+        <div class="progress-info">
+          <span class="progress-label">Complétude : {{ getCompletionPercentage() }}%</span>
+        </div>
+        <mat-progress-bar mode="determinate" [value]="getCompletionPercentage()" color="accent"></mat-progress-bar>
+      </div>
+    </div>
+
+  <form [formGroup]="enrichmentForm" class="enrichment-form">
+    
+    <!-- Bloc 1: Typologie d'assortiment -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="section-icon">category</mat-icon>
+          Typologie d'assortiment
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Type d'assortiment *</mat-label>
+            <mat-select formControlName="assortmentType" (selectionChange)="onAssortmentTypeChange()">
+              <mat-option *ngFor="let type of assortmentTypes" [value]="type.value">
+                {{ type.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Sous-type d'assortiment *</mat-label>
+            <mat-select formControlName="assortmentSubType" (selectionChange)="onAssortmentSubTypeChange()">
+              <mat-option *ngFor="let subType of assortmentSubTypes" [value]="subType.value">
+                {{ subType.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row" *ngIf="shouldShowDates()">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Date de début *</mat-label>
+            <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+            <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Date de fin</mat-label>
+            <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+            <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Statut</mat-label>
+            <input matInput formControlName="status" readonly>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Responsable</mat-label>
+            <input matInput formControlName="responsible" readonly>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Bloc 2: Informations logistiques -->
+    <mat-card class="section-card" *ngIf="shouldShowLogistics()">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="section-icon" [color]="getValidationColor(validationStatus.logistics)">
+            {{ getValidationIcon(validationStatus.logistics) }}
+          </mat-icon>
+          Données logistiques
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Fournisseur principal *</mat-label>
+            <mat-select formControlName="mainSupplier">
+              <mat-option *ngFor="let supplier of suppliers" [value]="supplier.id">
+                {{ supplier.name }} ({{ supplier.code }})
+              </mat-option>
+            </mat-select>
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Entrepôt de rattachement *</mat-label>
+            <mat-select formControlName="warehouse">
+              <mat-option *ngFor="let warehouse of warehouses" [value]="warehouse.id">
+                {{ warehouse.name }} ({{ warehouse.code }})
+              </mat-option>
+            </mat-select>
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field-small">
+            <mat-label>MOQ *</mat-label>
+            <input matInput type="number" formControlName="moq" min="1">
+            <mat-error>Valeur obligatoire ≥ 1</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field-small">
+            <mat-label>PCB *</mat-label>
+            <input matInput type="number" formControlName="pcb" min="1">
+            <mat-error>Valeur obligatoire ≥ 1</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field-small">
+            <mat-label>Délai livraison (jours) *</mat-label>
+            <input matInput type="number" formControlName="deliveryDelay" min="1">
+            <mat-error>Valeur obligatoire ≥ 1</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field-small">
+            <mat-label>Stock mini *</mat-label>
+            <input matInput type="number" formControlName="minStock" min="0">
+            <mat-error>Valeur obligatoire ≥ 0</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field-small">
+            <mat-label>Stock maxi *</mat-label>
+            <input matInput type="number" formControlName="maxStock" min="0">
+            <mat-error>Valeur obligatoire ≥ 0</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Mode de réassort *</mat-label>
+            <mat-select formControlName="reassortMode">
+              <mat-option *ngFor="let mode of reassortModes" [value]="mode.value">
+                {{ mode.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field-full">
+            <mat-label>Fournisseurs alternatifs</mat-label>
+            <mat-select formControlName="alternativeSuppliers" multiple>
+              <mat-option *ngFor="let supplier of suppliers" [value]="supplier.id">
+                {{ supplier.name }} ({{ supplier.code }})
+              </mat-option>
+            </mat-select>
+            <mat-hint>Sélection multiple possible</mat-hint>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Bloc 3: Tarification -->
+    <mat-card class="section-card" *ngIf="shouldShowSales()">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="section-icon" [color]="getValidationColor(validationStatus.pricing)">
+            {{ getValidationIcon(validationStatus.pricing) }}
+          </mat-icon>
+          Données de vente
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Prix d'achat (€) *</mat-label>
+            <input matInput type="number" formControlName="purchasePrice" min="0" step="0.01">
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field" 
+                         *ngIf="enrichmentForm.get('assortmentType')?.value === 'vendable' || enrichmentForm.get('assortmentType')?.value === 'both'">
+            <mat-label>Prix de vente (€) *</mat-label>
+            <input matInput type="number" formControlName="salePrice" min="0" step="0.01">
+            <mat-error>Ce champ est obligatoire pour les assortiments vendables</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row" *ngIf="enrichmentForm.get('assortmentType')?.value === 'vendable' || enrichmentForm.get('assortmentType')?.value === 'both'">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Typologie de prix *</mat-label>
+            <mat-select formControlName="priceType" (selectionChange)="onPriceTypeChange()">
+              <mat-option *ngFor="let type of priceTypes" [value]="type.value">
+                {{ type.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Marge calculée (%)</mat-label>
+            <input matInput formControlName="margin" readonly>
+            <mat-icon matSuffix>percent</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row" *ngIf="enrichmentForm.get('priceType')?.value === 'bordered'">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Prix minimum (€) *</mat-label>
+            <input matInput type="number" formControlName="minPrice" min="0" step="0.01">
+            <mat-error>Ce champ est obligatoire pour les prix bordés</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Prix maximum (€) *</mat-label>
+            <input matInput type="number" formControlName="maxPrice" min="0" step="0.01">
+            <mat-error>Ce champ est obligatoire pour les prix bordés</mat-error>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Bloc 4: Marketing & visibilité -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="section-icon" [color]="getValidationColor(validationStatus.marketing)">
+            {{ getValidationIcon(validationStatus.marketing) }}
+          </mat-icon>
+          Marketing & visibilité
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field-full">
+            <mat-label>Libellé commercial *</mat-label>
+            <input matInput formControlName="commercialLabel">
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field-full">
+            <mat-label>Description courte * (max 100 caractères)</mat-label>
+            <textarea matInput formControlName="shortDescription" rows="2" maxlength="100"></textarea>
+            <mat-hint>{{ enrichmentForm.get('shortDescription')?.value?.length || 0 }}/100</mat-hint>
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field-full">
+            <mat-label>Description longue (max 500 caractères)</mat-label>
+            <textarea matInput formControlName="longDescription" rows="4" maxlength="500"></textarea>
+            <mat-hint>{{ enrichmentForm.get('longDescription')?.value?.length || 0 }}/500</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <div class="image-upload-section">
+            <label class="upload-label">Image principale</label>
+            <div class="upload-area">
+              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+              <button mat-stroked-button class="assortment-btn-outline" (click)="fileInput.click()" type="button">
+                <mat-icon>cloud_upload</mat-icon>
+                Choisir une image
+              </button>
+              <span class="file-name" *ngIf="enrichmentForm.get('mainImage')?.value">
+                {{ enrichmentForm.get('mainImage')?.value }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Famille *</mat-label>
+            <mat-select formControlName="family">
+              <mat-option *ngFor="let family of families" [value]="family.value">
+                {{ family.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Univers *</mat-label>
+            <mat-select formControlName="universe">
+              <mat-option *ngFor="let universe of universes" [value]="universe.value">
+                {{ universe.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error>Ce champ est obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Saisonnalité *</mat-label>
+            <mat-select formControlName="seasonality">
+              <mat-option *ngFor="let season of seasonalities" [value]="season.value">
+                {{ season.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field-full">
+            <mat-label>Canaux de vente *</mat-label>
+            <mat-select formControlName="salesChannels" multiple>
+              <mat-option *ngFor="let channel of salesChannels" [value]="channel.value">
+                {{ channel.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error>Sélectionnez au moins un canal</mat-error>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Bloc 5: Validation et complétude -->
+    <mat-card class="section-card validation-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="section-icon">checklist</mat-icon>
+          Validation et complétude
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="validation-checklist">
+          <!-- Données marketing : toujours affichées -->
+          <div class="validation-item" [class.completed]="validationStatus.marketing">
+            <mat-icon [color]="getValidationColor(validationStatus.marketing)">
+              {{ getValidationIcon(validationStatus.marketing) }}
+            </mat-icon>
+            <span class="validation-label">Données marketing présentes</span>
+          </div>
+
+          <!-- Données logistiques : uniquement pour les assortiments commandables -->
+          <div class="validation-item" [class.completed]="validationStatus.logistics" *ngIf="shouldShowLogistics()">
+            <mat-icon [color]="getValidationColor(validationStatus.logistics)">
+              {{ getValidationIcon(validationStatus.logistics) }}
+            </mat-icon>
+            <span class="validation-label">Données logistiques complètes</span>
+          </div>
+
+          <!-- Données tarifaires : uniquement pour les assortiments vendables -->
+          <div class="validation-item" [class.completed]="validationStatus.pricing" *ngIf="shouldShowSales()">
+            <mat-icon [color]="getValidationColor(validationStatus.pricing)">
+              {{ getValidationIcon(validationStatus.pricing) }}
+            </mat-icon>
+            <span class="validation-label">Données tarifaires définies</span>
+          </div>
+        </div>
+
+        <mat-divider class="validation-divider"></mat-divider>
+
+        <div class="summary-section">
+          <h3>Résumé synthétique</h3>
+          <div class="summary-content" *ngIf="enrichmentForm.get('commercialLabel')?.value">
+            <p><strong>Assortiment :</strong> {{ enrichmentForm.get('commercialLabel')?.value }}</p>
+            <p><strong>Type :</strong> {{ enrichmentForm.get('assortmentType')?.value | titlecase }}</p>
+            <p><strong>Sous-type :</strong> {{ enrichmentForm.get('assortmentSubType')?.value | titlecase }}</p>
+            <p *ngIf="enrichmentForm.get('purchasePrice')?.value">
+              <strong>Prix d'achat :</strong> {{ enrichmentForm.get('purchasePrice')?.value }}€
+            </p>
+            <p *ngIf="enrichmentForm.get('salePrice')?.value">
+              <strong>Prix de vente :</strong> {{ enrichmentForm.get('salePrice')?.value }}€
+            </p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </form>
+
+  <!-- Boutons fixes en bas -->
+  <div class="fixed-actions">
+    <div class="actions-container">
+      <button mat-stroked-button class="assortment-btn-outline" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Retour
+      </button>
+      <button mat-raised-button class="assortment-btn-secondary" (click)="saveDraft()">
+        <mat-icon>save</mat-icon>
+        Sauvegarder le brouillon
+      </button>
+      <button mat-raised-button class="assortment-btn-primary" (click)="validateAssortment()" 
+              [disabled]="!isCompletelyValid()">
+        <mat-icon>check</mat-icon>
+        Valider l'assortiment
+      </button>
+    </div>
+  </div>
+</div>

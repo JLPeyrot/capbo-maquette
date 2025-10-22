@@ -1,0 +1,381 @@
+// STYLES GÉNÉRAUX
+.page-container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+// RESPONSIVE
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+  
+  .page-header {
+    .header-content {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    
+    .header-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+  
+  .filters-content .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .action-buttons {
+      justify-content: center;
+    }
+  }
+  
+  .content-wrapper {
+    padding: 0;
+  }
+}
+
+// EN-TÊTE DE PAGE
+.page-header {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #ff8c00;
+  margin-bottom: 24px;
+  padding: 24px;
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .title-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .page-icon {
+      color: #ff8c00;
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+
+    .title-content {
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .page-subtitle {
+        margin: 4px 0 0 0;
+        color: #666;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+
+    .action-btn {
+      min-width: 120px;
+      height: 40px;
+      font-weight: 500;
+      
+      mat-icon {
+        margin-right: 8px;
+      }
+      
+      &.save-btn {
+        background-color: #ff8c00 !important;
+        color: white !important;
+        
+        &:hover {
+          background-color: #e67e00 !important;
+        }
+      }
+    }
+  }
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// STYLES DES CARTES
+.tabs-card, .filters-card, .table-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  mat-card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 24px;
+    
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+      
+      mat-icon {
+        color: #ff8c00;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+  
+  mat-card-content {
+    padding: 24px;
+  }
+}
+
+// SECTION FILTRES
+.filters-content {
+  .filters-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    
+    .filter-field {
+      flex: 1;
+      min-width: 250px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      
+      .selection-counter {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: #fff3e0;
+        border-radius: 20px;
+        color: #e65100;
+        font-weight: 500;
+        
+        mat-icon {
+          color: #ff8c00;
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+  }
+}
+
+.tabs-container {
+  margin-bottom: 1rem;
+
+  ::ng-deep .mat-mdc-tab-group {
+    .mat-mdc-tab-header {
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .mat-mdc-tab {
+      min-width: 120px;
+      
+      .mat-mdc-tab-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+
+    .mat-mdc-tab.mat-mdc-tab-active {
+      .mat-mdc-tab-label {
+        color: #ff8c00;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.tab-content {
+  padding: 1rem 0;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    
+    button {
+      min-width: 120px;
+    }
+  }
+
+  .filter-section {
+    flex: 1;
+    max-width: 300px;
+    
+    mat-form-field {
+      width: 100%;
+    }
+  }
+
+  .export-section {
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+
+// SECTION TABLEAU
+.table-content {
+  .table-container {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+
+    .articles-table {
+      width: 100%;
+      
+      th {
+        background-color: #fafafa;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #e0e0e0;
+        padding: 16px;
+      }
+
+      td {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 16px;
+        
+        &:first-child {
+          width: 80px;
+          text-align: center;
+        }
+      }
+
+      .checkbox-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        
+        .lock-icon {
+          color: #757575;
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+
+      tr:hover {
+        background-color: #f9f9f9;
+      }
+    }
+  }
+
+  .selection-info {
+    text-align: center;
+    padding: 16px;
+    background-color: #fff3e0;
+    border-radius: 8px;
+    
+    p {
+      margin: 0;
+      font-weight: 500;
+      color: #e65100;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .page-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .action-bar {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .action-buttons,
+    .filter-section,
+    .export-section {
+      width: 100%;
+    }
+    
+    .filter-section {
+      max-width: none;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+    
+    .articles-table {
+      min-width: 600px;
+    }
+  }
+}
+
+// Styles spécifiques pour les onglets fermés
+::ng-deep .mat-mdc-tab-group {
+  .mat-mdc-tab:first-child.mat-mdc-tab-active {
+    .mat-mdc-tab-label {
+      color: #d32f2f;
+    }
+  }
+}
+
+// Animation pour les changements d'onglets
+.tab-content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

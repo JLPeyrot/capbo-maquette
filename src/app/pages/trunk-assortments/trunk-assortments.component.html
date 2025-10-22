@@ -1,0 +1,175 @@
+<div class="page-container">
+  <div class="content-wrapper">
+    <!-- En-tête de page -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <button mat-icon-button (click)="goBack()" class="back-btn-integrated">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <mat-icon class="page-icon">inventory_2</mat-icon>
+          <div>
+            <h1>Assortiments du tronc</h1>
+            <p class="subtitle">{{ trunkInfo.name }} - {{ trunkInfo.type }} - {{ trunkInfo.targetStore }}</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button mat-raised-button class="assortment-btn-primary" (click)="addAssortment()">
+            <mat-icon>add</mat-icon>
+            Ajouter un assortiment
+          </button>
+        </div>
+      </div>
+    </div>
+
+  <!-- Section de recherche et filtres -->
+  <div class="search-filters-section">
+    <h2>Recherche et filtres</h2>
+    
+    <!-- Barre de recherche et filtres sur une ligne -->
+    <div class="search-filters-row">
+      <div class="search-group">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Rechercher un assortiment</mat-label>
+          <input matInput 
+                 [(ngModel)]="searchTerm" 
+                 (ngModelChange)="onSearchChange()"
+                 placeholder="Nom ou catégorie...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Statut</mat-label>
+          <mat-select [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()">
+            <mat-option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Catégorie</mat-label>
+          <mat-select [(ngModel)]="selectedCategory" (ngModelChange)="onFilterChange()">
+            <mat-option *ngFor="let category of categoryOptions" [value]="category.value">
+              {{ category.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section du tableau -->
+  <div class="table-section">
+    <div class="table-header">
+      <h2>Liste des assortiments ({{ filteredAssortments.length }})</h2>
+    </div>
+
+    <div class="table-container">
+      <table mat-table [dataSource]="filteredAssortments" class="assortments-table">
+
+        <!-- Colonne Nom -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef class="name-column">Nom de l'assortiment</th>
+          <td mat-cell *matCellDef="let assortment" class="name-cell">
+            <div class="assortment-name">
+              <mat-icon class="assortment-icon">inventory_2</mat-icon>
+              <div class="name-content">
+                <div class="primary-name">{{ assortment.name }}</div>
+                <div class="description" *ngIf="assortment.description">{{ assortment.description }}</div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Catégorie -->
+        <ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef class="category-column">Catégorie</th>
+          <td mat-cell *matCellDef="let assortment" class="category-cell">
+            <div class="category-badge" [ngClass]="getCategoryClass(assortment.category)">
+              <mat-icon>{{ getCategoryIcon(assortment.category) }}</mat-icon>
+              {{ assortment.category }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Statut -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef class="status-column">Statut</th>
+          <td mat-cell *matCellDef="let assortment" class="status-cell">
+            <div class="status-badge" [ngClass]="getStatusClass(assortment.status)">
+              <mat-icon>{{ getStatusIcon(assortment.status) }}</mat-icon>
+              {{ assortment.status }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Date d'ajout -->
+        <ng-container matColumnDef="addedDate">
+          <th mat-header-cell *matHeaderCellDef class="date-column">Date d'ajout</th>
+          <td mat-cell *matCellDef="let assortment" class="date-cell">
+            {{ assortment.addedDate }}
+          </td>
+        </ng-container>
+
+        <!-- Colonne Date de début -->
+        <ng-container matColumnDef="startDate">
+          <th mat-header-cell *matHeaderCellDef class="date-column">Date de début</th>
+          <td mat-cell *matCellDef="let assortment" class="date-cell">
+            {{ assortment.startDate || '-' }}
+          </td>
+        </ng-container>
+
+        <!-- Colonne Date de fin -->
+        <ng-container matColumnDef="endDate">
+          <th mat-header-cell *matHeaderCellDef class="date-column">Date de fin</th>
+          <td mat-cell *matCellDef="let assortment" class="date-cell">
+            {{ assortment.endDate || '-' }}
+          </td>
+        </ng-container>
+
+        <!-- Colonne Actions -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="actions-column">Actions</th>
+          <td mat-cell *matCellDef="let assortment" class="actions-cell">
+            <div class="action-buttons">
+              <button mat-icon-button 
+                      (click)="viewAssortment(assortment)" 
+                      class="assortment-action-btn assortment-action-btn-view"
+                      matTooltip="Voir les détails">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button 
+                      (click)="editAssortment(assortment)" 
+                      class="assortment-action-btn assortment-action-btn-edit"
+                      matTooltip="Modifier">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button 
+                      (click)="deleteAssortment(assortment)" 
+                      class="assortment-action-btn assortment-action-btn-delete"
+                      matTooltip="Supprimer">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <!-- Message si aucun résultat -->
+      <div *ngIf="filteredAssortments.length === 0" class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <h3>Aucun assortiment trouvé</h3>
+        <p>Aucun assortiment ne correspond aux critères de recherche.</p>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>

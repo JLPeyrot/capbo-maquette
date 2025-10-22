@@ -1,0 +1,219 @@
+<div class="page-container">
+  <div class="content-wrapper">
+    <!-- HEADER DE LA PAGE -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <mat-icon class="page-icon">inventory_2</mat-icon>
+          <div class="title-content">
+            <h1>Troncs d'Assortiment</h1>
+            <p class="page-subtitle">Consultez et gérez vos troncs d'assortiment existants</p>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button mat-raised-button 
+                  color="primary" 
+                  class="create-trunk-btn"
+                  routerLink="/assortment-trunk">
+            <mat-icon>add</mat-icon>
+            Créer un tronc
+          </button>
+        </div>
+      </div>
+    </div>
+
+  <!-- SECTION FILTRES ET RECHERCHE -->
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-card-title class="card-title">
+        <mat-icon>filter_list</mat-icon>
+        Recherche et filtres
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="filters-content">
+      <div class="search-row">
+        <!-- Zone de recherche -->
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Rechercher un tronc</mat-label>
+          <input matInput 
+                 [(ngModel)]="searchTerm" 
+                 (input)="filterTrunks()"
+                 placeholder="Nom du tronc, enseigne...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Filtres additionnels -->
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Type de tronc</mat-label>
+          <mat-select [(value)]="selectedType" (selectionChange)="filterTrunks()">
+            <mat-option value="">Tous les types</mat-option>
+            <mat-option value="national">National</mat-option>
+            <mat-option value="complementaire">Complémentaire</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Enseigne</mat-label>
+          <mat-select [(value)]="selectedEnseigne" (selectionChange)="filterTrunks()">
+            <mat-option value="">Toutes les enseignes</mat-option>
+            <mat-option *ngFor="let enseigne of enseignes" [value]="enseigne.value">
+              {{ enseigne.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Statut</mat-label>
+          <mat-select [(value)]="selectedStatus" (selectionChange)="filterTrunks()">
+            <mat-option value="">Tous les statuts</mat-option>
+            <mat-option value="actif">Actif</mat-option>
+            <mat-option value="inactif">Inactif</mat-option>
+            <mat-option value="brouillon">Brouillon</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- SECTION TRONCS -->
+  <mat-card class="table-card">
+    <mat-card-header>
+      <mat-card-title class="card-title">
+        <mat-icon>list_alt</mat-icon>
+        Liste des troncs
+        <span class="results-count" *ngIf="filteredTrunks.length > 0">({{ filteredTrunks.length }} résultats)</span>
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content class="table-content">
+      <!-- Barre d'action -->
+      <div class="action-bar" *ngIf="filteredTrunks.length > 0">
+        <div class="selection-info">
+          <span class="info-text">{{ filteredTrunks.length }} troncs trouvés</span>
+        </div>
+        
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="navigateToCreateTrunk()">
+          <mat-icon>add</mat-icon>
+          Créer un nouveau tronc
+        </button>
+      </div>
+
+      <!-- Tableau des troncs -->
+      <div class="table-container">
+        <table mat-table [dataSource]="filteredTrunks" class="trunks-table">
+          
+          <!-- Colonne Nom -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Nom du tronc</th>
+            <td mat-cell *matCellDef="let trunk" class="name-cell">
+              <div class="trunk-name-cell">
+                <mat-icon class="trunk-icon">account_tree</mat-icon>
+                <span class="trunk-name">{{ trunk.name }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Type -->
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let trunk">
+              <span class="type-badge" [ngClass]="'type-' + trunk.type">
+                {{ trunk.type === 'national' ? 'National' : 'Complémentaire' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Enseigne -->
+          <ng-container matColumnDef="enseigne">
+            <th mat-header-cell *matHeaderCellDef>Enseigne</th>
+            <td mat-cell *matCellDef="let trunk" class="enseigne-cell">{{ trunk.enseigne }}</td>
+          </ng-container>
+
+          <!-- Colonne Statut -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Statut</th>
+            <td mat-cell *matCellDef="let trunk">
+              <span class="status-badge" [ngClass]="'status-' + trunk.status">
+                <mat-icon *ngIf="trunk.status === 'actif'">check_circle</mat-icon>
+                <mat-icon *ngIf="trunk.status === 'inactif'">cancel</mat-icon>
+                <mat-icon *ngIf="trunk.status === 'brouillon'">edit</mat-icon>
+                {{ getStatusLabel(trunk.status) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Nombre d'articles -->
+          <ng-container matColumnDef="articlesCount">
+            <th mat-header-cell *matHeaderCellDef>Articles</th>
+            <td mat-cell *matCellDef="let trunk" class="articles-cell">
+              <span class="articles-count">{{ trunk.articlesCount || 0 }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Colonne Date de création -->
+          <ng-container matColumnDef="createdDate">
+            <th mat-header-cell *matHeaderCellDef>Créé le</th>
+            <td mat-cell *matCellDef="let trunk" class="date-cell">{{ trunk.createdDate | date:'dd/MM/yyyy' }}</td>
+          </ng-container>
+
+          <!-- Colonne Actions -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let trunk" class="actions-cell">
+              <div class="action-buttons">
+                <button mat-icon-button 
+                        class="action-btn view-btn"
+                        matTooltip="Voir les détails"
+                        (click)="viewTrunk(trunk)">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button 
+                        class="action-btn edit-btn"
+                        matTooltip="Modifier"
+                        (click)="editTrunk(trunk)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button 
+                        class="action-btn assortment-btn"
+                        matTooltip="Ajouter des assortiments"
+                        (click)="addAssortments(trunk)">
+                  <mat-icon>add_box</mat-icon>
+                </button>
+                <button mat-icon-button 
+                        class="action-btn delete-btn"
+                        matTooltip="Supprimer"
+                        (click)="deleteTrunk(trunk)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <!-- Message si aucun résultat -->
+      <div *ngIf="filteredTrunks.length === 0" class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <p>{{ searchTerm ? 'Aucun tronc ne correspond aux critères de recherche.' : 'Aucun tronc d\'assortiment n\'a été créé.' }}</p>
+        <button mat-stroked-button (click)="clearFilters()" *ngIf="searchTerm">Effacer les filtres</button>
+        <button mat-raised-button 
+                class="create-trunk-btn"
+                (click)="navigateToCreateTrunk()" 
+                *ngIf="!searchTerm">
+          <mat-icon>add</mat-icon>
+          Créer votre premier tronc
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  </div>
+</div>

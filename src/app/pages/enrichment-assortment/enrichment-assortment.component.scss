@@ -1,0 +1,430 @@
+// STYLES GÉNÉRAUX
+.page-container {
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// RESPONSIVE
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+  
+  .page-header {
+    .header-content {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    
+    .header-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+}
+
+// EN-TÊTE DE PAGE
+.page-header {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #ff8c00;
+  margin-bottom: 24px;
+  padding: 24px;
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .title-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+
+    /* Bouton retour intégré */
+    .back-btn-integrated {
+      position: absolute;
+      left: -16px;
+      top: -8px;
+      color: #ff8c00;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: rgba(255, 140, 0, 0.1);
+        color: #e65100;
+        transform: scale(1.1);
+      }
+    }
+
+    .page-icon {
+      color: #ff8c00;
+      width: 32px;
+      height: 32px;
+      margin-left: 48px; /* Espace pour le bouton de retour */
+    }
+
+    div {
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .subtitle {
+        margin: 4px 0 0 0;
+        color: #666;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+
+    button {
+      min-width: 140px;
+      height: 40px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+
+    /* Bouton Sauvegarder - Style orange secondaire */
+    .save-btn {
+      background-color: #fff3e0;
+      color: #ff8c00;
+      border: 2px solid #ff8c00;
+      
+      &:hover {
+        background-color: #ff8c00;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    /* Bouton Valider - Style orange principal */
+    .validate-btn {
+      background-color: #ff8c00;
+      color: white;
+      border: 2px solid #ff8c00;
+      
+      &:hover {
+        background-color: #e65100;
+        border-color: #e65100;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+      
+      &:disabled {
+        background-color: #ffcc80;
+        border-color: #ffcc80;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// Barre de progression
+.progress-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progress-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+::ng-deep .mat-mdc-progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  
+  .mdc-linear-progress__buffer {
+    background-color: #e0e0e0;
+  }
+  
+  .mdc-linear-progress__bar-inner {
+    border-color: #ff8c00;
+  }
+}
+
+// CARTES ET SECTIONS
+.section-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .mat-mdc-card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 24px;
+  }
+
+  .mat-mdc-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+
+    .section-icon {
+      color: #ff8c00;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .mat-mdc-card-content {
+    padding: 24px;
+  }
+}
+
+// FORMULAIRES
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: flex-start;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.form-field {
+  flex: 1;
+  min-width: 200px;
+
+  @media (max-width: 768px) {
+    min-width: unset;
+    width: 100%;
+  }
+}
+
+.form-field-small {
+  flex: 0 0 150px;
+  min-width: 150px;
+
+  @media (max-width: 768px) {
+    flex: 1;
+    min-width: unset;
+  }
+}
+
+.form-field-full {
+  flex: 1;
+  width: 100%;
+}
+
+// Styles Material Design
+::ng-deep .mat-mdc-form-field {
+  width: 100%;
+
+  .mat-mdc-text-field-wrapper {
+    border-radius: 8px;
+  }
+
+  &.mat-form-field-appearance-outline {
+    .mat-mdc-form-field-outline {
+      border-radius: 8px;
+    }
+  }
+
+  .mat-mdc-form-field-error {
+    font-size: 12px;
+  }
+}
+
+::ng-deep .mat-mdc-select-panel {
+  border-radius: 8px;
+}
+
+// Upload d'image
+.image-upload-section {
+  flex: 1;
+}
+
+.upload-label {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.upload-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  background-color: #fafafa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #ff8c00;
+    background-color: #fff3e0;
+  }
+}
+
+.file-name {
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+// VALIDATION ET RÉSUMÉ
+.validation-card {
+  border-left: 4px solid #ff8c00;
+}
+
+.validation-checklist {
+  margin-bottom: 24px;
+}
+
+.validation-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.completed {
+    .validation-label {
+      color: #4caf50;
+      font-weight: 500;
+    }
+  }
+}
+
+.validation-label {
+  font-size: 16px;
+  color: #666;
+}
+
+.validation-divider {
+  margin: 24px 0;
+}
+
+.summary-section {
+  h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+.summary-content {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid #ff8c00;
+
+  p {
+    margin: 8px 0;
+    font-size: 14px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ANIMATIONS ET ÉTATS
+.section-card {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// États des champs
+::ng-deep .mat-mdc-form-field {
+  &.ng-invalid.ng-touched {
+    .mat-mdc-text-field-wrapper {
+      border-color: #f44336;
+    }
+  }
+
+  &.ng-valid.ng-touched {
+    .mat-mdc-text-field-wrapper {
+      border-color: #4caf50;
+    }
+  }
+}
+
+// Icônes de validation colorées
+::ng-deep .mat-icon {
+  &.mat-primary {
+    color: #4caf50 !important;
+  }
+
+  &.mat-warn {
+    color: #ff8c00 !important;
+  }
+}
