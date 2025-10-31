@@ -1,0 +1,261 @@
+<div class="page-container">
+  <div class="content-wrapper">
+    
+    <!-- En-tête de page -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <mat-icon class="page-icon">manage_accounts</mat-icon>
+          <div>
+            <h1>Gestion des Troncs</h1>
+            <p class="subtitle">Consultez et gérez l'ensemble de vos troncs d'assortiment</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button mat-raised-button 
+                  color="primary" 
+                  class="orange-btn"
+                  (click)="createTrunk()">
+            <mat-icon>add</mat-icon>
+            Créer un tronc
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="stats-section">
+      <div class="stats-card total">
+        <div class="stats-icon">
+          <mat-icon>inventory</mat-icon>
+        </div>
+        <div class="stats-content">
+          <div class="stats-number">{{ stats.totalTrunks }}</div>
+          <div class="stats-label">Troncs Total</div>
+        </div>
+      </div>
+
+      <div class="stats-card active">
+        <div class="stats-icon">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="stats-content">
+          <div class="stats-number">{{ stats.activeTrunks }}</div>
+          <div class="stats-label">Troncs Actifs</div>
+        </div>
+      </div>
+
+      <div class="stats-card draft">
+        <div class="stats-icon">
+          <mat-icon>edit</mat-icon>
+        </div>
+        <div class="stats-content">
+          <div class="stats-number">{{ stats.draftTrunks }}</div>
+          <div class="stats-label">Brouillons</div>
+        </div>
+      </div>
+
+      <div class="stats-card articles">
+        <div class="stats-icon">
+          <mat-icon>shopping_cart</mat-icon>
+        </div>
+        <div class="stats-content">
+          <div class="stats-number">{{ stats.totalArticles }}</div>
+          <div class="stats-label">Articles Total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <mat-card class="search-filters-card">
+      <mat-card-header class="search-header">
+        <mat-card-title class="search-title">
+          <div class="title-content">
+            <mat-icon class="search-icon">search</mat-icon>
+            <span>Recherche et filtres</span>
+          </div>
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content class="search-content">
+        <form [formGroup]="searchForm" class="search-form">
+          
+          <!-- Ligne de recherche et filtres -->
+          <div class="search-filters-row">
+            <mat-form-field class="search-field" appearance="outline">
+              <mat-label>Rechercher un tronc</mat-label>
+              <input matInput 
+                     formControlName="searchTerm" 
+                     placeholder="Nom du tronc ou groupe">
+              <mat-icon matSuffix class="search-suffix-icon">search</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Type de tronc</mat-label>
+              <mat-select formControlName="trunkType">
+                <mat-option *ngFor="let type of trunkTypes" [value]="type.value">
+                  {{ type.label }}
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix class="filter-icon">category</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Statut</mat-label>
+              <mat-select formControlName="status">
+                <mat-option *ngFor="let status of statusOptions" [value]="status.value">
+                  {{ status.label }}
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix class="filter-icon">flag</mat-icon>
+            </mat-form-field>
+            
+            <button mat-raised-button 
+                    type="button" 
+                    class="assortment-btn-secondary clear-btn"
+                    (click)="clearFilters()">
+              <mat-icon>refresh</mat-icon>
+              Réinitialiser
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Résultats et liste des troncs -->
+    <mat-card class="results-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>list_alt</mat-icon>
+          Troncs disponibles
+          <span class="results-count">({{ filteredTrunks.length }} résultat{{ filteredTrunks.length > 1 ? 's' : '' }})</span>
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content class="results-content">
+        <div class="trunks-grid" *ngIf="filteredTrunks.length > 0">
+          <div class="trunk-card" *ngFor="let trunk of filteredTrunks">
+            
+            <!-- En-tête de la carte -->
+            <div class="trunk-header">
+              <div class="trunk-title">
+                <h3>{{ trunk.name }}</h3>
+                <div class="trunk-badges">
+                  <span class="type-badge" [ngClass]="getTypeBadgeClass(trunk.type)">
+                    {{ trunk.type === 'TAC' ? 'TAC' : trunk.type === 'TAN' ? 'TAN' : 'Complémentaire' }}
+                  </span>
+                  <span class="status-badge" [ngClass]="getStatusBadgeClass(trunk.status)">
+                    {{ trunk.status | titlecase }}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="trunk-actions">
+                <button mat-icon-button 
+                        class="action-btn view-btn"
+                        (click)="viewTrunkDetails(trunk)"
+                        matTooltip="Voir les détails">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button 
+                        class="action-btn edit-btn"
+                        (click)="editTrunk(trunk)"
+                        matTooltip="Modifier">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button 
+                        class="action-btn duplicate-btn"
+                        (click)="duplicateTrunk(trunk)"
+                        matTooltip="Dupliquer">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+                <button mat-icon-button 
+                        class="action-btn delete-btn"
+                        (click)="deleteTrunk(trunk)"
+                        matTooltip="Supprimer">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Contenu de la carte -->
+            <div class="trunk-content">
+              
+              <!-- Informations principales -->
+              <div class="trunk-info">
+                <div class="info-item">
+                  <mat-icon class="info-icon">shopping_cart</mat-icon>
+                  <span class="info-label">Articles :</span>
+                  <span class="info-value">{{ trunk.articlesCount }}</span>
+                </div>
+                
+                <div class="info-item">
+                  <mat-icon class="info-icon">store</mat-icon>
+                  <span class="info-label">Magasins :</span>
+                  <span class="info-value">{{ trunk.storesCount }}</span>
+                </div>
+                
+                <div class="info-item">
+                  <mat-icon class="info-icon">calendar_today</mat-icon>
+                  <span class="info-label">Créé le :</span>
+                  <span class="info-value">{{ formatDate(trunk.createdDate) }}</span>
+                </div>
+                
+                <div class="info-item">
+                  <mat-icon class="info-icon">update</mat-icon>
+                  <span class="info-label">Modifié le :</span>
+                  <span class="info-value">{{ formatDate(trunk.lastModified) }}</span>
+                </div>
+              </div>
+
+              <!-- Groupes et attributs -->
+              <div class="trunk-details">
+                <div class="detail-section" *ngIf="trunk.groups.length > 0">
+                  <h4>
+                    <mat-icon>category</mat-icon>
+                    Groupes
+                  </h4>
+                  <div class="tags-container">
+                    <mat-chip-set>
+                      <mat-chip *ngFor="let group of trunk.groups" class="group-chip">
+                        {{ group }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </div>
+                </div>
+                
+                <div class="detail-section" *ngIf="trunk.attributes.length > 0">
+                  <h4>
+                    <mat-icon>tune</mat-icon>
+                    Attributs
+                  </h4>
+                  <div class="tags-container">
+                    <mat-chip-set>
+                      <mat-chip *ngFor="let attribute of trunk.attributes" class="attribute-chip">
+                        {{ attribute }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message si aucun résultat -->
+        <div class="no-results" *ngIf="filteredTrunks.length === 0">
+          <mat-icon class="no-results-icon">search_off</mat-icon>
+          <h3>Aucun tronc trouvé</h3>
+          <p>Aucun tronc ne correspond à vos critères de recherche.</p>
+          <button mat-raised-button 
+                  class="orange-btn"
+                  (click)="clearFilters()">
+            <mat-icon>refresh</mat-icon>
+            Réinitialiser les filtres
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+</div>

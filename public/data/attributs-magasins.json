@@ -1,0 +1,28 @@
+{
+  "attributs_magasins": [
+    {
+      "code": "CUISINE_PRO",
+      "description": "Magasin spécialisé en électroménager encastrable et cuisine complète"
+    },
+    {
+      "code": "EXPERTISE_GAMING",
+      "description": "Magasin mettant l'accent sur les PC, consoles et accessoires gaming"
+    },
+    {
+      "code": "EXPERTISE_CINEMA",
+      "description": "Magasin spécialisé dans les téléviseurs, audio et home cinéma"
+    },
+    {
+      "code": "ATELIER_REPARATION",
+      "description": "Magasin disposant d'un atelier de réparation et service après-vente"
+    },
+    {
+      "code": "B2B",
+      "description": "Magasin proposant des offres et services dédiés aux clients professionnels"
+    },
+    {
+      "code": "RETRAIT_1H",
+      "description": "Magasin offrant le service de retrait rapide des commandes"
+    }
+  ]
+}

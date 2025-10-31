@@ -1,0 +1,230 @@
+<div class="trunk-control-container">
+  
+  <!-- En-tête de page -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <mat-icon class="page-icon">account_tree</mat-icon>
+        <div>
+          <h1>Contrôle des Articles du Tronc</h1>
+          <p class="subtitle">Gérez les articles présents dans la structure hiérarchique du tronc</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button mat-raised-button color="primary" class="orange-btn">
+          <mat-icon>add</mat-icon>
+          Ajouter un article
+        </button>
+        <button mat-stroked-button>
+          <mat-icon>import_export</mat-icon>
+          Importer/Exporter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu principal avec sidebar -->
+  <div class="main-content">
+    
+    <!-- Sidebar gauche avec arborescence -->
+    <div class="sidebar-left">
+      <div class="sidebar-header">
+        <h3>Structure Hiérarchique</h3>
+        <div class="sidebar-actions">
+          <button mat-icon-button matTooltip="Développer tout">
+            <mat-icon>unfold_more</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Réduire tout">
+            <mat-icon>unfold_less</mat-icon>
+          </button>
+        </div>
+      </div>
+      
+      <div class="sidebar-content">
+        <app-tree-view
+          *ngIf="!isLoading && hierarchyNodes.length > 0"
+          [nodes]="hierarchyNodes"
+          [config]="treeConfig"
+          [selectedNodeIds]="selectedNodeIds"
+          [getSelectedCountForNode]="getSelectedCountForNode.bind(this)"
+          (nodeAction)="onNodeAction($event)">
+        </app-tree-view>
+        
+        <div *ngIf="isLoading" class="loading-state">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Chargement de la hiérarchie...</p>
+        </div>
+        
+        <div *ngIf="!isLoading && hierarchyNodes.length === 0" class="empty-state">
+          <mat-icon>folder_open</mat-icon>
+          <p>Aucune donnée disponible</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone principale de contenu -->
+    <div class="content-area">
+      
+      <!-- Informations sur la sélection -->
+      <div class="selection-info">
+        <div *ngIf="selectedNode" class="selected-item">
+          <mat-icon>{{ selectedNode.type === 'trunk' ? 'account_tree' : 
+                       selectedNode.type === 'department' ? 'store' : 
+                       selectedNode.type === 'family' ? 'category' : 
+                       selectedNode.type === 'sub-family' ? 'label' : 'folder' }}</mat-icon>
+          <div class="item-details">
+            <h3>{{ selectedNode.name }}</h3>
+            <p>{{ selectedNode.articlesCount || 0 }} articles</p>
+          </div>
+        </div>
+        
+        <div *ngIf="!selectedNode" class="default-content">
+          <mat-icon>info</mat-icon>
+          <p>Sélectionnez un élément dans l'arbre pour voir les détails</p>
+        </div>
+      </div>
+
+      <!-- Zone par défaut si aucune sélection -->
+      <div class="default-content" *ngIf="!selectedNode">
+        <div class="default-message">
+          <mat-icon class="default-icon">account_tree</mat-icon>
+          <h2>Sélectionnez un élément dans l'arborescence</h2>
+          <p>Choisissez un rayon, une famille ou une sous-famille dans la structure hiérarchique pour voir les articles correspondants.</p>
+        </div>
+      </div>
+
+      <!-- Contenu des articles (à développer) -->
+      <div class="articles-content" *ngIf="selectedNode">
+        
+        <!-- Barre d'outils pour les articles -->
+        <div class="articles-toolbar">
+          <div class="toolbar-left">
+            <!-- Indication du filtre actif -->
+            <div class="filter-indicator" *ngIf="hasActiveFilter()">
+              <mat-icon>filter_list</mat-icon>
+              <span class="filter-text">{{ getActiveFilterText() }}</span>
+              <button mat-icon-button 
+                      (click)="resetFilter()" 
+                      matTooltip="Afficher tous les articles"
+                      class="reset-filter-btn">
+                <mat-icon>clear</mat-icon>
+              </button>
+            </div>
+            
+            <!-- Checkbox pour sélectionner tous les articles -->
+            <div class="select-all-container" *ngIf="filteredArticles.length > 0">
+              <mat-checkbox 
+                [checked]="selectAll"
+                [indeterminate]="getSelectedCount() > 0 && !selectAll"
+                (change)="onSelectAll($event.checked)"
+                class="select-all-checkbox">
+                Tout sélectionner
+              </mat-checkbox>
+              <span class="selection-count" *ngIf="getSelectedCount() > 0">
+                ({{ getSelectedCount() }} sélectionné{{ getSelectedCount() > 1 ? 's' : '' }})
+              </span>
+            </div>
+            
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Rechercher des articles</mat-label>
+              <input matInput 
+                     [(ngModel)]="searchQuery" 
+                     (keyup.enter)="onSearchArticles()"
+                     placeholder="Tapez votre recherche...">
+              <mat-icon matSuffix 
+                        *ngIf="!searchQuery" 
+                        (click)="onSearchArticles()">search</mat-icon>
+              <mat-icon matSuffix 
+                        *ngIf="searchQuery" 
+                        (click)="clearSearch()" 
+                        class="clear-icon">clear</mat-icon>
+            </mat-form-field>
+          </div>
+          
+          <div class="toolbar-right">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Filtrer par statut</mat-label>
+              <mat-select>
+                <mat-option value="">Tous</mat-option>
+                <mat-option value="actif">Actif</mat-option>
+                <mat-option value="inactif">Inactif</mat-option>
+                <mat-option value="brouillon">Brouillon</mat-option>
+              </mat-select>
+            </mat-form-field>
+            
+            <button mat-icon-button matTooltip="Vue en grille" 
+                    [class.active]="isGridView()" 
+                    (click)="setGridView()">
+              <mat-icon>grid_view</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Vue en liste" 
+                    [class.active]="isListView()" 
+                    (click)="setListView()">
+              <mat-icon>view_list</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Liste des articles -->
+        <div class="articles-list">
+          <div *ngIf="filteredArticles.length > 0; else noArticles" 
+               class="articles-grid" 
+               [class.grid-view]="isGridView()" 
+               [class.list-view]="isListView()">
+            <div *ngFor="let article of filteredArticles; let i = index" class="article-card">
+              <div class="article-header">
+                <!-- Checkbox de sélection -->
+                <div class="article-checkbox">
+                  <mat-checkbox 
+                    [checked]="isArticleSelected(article.code)"
+                    (change)="onArticleSelect(article.code, $event.checked)">
+                  </mat-checkbox>
+                </div>
+                <div class="article-number">{{ article.code }}</div>
+              </div>
+
+              <!-- Contenu de l'article adaptatif selon la vue -->
+              <div class="article-content" [ngClass]="{'list-layout': isListView(), 'grid-layout': isGridView()}">
+                <h3 class="article-title">{{ article.libelle }}</h3>
+                
+                <div class="article-details" *ngIf="isGridView()">
+                  <div class="article-meta">
+                    <div class="meta-item">
+                      <strong>Code:</strong> {{ article.code }}
+                    </div>
+                    <div class="meta-item">
+                      <strong>Univers:</strong> {{ article.univers }}
+                    </div>
+                    <div class="meta-item">
+                      <strong>Famille:</strong> {{ article.famille }}
+                    </div>
+                    <div class="meta-item" *ngIf="article.sousFamille">
+                      <strong>Sous-famille:</strong> {{ article.sousFamille }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="article-details" *ngIf="isListView()">
+                  <div class="article-meta">
+                    <span class="meta-item">{{ article.code }}</span>
+                    <span class="meta-item">{{ article.univers }}</span>
+                    <span class="meta-item">{{ article.famille }}</span>
+                    <span class="meta-item" *ngIf="article.sousFamille">{{ article.sousFamille }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <ng-template #noArticles>
+            <div class="empty-articles">
+              <mat-icon>inventory_2</mat-icon>
+              <h3>{{ selectedNode ? 'Aucun article trouvé' : 'Sélectionnez un élément' }}</h3>
+              <p>{{ selectedNode ? 'Aucun article ne correspond à votre sélection.' : 'Choisissez un rayon, une famille ou une sous-famille pour voir les articles.' }}</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

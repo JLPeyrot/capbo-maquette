@@ -1,0 +1,281 @@
+<div class="data-page-container">
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="title-section">
+      <h1 class="page-title">
+        <mat-icon class="title-icon">dataset</mat-icon>
+        Catalogue Produits
+      </h1>
+      <p class="page-subtitle">Exploration des données produits par univers, famille et sous-famille</p>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-section">
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon class="stat-icon">inventory</mat-icon>
+            <div class="stat-info">
+              <span class="stat-number">{{ stats.totalItems }}</span>
+              <span class="stat-label">Produits</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon class="stat-icon">category</mat-icon>
+            <div class="stat-info">
+              <span class="stat-number">{{ stats.universCount }}</span>
+              <span class="stat-label">Univers</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon class="stat-icon">folder</mat-icon>
+            <div class="stat-info">
+              <span class="stat-number">{{ stats.familleCount }}</span>
+              <span class="stat-label">Familles</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-content">
+            <mat-icon class="stat-icon">folder_open</mat-icon>
+            <div class="stat-info">
+              <span class="stat-number">{{ stats.sousFamilleCount }}</span>
+              <span class="stat-label">Sous-familles</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Filtres et contrôles -->
+  <div class="controls-section">
+    <mat-card>
+      <mat-card-content>
+        <div class="controls-grid">
+          <!-- Filtres -->
+          <div class="filters-section">
+            <h3 class="section-title">
+              <mat-icon>filter_list</mat-icon>
+              Filtres
+            </h3>
+            
+            <div class="filters-row">
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Recherche</mat-label>
+                <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" 
+                       placeholder="Rechercher...">
+                <mat-icon matSuffix>search</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Univers</mat-label>
+                <mat-select [(ngModel)]="selectedUnivers" (selectionChange)="onUniversChange()">
+                  <mat-option value="">Tous les univers</mat-option>
+                  <mat-option *ngFor="let univers of universOptions" [value]="univers">
+                    {{ univers }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="filter-field">
+                <mat-label>Famille</mat-label>
+                <mat-select [(ngModel)]="selectedFamille" (selectionChange)="onFamilleChange()" 
+                           [disabled]="!selectedUnivers">
+                  <mat-option value="">Toutes les familles</mat-option>
+                  <mat-option *ngFor="let famille of familleOptions" [value]="famille">
+                    {{ famille }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <button mat-raised-button color="warn" (click)="clearFilters()" class="clear-btn">
+                <mat-icon>clear</mat-icon>
+                Effacer
+              </button>
+            </div>
+          </div>
+
+          <!-- Modes d'affichage -->
+          <div class="view-modes-section">
+            <h3 class="section-title">
+              <mat-icon>view_module</mat-icon>
+              Affichage
+            </h3>
+            
+            <mat-button-toggle-group [(ngModel)]="viewMode" (change)="changeViewMode($event.value)">
+              <mat-button-toggle value="table">
+                <mat-icon>table_view</mat-icon>
+                Tableau
+              </mat-button-toggle>
+              <mat-button-toggle value="cards">
+                <mat-icon>view_module</mat-icon>
+                Cartes
+              </mat-button-toggle>
+              <mat-button-toggle value="tree">
+                <mat-icon>account_tree</mat-icon>
+                Arbre
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Résultats -->
+  <div class="results-section">
+    <div class="results-header">
+      <h3 class="results-title">
+        Résultats ({{ filteredData.length }} élément{{ filteredData.length > 1 ? 's' : '' }})
+      </h3>
+    </div>
+
+    <!-- Vue Tableau -->
+    <div *ngIf="viewMode === 'table'" class="table-view">
+      <mat-card>
+        <mat-card-content>
+          <table mat-table [dataSource]="paginatedData" class="data-table">
+            <ng-container matColumnDef="univers">
+              <th mat-header-cell *matHeaderCellDef>Univers</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="cell-content">
+                  <mat-icon class="cell-icon">category</mat-icon>
+                  {{ element.univers }}
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="famille">
+              <th mat-header-cell *matHeaderCellDef>Famille</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="cell-content">
+                  <mat-icon class="cell-icon">folder</mat-icon>
+                  {{ element.famille }}
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="sousFamille">
+              <th mat-header-cell *matHeaderCellDef>Sous-famille</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="cell-content">
+                  <mat-icon class="cell-icon">folder_open</mat-icon>
+                  {{ element.sousFamille }}
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['univers', 'famille', 'sousFamille']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['univers', 'famille', 'sousFamille']"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Vue Cartes -->
+    <div *ngIf="viewMode === 'cards'" class="cards-view">
+      <div class="cards-grid">
+        <mat-card *ngFor="let item of paginatedData" class="product-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="card-avatar">inventory_2</mat-icon>
+            <mat-card-title>{{ item.sousFamille }}</mat-card-title>
+            <mat-card-subtitle>{{ item.famille }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="card-info">
+              <div class="info-item">
+                <mat-icon class="info-icon">category</mat-icon>
+                <span class="info-label">Univers:</span>
+                <span class="info-value">{{ item.univers }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Vue Arbre -->
+    <div *ngIf="viewMode === 'tree'" class="tree-view">
+      <mat-card>
+        <mat-card-content>
+          <div class="tree-container">
+            <div *ngFor="let univers of getTreeKeys()" class="tree-univers">
+              <div class="tree-node univers-node">
+                <mat-icon class="tree-icon">category</mat-icon>
+                <span class="tree-label">{{ univers }}</span>
+                <span class="tree-count">({{ getFamilleKeys(univers).length }} familles)</span>
+              </div>
+              
+              <div class="tree-children">
+                <div *ngFor="let famille of getFamilleKeys(univers)" class="tree-famille">
+                  <div class="tree-node famille-node">
+                    <mat-icon class="tree-icon">folder</mat-icon>
+                    <span class="tree-label">{{ famille }}</span>
+                    <span class="tree-count">({{ getSousFamilles(univers, famille).length }} sous-familles)</span>
+                  </div>
+                  
+                  <div class="tree-children">
+                    <div *ngFor="let sousFamille of getSousFamilles(univers, famille)" class="tree-sous-famille">
+                      <div class="tree-node sous-famille-node">
+                        <mat-icon class="tree-icon">folder_open</mat-icon>
+                        <span class="tree-label">{{ sousFamille }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="viewMode !== 'tree' && totalPages > 1" class="pagination-section">
+      <mat-card>
+        <mat-card-content>
+          <div class="pagination-controls">
+            <button mat-icon-button (click)="previousPage()" [disabled]="currentPage === 0">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            
+            <div class="page-numbers">
+              <button *ngFor="let page of pageNumbers" 
+                      mat-button 
+                      [class.active]="page === currentPage"
+                      (click)="goToPage(page)">
+                {{ page + 1 }}
+              </button>
+            </div>
+            
+            <button mat-icon-button (click)="nextPage()" 
+                    [disabled]="(currentPage + 1) * pageSize >= filteredData.length">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          
+          <div class="pagination-info">
+            Page {{ currentPage + 1 }} sur {{ totalPages }} 
+            ({{ filteredData.length }} résultat{{ filteredData.length > 1 ? 's' : '' }})
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

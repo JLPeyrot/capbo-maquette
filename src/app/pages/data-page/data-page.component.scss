@@ -1,0 +1,542 @@
+.data-page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 0;
+
+  /* ===== EN-TÊTE ===== */
+  .page-header {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b35 100%);
+    color: white;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(255, 140, 0, 0.3);
+
+    .title-section {
+      max-width: 1200px;
+      margin: 0 auto;
+
+      .page-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .title-icon {
+          font-size: 2.5rem;
+          width: 2.5rem;
+          height: 2.5rem;
+        }
+      }
+
+      .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+        font-weight: 300;
+      }
+    }
+  }
+
+  /* ===== STATISTIQUES ===== */
+  .stats-section {
+    padding: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+
+      .stat-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 140, 0, 0.1);
+
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 40px rgba(255, 140, 0, 0.2);
+        }
+
+        .mat-mdc-card-content {
+          padding: 24px;
+
+          .stat-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+
+            .stat-icon {
+              font-size: 2.5rem;
+              width: 2.5rem;
+              height: 2.5rem;
+              color: #ff8c00;
+              background: rgba(255, 140, 0, 0.1);
+              border-radius: 12px;
+              padding: 8px;
+            }
+
+            .stat-info {
+              display: flex;
+              flex-direction: column;
+
+              .stat-number {
+                font-size: 2rem;
+                font-weight: 700;
+                color: #333;
+                line-height: 1;
+              }
+
+              .stat-label {
+                font-size: 0.9rem;
+                color: #666;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* ===== CONTRÔLES ===== */
+  .controls-section {
+    padding: 0 32px 32px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .mat-mdc-card {
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 140, 0, 0.1);
+
+      .mat-mdc-card-content {
+        padding: 32px;
+
+        .controls-grid {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 32px;
+          align-items: start;
+
+          .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0 0 16px 0;
+
+            mat-icon {
+              color: #ff8c00;
+            }
+          }
+
+          .filters-section {
+            .filters-row {
+              display: grid;
+              grid-template-columns: 1fr 1fr 1fr auto;
+              gap: 16px;
+              align-items: end;
+
+              .filter-field {
+                width: 100%;
+              }
+
+              .clear-btn {
+                height: 56px;
+                background: rgba(244, 67, 54, 0.1);
+                color: #f44336;
+                border: 1px solid rgba(244, 67, 54, 0.3);
+
+                &:hover {
+                  background: rgba(244, 67, 54, 0.2);
+                }
+              }
+            }
+          }
+
+          .view-modes-section {
+            .mat-button-toggle-group {
+              width: 100%;
+
+              .mat-button-toggle {
+                flex: 1;
+                border-color: rgba(255, 140, 0, 0.3);
+
+                &.mat-button-toggle-checked {
+                  background: rgba(255, 140, 0, 0.1);
+                  color: #ff8c00;
+                }
+
+                .mat-icon {
+                  margin-right: 8px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* ===== RÉSULTATS ===== */
+  .results-section {
+    padding: 0 32px 32px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .results-header {
+      margin-bottom: 24px;
+
+      .results-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+      }
+    }
+
+    /* Vue Tableau */
+    .table-view {
+      .mat-mdc-card {
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+
+        .data-table {
+          width: 100%;
+
+          .mat-mdc-header-cell {
+            background: rgba(255, 140, 0, 0.1);
+            color: #ff8c00;
+            font-weight: 600;
+            font-size: 1rem;
+            border-bottom: 2px solid #ff8c00;
+          }
+
+          .mat-mdc-cell {
+            padding: 16px;
+            border-bottom: 1px solid #eee;
+
+            .cell-content {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .cell-icon {
+                color: #ff8c00;
+                font-size: 1.2rem;
+              }
+            }
+          }
+
+          .mat-mdc-row {
+            transition: background-color 0.3s ease;
+
+            &:hover {
+              background: rgba(255, 140, 0, 0.05);
+            }
+          }
+        }
+      }
+    }
+
+    /* Vue Cartes */
+    .cards-view {
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+
+        .product-card {
+          border-radius: 16px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
+          border: 1px solid rgba(255, 140, 0, 0.1);
+
+          &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(255, 140, 0, 0.2);
+          }
+
+          .mat-mdc-card-header {
+            .card-avatar {
+              background: rgba(255, 140, 0, 0.1);
+              color: #ff8c00;
+            }
+
+            .mat-mdc-card-title {
+              color: #333;
+              font-weight: 600;
+            }
+
+            .mat-mdc-card-subtitle {
+              color: #666;
+            }
+          }
+
+          .mat-mdc-card-content {
+            .card-info {
+              .info-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+
+                .info-icon {
+                  color: #ff8c00;
+                  font-size: 1.1rem;
+                }
+
+                .info-label {
+                  font-weight: 500;
+                  color: #666;
+                }
+
+                .info-value {
+                  color: #333;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /* Vue Arbre */
+    .tree-view {
+      .mat-mdc-card {
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+        .tree-container {
+          .tree-univers {
+            margin-bottom: 24px;
+
+            .univers-node {
+              background: rgba(255, 140, 0, 0.1);
+              border-left: 4px solid #ff8c00;
+              padding: 16px;
+              border-radius: 8px;
+              margin-bottom: 16px;
+            }
+
+            .tree-children {
+              margin-left: 24px;
+
+              .tree-famille {
+                margin-bottom: 16px;
+
+                .famille-node {
+                  background: rgba(33, 150, 243, 0.1);
+                  border-left: 3px solid #2196f3;
+                  padding: 12px;
+                  border-radius: 6px;
+                  margin-bottom: 12px;
+                }
+
+                .tree-children {
+                  margin-left: 20px;
+
+                  .tree-sous-famille {
+                    margin-bottom: 8px;
+
+                    .sous-famille-node {
+                      background: rgba(76, 175, 80, 0.1);
+                      border-left: 2px solid #4caf50;
+                      padding: 8px;
+                      border-radius: 4px;
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          .tree-node {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .tree-icon {
+              font-size: 1.2rem;
+            }
+
+            .tree-label {
+              font-weight: 500;
+              flex: 1;
+            }
+
+            .tree-count {
+              font-size: 0.9rem;
+              color: #666;
+              font-weight: 400;
+            }
+          }
+        }
+      }
+    }
+
+    /* Pagination */
+    .pagination-section {
+      margin-top: 24px;
+
+      .mat-mdc-card {
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+        .mat-mdc-card-content {
+          padding: 16px 24px;
+
+          .pagination-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+
+            .page-numbers {
+              display: flex;
+              gap: 4px;
+
+              button {
+                min-width: 40px;
+                height: 40px;
+                border-radius: 8px;
+
+                &.active {
+                  background: #ff8c00;
+                  color: white;
+                }
+              }
+            }
+          }
+
+          .pagination-info {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .data-page-container {
+    .page-header {
+      padding: 24px 16px;
+
+      .page-title {
+        font-size: 2rem;
+      }
+    }
+
+    .stats-section,
+    .controls-section,
+    .results-section {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .stats-section .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .controls-section .controls-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+
+      .filters-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+    }
+
+    .cards-view .cards-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tree-view .tree-container {
+      .tree-univers .tree-children {
+        margin-left: 12px;
+
+        .tree-famille .tree-children {
+          margin-left: 12px;
+        }
+      }
+    }
+  }
+}
+
+/* ===== MODE SOMBRE ===== */
+@media (prefers-color-scheme: dark) {
+  .data-page-container {
+    background: linear-gradient(135deg, #263238 0%, #37474f 100%);
+
+    .page-header {
+      background: linear-gradient(135deg, #ff8c00 0%, #ff6b35 100%);
+    }
+
+    .stats-section .stats-grid .stat-card,
+    .controls-section .mat-mdc-card,
+    .results-section .table-view .mat-mdc-card,
+    .results-section .tree-view .mat-mdc-card,
+    .results-section .pagination-section .mat-mdc-card {
+      background: #424242;
+      color: #fff;
+    }
+
+    .cards-view .cards-grid .product-card {
+      background: #424242;
+      color: #fff;
+
+      .mat-mdc-card-title {
+        color: #fff;
+      }
+
+      .mat-mdc-card-subtitle {
+        color: #ccc;
+      }
+    }
+
+    .results-title,
+    .section-title {
+      color: #fff;
+    }
+
+    .stat-info .stat-number {
+      color: #fff;
+    }
+
+    .stat-info .stat-label {
+      color: #ccc;
+    }
+
+    .tree-node .tree-label {
+      color: #fff;
+    }
+
+    .tree-node .tree-count {
+      color: #ccc;
+    }
+
+    .data-table .mat-mdc-cell {
+      color: #fff;
+      border-bottom-color: #555;
+    }
+
+    .pagination-info {
+      color: #ccc;
+    }
+  }
+}

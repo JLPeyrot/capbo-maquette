@@ -116,13 +116,26 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     
     // Chargement du fichier JSON
-    fetch('/assets/data/botanic-products.json')
+    fetch('/assets/data/articles.json')
       .then(response => response.json())
       .then(data => {
         this.articles = data.articles.map((article: any) => ({
           ...article,
+          id: article.code, // Utiliser le code comme ID
+          reference: article.code,
+          designation: article.libelle,
+          famille: article.univers,
+          sousFamille: article.sousFamille || article.famille,
+          marque: 'Marque générique', // Valeur par défaut
+          prixVente: Math.round((Math.random() * 100 + 5) * 100) / 100,
+          prixAchat: Math.round((Math.random() * 50 + 2) * 100) / 100,
+          stock: Math.floor(Math.random() * 50),
+          stockMinimum: Math.floor(Math.random() * 10 + 5),
+          statut: (['actif', 'inactif', 'suspendu'] as const)[Math.floor(Math.random() * 3)],
           dateCreation: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-          derniereMaj: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000)
+          derniereMaj: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+          codeEan: `${Math.floor(Math.random() * 1000000000000)}`,
+          fournisseurPrincipal: 'Fournisseur principal'
         }));
         this.filteredArticles = [...this.articles];
         this.totalArticles = this.articles.length;

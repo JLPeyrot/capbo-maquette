@@ -47,6 +47,30 @@ export const routes: Routes = [
     component: MainLayoutComponent
   },
   {
+    path: 'create-trunk',
+    component: MainLayoutComponent
+  },
+  {
+    path: 'trunk-management',
+    component: MainLayoutComponent
+  },
+  {
+    path: 'trunk-control/:trunkName',
+    component: MainLayoutComponent
+  },
+  {
+    path: 'trunk-control',
+    component: MainLayoutComponent
+  },
+  {
+    path: 'data-page',
+    component: MainLayoutComponent
+  },
+  {
+    path: 'articles',
+    component: MainLayoutComponent
+  },
+  {
     path: '**',
     redirectTo: ''
   }

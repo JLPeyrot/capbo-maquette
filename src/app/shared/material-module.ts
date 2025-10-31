@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 
 // Buttons & Indicators
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 
@@ -48,6 +49,7 @@ const MaterialModules = [
   MatListModule,
   MatMenuModule,
   MatButtonModule,
+  MatButtonToggleModule,
   MatIconModule,
   MatBadgeModule,
   MatFormFieldModule,

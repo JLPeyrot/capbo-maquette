@@ -1,0 +1,206 @@
+<div class="tree-view-container">
+  <div class="tree-nodes">
+    <ng-container *ngFor="let node of nodes">
+      <div class="tree-node-wrapper">
+        <!-- Nœud principal -->
+        <div 
+          [class]="getNodeClass(node)"
+          [style]="getIndentStyle(node.level)"
+          (click)="onNodeClick(node)">
+          
+          <!-- Icône d'expansion/réduction -->
+          <button 
+            *ngIf="hasChildren(node)"
+            mat-icon-button 
+            class="expand-button"
+            (click)="$event.stopPropagation(); toggleNode(node)">
+            <mat-icon class="expand-icon">{{ getExpandIcon(node) }}</mat-icon>
+          </button>
+          
+          <!-- Espacement pour les nœuds sans enfants -->
+          <div *ngIf="!hasChildren(node)" class="expand-spacer"></div>
+          
+          <!-- Icône du type de nœud -->
+          <mat-icon 
+            *ngIf="config.showIcons" 
+            class="node-icon"
+            [class.node-icon-selected]="node.isSelected">
+            {{ getNodeIcon(node) }}
+          </mat-icon>
+          
+          <!-- Nom du nœud -->
+          <span class="node-label" [class.node-label-selected]="node.isSelected">
+            {{ node.name }}
+          </span>
+          
+          <!-- Compteur d'articles -->
+          <span 
+            *ngIf="config.showArticleCount && node.articlesCount !== undefined" 
+            class="article-count">
+            ({{ node.articlesCount }})
+          </span>
+          
+          <!-- Badge de sélection -->
+          <span 
+            *ngIf="getSelectedCountForNode && getSelectedCountForNode(node) > 0" 
+            class="selection-badge">
+            {{ getSelectedCountForNode(node) }}
+          </span>
+        </div>
+        
+        <!-- Nœuds enfants (récursif) -->
+        <div 
+          *ngIf="node.children && node.expanded" 
+          class="tree-children">
+          <ng-container *ngFor="let childNode of node.children">
+            <div class="tree-node-wrapper">
+              <!-- Nœud enfant -->
+              <div 
+                [class]="getNodeClass(childNode)"
+                [style]="getIndentStyle(childNode.level)"
+                (click)="onNodeClick(childNode)">
+                
+                <!-- Icône d'expansion/réduction -->
+                <button 
+                  *ngIf="hasChildren(childNode)"
+                  mat-icon-button 
+                  class="expand-button"
+                  (click)="$event.stopPropagation(); toggleNode(childNode)">
+                  <mat-icon class="expand-icon">{{ getExpandIcon(childNode) }}</mat-icon>
+                </button>
+                
+                <!-- Espacement pour les nœuds sans enfants -->
+                <div *ngIf="!hasChildren(childNode)" class="expand-spacer"></div>
+                
+                <!-- Icône du type de nœud -->
+                <mat-icon 
+                  *ngIf="config.showIcons" 
+                  class="node-icon"
+                  [class.node-icon-selected]="childNode.isSelected">
+                  {{ getNodeIcon(childNode) }}
+                </mat-icon>
+                
+                <!-- Nom du nœud -->
+                <span class="node-label" [class.node-label-selected]="childNode.isSelected">
+                  {{ childNode.name }}
+                </span>
+                
+                <!-- Compteur d'articles -->
+                <span 
+                  *ngIf="config.showArticleCount && childNode.articlesCount !== undefined" 
+                  class="article-count">
+                  ({{ childNode.articlesCount }})
+                </span>
+                
+                <!-- Badge de sélection -->
+                <span 
+                  *ngIf="getSelectedCountForNode && getSelectedCountForNode(childNode) > 0" 
+                  class="selection-badge">
+                  {{ getSelectedCountForNode(childNode) }}
+                </span>
+              </div>
+              
+              <!-- Sous-nœuds enfants (récursif) -->
+              <div 
+                *ngIf="childNode.children && childNode.expanded" 
+                class="tree-children">
+                <ng-container *ngFor="let subChildNode of childNode.children">
+                  <div class="tree-node-wrapper">
+                    <!-- Sous-nœud enfant -->
+                    <div 
+                      [class]="getNodeClass(subChildNode)"
+                      [style]="getIndentStyle(subChildNode.level)"
+                      (click)="onNodeClick(subChildNode)">
+                      
+                      <!-- Icône d'expansion/réduction -->
+                      <button 
+                        *ngIf="hasChildren(subChildNode)"
+                        mat-icon-button 
+                        class="expand-button"
+                        (click)="$event.stopPropagation(); toggleNode(subChildNode)">
+                        <mat-icon class="expand-icon">{{ getExpandIcon(subChildNode) }}</mat-icon>
+                      </button>
+                      
+                      <!-- Espacement pour les nœuds sans enfants -->
+                      <div *ngIf="!hasChildren(subChildNode)" class="expand-spacer"></div>
+                      
+                      <!-- Icône du type de nœud -->
+                      <mat-icon 
+                        *ngIf="config.showIcons" 
+                        class="node-icon"
+                        [class.node-icon-selected]="subChildNode.isSelected">
+                        {{ getNodeIcon(subChildNode) }}
+                      </mat-icon>
+                      
+                      <!-- Nom du nœud -->
+                      <span class="node-label" [class.node-label-selected]="subChildNode.isSelected">
+                        {{ subChildNode.name }}
+                      </span>
+                      
+                      <!-- Compteur d'articles -->
+                      <span 
+                        *ngIf="config.showArticleCount && subChildNode.articlesCount !== undefined" 
+                        class="article-count">
+                        ({{ subChildNode.articlesCount }})
+                      </span>
+                      
+                      <!-- Badge de sélection -->
+                      <span 
+                        *ngIf="getSelectedCountForNode && getSelectedCountForNode(subChildNode) > 0" 
+                        class="selection-badge">
+                        {{ getSelectedCountForNode(subChildNode) }}
+                      </span>
+                    </div>
+                    
+                    <!-- Arrière-petits-enfants (niveau final) -->
+                    <div 
+                      *ngIf="subChildNode.children && subChildNode.expanded" 
+                      class="tree-children">
+                      <ng-container *ngFor="let leafNode of subChildNode.children">
+                        <div 
+                          [class]="getNodeClass(leafNode)"
+                          [style]="getIndentStyle(leafNode.level)"
+                          (click)="onNodeClick(leafNode)">
+                          
+                          <!-- Espacement pour les feuilles -->
+                          <div class="expand-spacer"></div>
+                          
+                          <!-- Icône du type de nœud -->
+                          <mat-icon 
+                            *ngIf="config.showIcons" 
+                            class="node-icon"
+                            [class.node-icon-selected]="leafNode.isSelected">
+                            {{ getNodeIcon(leafNode) }}
+                          </mat-icon>
+                          
+                          <!-- Nom du nœud -->
+                          <span class="node-label" [class.node-label-selected]="leafNode.isSelected">
+                            {{ leafNode.name }}
+                          </span>
+                          
+                          <!-- Compteur d'articles -->
+                          <span 
+                            *ngIf="config.showArticleCount && leafNode.articlesCount !== undefined" 
+                            class="article-count">
+                            ({{ leafNode.articlesCount }})
+                          </span>
+                          
+                          <!-- Badge de sélection -->
+                          <span 
+                            *ngIf="getSelectedCountForNode && getSelectedCountForNode(leafNode) > 0" 
+                            class="selection-badge">
+                            {{ getSelectedCountForNode(leafNode) }}
+                          </span>
+                        </div>
+                      </ng-container>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

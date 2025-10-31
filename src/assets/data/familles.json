@@ -1,0 +1,106 @@
+{
+  "familles": [
+    {
+      "univers": "Électroménager",
+      "familles": [
+        {
+          "code": "LAVAGE",
+          "libelle": "Lavage"
+        },
+        {
+          "code": "FROID",
+          "libelle": "Froid"
+        },
+        {
+          "code": "CUISSON",
+          "libelle": "Cuisson"
+        },
+        {
+          "code": "ENTRETIEN",
+          "libelle": "Entretien"
+        }
+      ]
+    },
+    {
+      "univers": "Image & Son",
+      "familles": [
+        {
+          "code": "TELEVISEURS",
+          "libelle": "Téléviseurs"
+        },
+        {
+          "code": "AUDIO",
+          "libelle": "Audio"
+        },
+        {
+          "code": "PHOTO_VIDEO",
+          "libelle": "Photo & Vidéo"
+        }
+      ]
+    },
+    {
+      "univers": "Informatique",
+      "familles": [
+        {
+          "code": "ORDINATEURS_PORTABLES",
+          "libelle": "Ordinateurs portables"
+        },
+        {
+          "code": "ORDINATEURS_BUREAU",
+          "libelle": "Ordinateurs de bureau"
+        },
+        {
+          "code": "IMPRESSION",
+          "libelle": "Impression"
+        },
+        {
+          "code": "STOCKAGE",
+          "libelle": "Stockage"
+        }
+      ]
+    },
+    {
+      "univers": "Téléphonie",
+      "familles": [
+        {
+          "code": "SMARTPHONES",
+          "libelle": "Smartphones"
+        },
+        {
+          "code": "ACCESSOIRES",
+          "libelle": "Accessoires"
+        }
+      ]
+    },
+    {
+      "univers": "Objets connectés",
+      "familles": [
+        {
+          "code": "MAISON_CONNECTEE",
+          "libelle": "Maison connectée"
+        },
+        {
+          "code": "SANTE_CONNECTEE",
+          "libelle": "Santé connectée"
+        }
+      ]
+    },
+    {
+      "univers": "Cuisine",
+      "familles": [
+        {
+          "code": "PETIT_DEJEUNER",
+          "libelle": "Petit-déjeuner"
+        },
+        {
+          "code": "PREPARATION_CULINAIRE",
+          "libelle": "Préparation culinaire"
+        },
+        {
+          "code": "CUISSON_CONVIVIALE",
+          "libelle": "Cuisson conviviale"
+        }
+      ]
+    }
+  ]
+}

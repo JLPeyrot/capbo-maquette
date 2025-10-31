@@ -1,0 +1,178 @@
+<div class="create-trunk-container">
+  <!-- HEADER DE LA PAGE -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <button mat-icon-button class="back-btn-integrated" (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h1 class="page-title">
+          <mat-icon class="title-icon">account_tree</mat-icon>
+          Créer un tronc
+        </h1>
+        <p class="page-subtitle">Configuration d'un nouveau tronc d'assortiment</p>
+      </div>
+      <div class="header-actions">
+        <button mat-raised-button color="primary" class="validate-btn" 
+                [disabled]="!isFormValid()" (click)="onSubmit()">
+          <mat-icon>check</mat-icon>
+          Valider
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENU PRINCIPAL -->
+  <div class="content-wrapper">
+    <!-- FORMULAIRE -->
+    <div class="form-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>settings</mat-icon>
+            Configuration du tronc
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="trunkForm" class="trunk-form">
+            <!-- Nom du tronc -->
+            <div class="form-field">
+              <label class="field-label">Nom du tronc :</label>
+              <div class="field-input">
+                <mat-form-field appearance="outline">
+                  <input matInput formControlName="name" placeholder="Nom du tronc">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Type de tronc -->
+            <div class="form-field">
+              <label class="field-label">Type de tronc :</label>
+              <div class="field-input">
+                <mat-form-field appearance="outline">
+                  <mat-select formControlName="selectedTrunkType" placeholder="Sélectionner un type">
+                    <mat-option *ngFor="let type of trunkTypes" [value]="type.id">
+                      {{ type.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Niveau -->
+            <div class="form-field">
+              <label class="field-label">Niveau :</label>
+              <div class="field-input">
+                <mat-form-field appearance="outline">
+                  <input matInput formControlName="level" placeholder="Niveau" type="number">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Groupes -->
+            <div class="form-field">
+              <label class="field-label">Groupes :</label>
+              <div class="field-with-button">
+                <mat-form-field appearance="outline" class="field-select">
+                  <mat-select formControlName="selectedGroupValue" placeholder="Sélectionner un groupe">
+                    <mat-option *ngFor="let group of availableGroupsFiltered" [value]="group.id">
+                      <span class="group-option">
+                        <strong>{{ group.name }}</strong>
+                        <small class="group-category"> - {{ group.category }}</small>
+                      </span>
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <button mat-icon-button class="add-button" (click)="addGroup()" 
+                        [disabled]="!trunkForm.get('selectedGroupValue')?.value">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Groupes sélectionnés -->
+            <div class="selected-items" *ngIf="selectedGroups.length > 0">
+              <mat-chip-set>
+                <mat-chip *ngFor="let group of selectedGroups; let i = index" 
+                          (removed)="removeGroup(i)">
+                  <span class="chip-content">
+                    <strong>{{ group.name }}</strong>
+                    <small> ({{ group.category }})</small>
+                  </span>
+                  <mat-icon matChipRemove>cancel</mat-icon>
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+
+            <!-- Attributs -->
+            <div class="form-field">
+              <label class="field-label">Attributs :</label>
+              
+              <!-- Listes d'attributs dynamiques -->
+              <div class="attributes-container">
+                <div class="attribute-select-row" *ngFor="let attributeSelect of attributeSelects; let i = index">
+                  <mat-form-field appearance="outline" class="field-select">
+                    <mat-select [value]="attributeSelect.selectedValue" 
+                               (selectionChange)="onAttributeSelectionChange(i, $event.value)"
+                               placeholder="Sélectionner un attribut">
+                      <mat-option *ngFor="let attribute of getAvailableAttributesForSelect(i)" [value]="attribute.id">
+                        {{ attribute.name }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <button mat-icon-button class="remove-button" 
+                          *ngIf="attributeSelects.length > 1"
+                          (click)="removeAttributeSelect(i)">
+                    <mat-icon>remove</mat-icon>
+                  </button>
+                </div>
+                
+                <!-- Bouton pour ajouter une nouvelle liste -->
+                <div class="add-attribute-row">
+                  <button mat-raised-button class="add-attribute-btn" (click)="addAttributeSelect()">
+                    <mat-icon>add</mat-icon>
+                    Ajouter un attribut
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Attributs sélectionnés (affichage) -->
+            <div class="selected-items" *ngIf="selectedAttributes.length > 0">
+              <mat-chip-set>
+                <mat-chip *ngFor="let attribute of selectedAttributes; let i = index" 
+                          (removed)="removeSelectedAttribute(i)">
+                  {{ attribute.name }}
+                  <mat-icon matChipRemove>cancel</mat-icon>
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- MAGASINS CIBLÉS -->
+    <div class="stores-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>store</mat-icon>
+            Magasins correspondants
+          </mat-card-title>
+          <mat-card-subtitle>
+            {{ getMatchingStoresCount() }} magasin(s) trouvé(s)
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stores-list">
+            <div class="store-item" *ngFor="let store of getMatchingStores()">
+              <mat-icon class="store-icon">store</mat-icon>
+              <span class="store-name">{{ store.name }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

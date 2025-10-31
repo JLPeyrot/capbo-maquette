@@ -109,7 +109,7 @@
             </button>
             <div class="submenu" [class.expanded]="expandedGroups.products">
               <mat-list-item class="submenu-item" (click)="navigateTo('articles')">
-                <mat-icon matListItemIcon>inventory</mat-icon>
+                <mat-icon matListItemIcon>inventory_2</mat-icon>
                 <div matListItemTitle>Articles</div>
               </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('pricing')">
@@ -130,6 +130,10 @@
               <mat-list-item class="submenu-item" (click)="navigateTo('create-assortments')">
                 <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
                 <div matListItemTitle>Création d'assortiments</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('trunk-management')">
+                <mat-icon matListItemIcon>manage_accounts</mat-icon>
+                <div matListItemTitle>Gestion des Troncs</div>
               </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('assortment-trunk')">
                 <mat-icon matListItemIcon>account_tree</mat-icon>
@@ -357,9 +361,9 @@
         </div>
       </div>
 
-      <!-- PAGE ARTICLES LIST (en mode focus) -->
-      <div *ngSwitchCase="'articles-list'" class="page-container">
-        <app-articles-list (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode"></app-articles-list>
+      <!-- PAGE ARTICLES -->
+      <div *ngSwitchCase="'articles'" class="page-container">
+        <app-articles-list></app-articles-list>
       </div>
 
       <!-- PAGE CREATE ARTICLE (en mode focus) -->
@@ -410,6 +414,26 @@
       <!-- PAGE TRUNK ASSORTMENTS -->
       <div *ngSwitchCase="'trunk-assortments'" class="page-container">
         <app-trunk-assortments></app-trunk-assortments>
+      </div>
+
+      <!-- PAGE CREATE TRUNK -->
+      <div *ngSwitchCase="'create-trunk'" class="page-container">
+        <app-create-trunk></app-create-trunk>
+      </div>
+
+      <!-- PAGE TRUNK MANAGEMENT -->
+      <div *ngSwitchCase="'trunk-management'" class="page-container">
+        <app-trunk-management></app-trunk-management>
+      </div>
+
+      <!-- PAGE TRUNK CONTROL -->
+      <div *ngSwitchCase="'trunk-control'" class="page-container">
+        <app-trunk-control></app-trunk-control>
+      </div>
+
+      <!-- PAGE DE DONNÉES -->
+      <div *ngSwitchCase="'data-page'" class="page-container">
+        <app-data-page></app-data-page>
       </div>
 
     </div>

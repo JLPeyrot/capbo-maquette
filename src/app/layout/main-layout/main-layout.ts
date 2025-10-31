@@ -20,6 +20,10 @@ import { CreateAssortmentsComponent } from '../../pages/create-assortments/creat
 import { EnrichmentAssortmentComponent } from '../../pages/enrichment-assortment/enrichment-assortment.component';
 import { TrunkAssortmentsComponent } from '../../pages/trunk-assortments/trunk-assortments.component';
 import { AlertPopupComponent, AlertData } from '../../shared/components/alert-popup/alert-popup.component';
+import { CreateTrunkComponent } from '../../pages/create-trunk/create-trunk.component';
+import { TrunkManagementComponent } from '../../pages/trunk-management/trunk-management.component';
+import { TrunkControlComponent } from '../../pages/trunk-control/trunk-control.component';
+import { DataPageComponent } from '../../pages/data-page/data-page.component';
 
 interface Notification {
   id: number;
@@ -48,7 +52,7 @@ interface ExpandedGroups {
     CommonModule, 
     MaterialModule, 
     FormsModule,
-    ArticlesListComponent,  // Import de la liste d'articles
+    ArticlesListComponent,  // Import du composant liste des articles
     CreateArticleComponent,  // AJOUT de l'import du composant création
     SuppliersComponent,
     AssortmentTrunkComponent,
@@ -59,6 +63,10 @@ interface ExpandedGroups {
     CreateAssortmentsComponent,
     EnrichmentAssortmentComponent,
     TrunkAssortmentsComponent,
+    CreateTrunkComponent,
+    TrunkManagementComponent,
+    TrunkControlComponent,
+    DataPageComponent,
     AlertPopupComponent  // NOUVEAU
   ],
   templateUrl: './main-layout.html',
@@ -84,7 +92,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   };
   
   // AJOUT : État de navigation
-  currentView: 'dashboard' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'assortment-trunk' | 'reception-trunk' | 'trunk-selection' | 'add-assortments' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' = 'dashboard';
+  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'assortment-trunk' | 'reception-trunk' | 'trunk-selection' | 'add-assortments' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'data-page' = 'dashboard';
   
   // NOUVEAU : Mode focus
   isFocusMode: boolean = false;
@@ -97,7 +105,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   searchQuery: string = '';
   selectedStore: string = 'store1';
   selectedLanguage: string = 'fr';
-  userName: string = 'Sébastien';
+  userName: string = 'Lukas';
   notificationCount: number = 5;
 
   // NOUVEAU : Gestion du popup d'alerte
@@ -246,6 +254,21 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     } else if (url.includes('/enrichment-assortment')) {
       this.currentView = 'enrichment-assortment';
       this.isFocusMode = false;
+    } else if (url.includes('/create-trunk')) {
+      this.currentView = 'create-trunk';
+      this.isFocusMode = true;
+    } else if (url.includes('/trunk-management')) {
+      this.currentView = 'trunk-management';
+      this.isFocusMode = false;
+    } else if (url.includes('/trunk-control')) {
+      this.currentView = 'trunk-control';
+      this.isFocusMode = false;
+    } else if (url.includes('/data-page')) {
+      this.currentView = 'data-page';
+      this.isFocusMode = false;
+    } else if (url.includes('/articles')) {
+      this.currentView = 'articles';
+      this.isFocusMode = false;
     } else if (url.includes('/create-article')) {
       this.currentView = 'create-article';
       this.isFocusMode = true;
@@ -294,8 +317,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     // Gestion des différentes routes
     switch (route) {
       case 'articles':
-        this.currentView = 'articles-list';
-        this.isFocusMode = true; // MODIFIÉ : Liste en mode focus maintenant
+        this.currentView = 'articles';
+        this.isFocusMode = false;
         break;
       case 'create-article':
         this.currentView = 'create-article';
@@ -331,6 +354,18 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         break;
       case 'enrichment-assortment':
         this.currentView = 'enrichment-assortment';
+        this.isFocusMode = false;
+        break;
+      case 'create-trunk':
+        this.currentView = 'create-trunk';
+        this.isFocusMode = true;
+        break;
+      case 'trunk-management':
+        this.currentView = 'trunk-management';
+        this.isFocusMode = false;
+        break;
+      case 'data-page':
+        this.currentView = 'data-page';
         this.isFocusMode = false;
         break;
       case 'dashboard':

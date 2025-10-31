@@ -1,0 +1,52 @@
+{
+  "groupes": [
+    {
+      "code_groupe": "ZONE_GEO",
+      "libelle_groupe": "Zone géographique",
+      "valeurs": [
+        "NORD",
+        "SUD",
+        "EST",
+        "OUEST",
+        "CENTRE"
+      ]
+    },
+    {
+      "code_groupe": "TYPE",
+      "libelle_groupe": "Type d'environnement",
+      "valeurs": [
+        "URBAIN",
+        "PERIURBAIN",
+        "RURAL"
+      ]
+    },
+    {
+      "code_groupe": "SPEC",
+      "libelle_groupe": "Spécificité régionale",
+      "valeurs": [
+        "MONTAGNE",
+        "LITTORAL",
+        "FRONTIÈRE"
+      ]
+    },
+    {
+      "code_groupe": "CONTEXT_OP",
+      "libelle_groupe": "Contexte opérationnel",
+      "valeurs": [
+        "ZONE TOURISTIQUE",
+        "ZONE ÉTUDIANTE",
+        "ZONE À FORTE FRÉQUENTATION"
+      ]
+    },
+    {
+      "code_groupe": "STATUT_MAG",
+      "libelle_groupe": "Statut du magasin",
+      "valeurs": [
+        "INTÉGRÉ",
+        "FRANCHISÉ",
+        "AFFILIÉ",
+        "PILOTE"
+      ]
+    }
+  ]
+}
