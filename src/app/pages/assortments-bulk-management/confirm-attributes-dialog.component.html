@@ -1,0 +1,19 @@
+<h2 mat-dialog-title>Validation des modifications</h2>
+
+<div mat-dialog-content class="confirm-content">
+  <div class="warning-row">
+    <mat-icon class="warning-icon">warning_amber</mat-icon>
+    <span class="warning-text">
+      Vous êtes sur le point de
+      {{ data.mode === 'remove_all' ? 'supprimer tous les attributs' : (data.mode === 'remove' ? 'supprimer' : 'modifier') }}
+      <ng-container *ngIf="data.mode !== 'remove_all'">{{ data.attributesCount }} attributs</ng-container>
+      sur {{ data.articlesCount }} articles
+    </span>
+  </div>
+  <p class="hint-text">Cette action affectera les assortiments sélectionnés. Confirmez pour continuer.</p>
+</div>
+
+<div mat-dialog-actions align="end" class="confirm-actions">
+  <button mat-stroked-button (click)="onCancel()">Annuler</button>
+  <button mat-raised-button color="primary" (click)="onConfirm()">Confirmer</button>
+</div>

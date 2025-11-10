@@ -67,6 +67,10 @@ export const routes: Routes = [
     component: MainLayoutComponent
   },
   {
+    path: 'assortments-bulk',
+    component: MainLayoutComponent
+  },
+  {
     path: 'articles',
     component: MainLayoutComponent
   },

@@ -5,14 +5,16 @@
       "libelle": "Lave-linge Samsung 9kg Inox",
       "univers": "Électroménager",
       "famille": "Lavage",
-      "sousFamille": "Lave-linge"
+      "sousFamille": "Lave-linge",
+      "trunkId": "4"
     },
     {
       "code": "ART0002",
       "libelle": "Sèche-linge Bosch condensation",
       "univers": "Électroménager",
       "famille": "Lavage",
-      "sousFamille": "Sèche-linge"
+      "sousFamille": "Sèche-linge",
+      "trunkId": "4"
     },
     {
       "code": "ART0003",
@@ -299,42 +301,57 @@
       "libelle": "Robot pâtissier Kenwood Chef XL",
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
-      "sousFamille": "Robots multifonctions"
+      "sousFamille": "Robots multifonctions",
+      "trunkId": "4"
     },
     {
       "code": "ART0044",
       "libelle": "Blender Philips ProBlend 6",
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
-      "sousFamille": "Blenders"
+      "sousFamille": "Blenders",
+      "trunkId": "4"
     },
     {
       "code": "ART0045",
       "libelle": "Mixeur plongeant Bosch ErgoMixx",
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
-      "sousFamille": "Batteurs & mixeurs"
+      "sousFamille": "Batteurs & mixeurs",
+      "trunkId": "4"
     },
     {
       "code": "ART0046",
       "libelle": "Appareil à raclette Tefal 8 pers",
       "univers": "Cuisine",
       "famille": "Cuisson conviviale",
-      "sousFamille": "Raclettes & fondues"
+      "sousFamille": "Raclettes & fondues",
+      "trunkId": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0047",
       "libelle": "Plancha électrique Krampouz",
       "univers": "Cuisine",
       "famille": "Cuisson conviviale",
-      "sousFamille": "Plancha"
+      "sousFamille": "Plancha",
+      "trunkId": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0048",
       "libelle": "Multicuiseur Moulinex Cookeo",
       "univers": "Cuisine",
       "famille": "Cuisson conviviale",
-      "sousFamille": "Multicuiseurs"
+      "sousFamille": "Multicuiseurs",
+      "trunkId": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0049",
@@ -649,42 +666,57 @@
       "libelle": "Robot multifonction Magimix 5200",
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
-      "sousFamille": "Robots multifonctions"
+      "sousFamille": "Robots multifonctions",
+      "trunkId": "4"
     },
     {
       "code": "ART0094",
       "libelle": "Blender Kenwood BLP900",
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
-      "sousFamille": "Blenders"
+      "sousFamille": "Blenders",
+      "trunkId": "4"
     },
     {
       "code": "ART0095",
       "libelle": "Batteur électrique Braun MultiMix",
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
-      "sousFamille": "Batteurs & mixeurs"
+      "sousFamille": "Batteurs & mixeurs",
+      "trunkId": "4"
     },
     {
       "code": "ART0096",
       "libelle": "Appareil à fondue Tefal 6 pers",
       "univers": "Cuisine",
       "famille": "Cuisson conviviale",
-      "sousFamille": "Raclettes & fondues"
+      "sousFamille": "Raclettes & fondues",
+      "trunkId": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0097",
       "libelle": "Plancha Tepro",
       "univers": "Cuisine",
       "famille": "Cuisson conviviale",
-      "sousFamille": "Plancha"
+      "sousFamille": "Plancha",
+      "trunkId": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0098",
       "libelle": "Multicuiseur Philips Viva",
       "univers": "Cuisine",
       "famille": "Cuisson conviviale",
-      "sousFamille": "Multicuiseurs"
+      "sousFamille": "Multicuiseurs",
+      "trunkId": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0099",
@@ -999,42 +1031,57 @@
       "libelle": "Robot pâtissier Kenwood Chef Titanium",
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
-      "sousFamille": "Robots multifonctions"
+      "sousFamille": "Robots multifonctions",
+      "trunkId": "4"
     },
     {
       "code": "ART0144",
       "libelle": "Blender Kenwood Blend-X Pro",
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
-      "sousFamille": "Blenders"
+      "sousFamille": "Blenders",
+      "trunkId": "4"
     },
     {
       "code": "ART0145",
       "libelle": "Mixeur plongeant Philips Daily Collection",
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
-      "sousFamille": "Batteurs & mixeurs"
+      "sousFamille": "Batteurs & mixeurs",
+      "trunkId": "4"
     },
     {
       "code": "ART0146",
       "libelle": "Appareil à raclette Tefal 10 pers",
       "univers": "Cuisine",
       "famille": "Cuisson conviviale",
-      "sousFamille": "Raclettes & fondues"
+      "sousFamille": "Raclettes & fondues",
+      "trunkId": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0147",
       "libelle": "Plancha électrique Princess",
       "univers": "Cuisine",
       "famille": "Cuisson conviviale",
-      "sousFamille": "Plancha"
+      "sousFamille": "Plancha",
+      "trunkId": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0148",
       "libelle": "Multicuiseur Moulinex Cookeo Touch",
       "univers": "Cuisine",
       "famille": "Cuisson conviviale",
-      "sousFamille": "Multicuiseurs"
+      "sousFamille": "Multicuiseurs",
+      "trunkId": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0149",

@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>Confirmer l’ajout au tronc</h2>
+
+<div mat-dialog-content class="dialog-content">
+  <p>
+    {{ data.selectedCount }} élément{{ data.selectedCount > 1 ? 's' : '' }} vont être ajouté{{ data.selectedCount > 1 ? 's' : '' }}
+    au tronc « {{ data.trunkName }} »
+    <span *ngIf="data.trunkType">({{ data.trunkType }})</span>
+    de niveau {{ data.level }}
+    <span *ngIf="data.levelLabel">(<em>{{ data.levelLabel }}</em>)</span>.
+  </p>
+</div>
+
+<div mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button (click)="onCancel()">Annuler</button>
+  <button mat-raised-button color="primary" class="orange-action" (click)="onConfirm()">Valider</button>
+></div>

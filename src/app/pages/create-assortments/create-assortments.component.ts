@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TrunksService, TrunkOption } from '../../services/trunks.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -71,11 +72,7 @@ export class CreateAssortmentsComponent implements OnInit {
   // Options pour les filtres
   fournisseurs: string[] = ['Fournisseur A', 'Fournisseur B', 'Fournisseur C'];
   familles: string[] = ['Électronique', 'Textile', 'Alimentaire', 'Cosmétique'];
-  trunks: any[] = [
-    { id: 'TAN001', name: 'Tronc Alimentaire Nord' },
-    { id: 'TAC002', name: 'Tronc Alimentaire Centre' },
-    { id: 'TEN003', name: 'Tronc Électronique Nord' }
-  ];
+  trunks: TrunkOption[] = [];
 
   // État du panneau d'action
   showActionPanel = false;
@@ -84,7 +81,8 @@ export class CreateAssortmentsComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private trunksService: TrunksService
   ) {
     this.searchForm = this.fb.group({
       searchTerm: [''],
@@ -97,6 +95,9 @@ export class CreateAssortmentsComponent implements OnInit {
   ngOnInit(): void {
     this.loadArticles();
     this.setupFormSubscriptions();
+    this.trunksService.getTrunkOptions().subscribe(options => {
+      this.trunks = options;
+    });
   }
 
   private loadArticles(): void {

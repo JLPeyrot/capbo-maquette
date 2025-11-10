@@ -21,7 +21,7 @@ interface Article {
 })
 export class ReceptionTrunkComponent implements OnInit {
   
-  selectedTab: string = 'ferme';
+  selectedTab: 'ferme' | 'mixte' | 'ouvert' = 'ferme';
   selectedTabIndex: number = 0;
   filterText: string = '';
   displayedColumns: string[] = ['checkbox', 'reference', 'libelle', 'famille'];
@@ -99,7 +99,7 @@ export class ReceptionTrunkComponent implements OnInit {
       );
   }
 
-  selectTab(tab: string): void {
+  selectTab(tab: 'ferme' | 'mixte' | 'ouvert'): void {
     this.selectedTab = tab;
   }
 
@@ -138,7 +138,7 @@ export class ReceptionTrunkComponent implements OnInit {
   }
 
   onTabChange(event: any): void {
-    const tabs = ['ferme', 'mixte', 'ouvert'];
+    const tabs: Array<'ferme' | 'mixte' | 'ouvert'> = ['ferme', 'mixte', 'ouvert'];
     this.selectedTab = tabs[event.index];
     this.selectedTabIndex = event.index;
   }
@@ -160,6 +160,11 @@ export class ReceptionTrunkComponent implements OnInit {
 
   getTotalSelectedCount(): number {
     return this.articles.filter(article => article.checked).length;
+  }
+
+  // Nombre d'articles sélectionnés par onglet
+  getSelectedCountByTab(tab: 'ferme' | 'mixte' | 'ouvert'): number {
+    return this.articles.filter(article => article.type === tab && article.checked).length;
   }
 
   masterToggle(): void {

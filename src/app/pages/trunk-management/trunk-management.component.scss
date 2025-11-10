@@ -513,15 +513,27 @@
     .mat-mdc-chip {
       font-size: 12px;
       height: 28px;
+      border-radius: 10px;
+      background-color: #ffffff; /* fond blanc pour meilleure lisibilité */
+      border: 1px solid #e2e8f0; /* gris clair */
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 0 10px;
+      box-shadow: 0 1px 0 rgba(17, 24, 39, 0.06);
       
       &.group-chip {
-        background-color: #e3f2fd;
-        color: #1976d2;
+        background-color: #ffffff; /* blanc */
+        border-color: #cfe3fb; /* bord bleu/gris léger */
+        color: #1f4b99; /* bleu foncé lisible */
+        &:hover { background-color: #f5f9ff; }
       }
       
       &.attribute-chip {
-        background-color: #f3e5f5;
-        color: #7b1fa2;
+        background-color: #ffffff; /* blanc */
+        border-color: #dccff0; /* bord violet/gris léger */
+        color: #6b21a8; /* violet lisible */
+        &:hover { background-color: #f8f4ff; }
       }
     }
   }

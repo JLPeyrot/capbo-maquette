@@ -24,6 +24,7 @@ import { CreateTrunkComponent } from '../../pages/create-trunk/create-trunk.comp
 import { TrunkManagementComponent } from '../../pages/trunk-management/trunk-management.component';
 import { TrunkControlComponent } from '../../pages/trunk-control/trunk-control.component';
 import { DataPageComponent } from '../../pages/data-page/data-page.component';
+import { AssortmentsBulkManagementComponent } from '../../pages/assortments-bulk-management/assortments-bulk-management.component';
 
 interface Notification {
   id: number;
@@ -45,30 +46,31 @@ interface ExpandedGroups {
   admin: boolean;
 }
 
-@Component({
-  selector: 'app-main-layout',
-  standalone: true,
-  imports: [
-    CommonModule, 
-    MaterialModule, 
-    FormsModule,
-    ArticlesListComponent,  // Import du composant liste des articles
-    CreateArticleComponent,  // AJOUT de l'import du composant création
-    SuppliersComponent,
-    AssortmentTrunkComponent,
-    ReceptionTrunkComponent,
-    AddAssortmentsComponent,  // Import du composant ajout assortiments
-    TrunkSelectionComponent,  // Import du composant sélection de tronc
-    TrunkListComponent,  // Import du composant liste des troncs
-    CreateAssortmentsComponent,
-    EnrichmentAssortmentComponent,
-    TrunkAssortmentsComponent,
-    CreateTrunkComponent,
-    TrunkManagementComponent,
-    TrunkControlComponent,
-    DataPageComponent,
-    AlertPopupComponent  // NOUVEAU
-  ],
+  @Component({
+    selector: 'app-main-layout',
+    standalone: true,
+    imports: [
+      CommonModule, 
+      MaterialModule, 
+      FormsModule,
+      ArticlesListComponent,  // Import du composant liste des articles
+      CreateArticleComponent,  // AJOUT de l'import du composant création
+      SuppliersComponent,
+      AssortmentTrunkComponent,
+      ReceptionTrunkComponent,
+      AddAssortmentsComponent,  // Import du composant ajout assortiments
+      TrunkSelectionComponent,  // Import du composant sélection de tronc
+      TrunkListComponent,  // Import du composant liste des troncs
+      CreateAssortmentsComponent,
+      EnrichmentAssortmentComponent,
+      TrunkAssortmentsComponent,
+      CreateTrunkComponent,
+      TrunkManagementComponent,
+      TrunkControlComponent,
+      DataPageComponent,
+      AssortmentsBulkManagementComponent,
+      AlertPopupComponent  // NOUVEAU
+    ],
   templateUrl: './main-layout.html',
   styleUrls: ['./main-layout.scss']
 })
@@ -92,7 +94,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   };
   
   // AJOUT : État de navigation
-  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'assortment-trunk' | 'reception-trunk' | 'trunk-selection' | 'add-assortments' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'data-page' = 'dashboard';
+  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'assortment-trunk' | 'reception-trunk' | 'trunk-selection' | 'add-assortments' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'assortments-bulk-management' | 'data-page' = 'dashboard';
   
   // NOUVEAU : Mode focus
   isFocusMode: boolean = false;
@@ -266,6 +268,9 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     } else if (url.includes('/data-page')) {
       this.currentView = 'data-page';
       this.isFocusMode = false;
+    } else if (url.includes('/assortments-bulk')) {
+      this.currentView = 'assortments-bulk-management';
+      this.isFocusMode = false;
     } else if (url.includes('/articles')) {
       this.currentView = 'articles';
       this.isFocusMode = false;
@@ -366,6 +371,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         break;
       case 'data-page':
         this.currentView = 'data-page';
+        this.isFocusMode = false;
+        break;
+      case 'assortments-bulk':
+        this.currentView = 'assortments-bulk-management';
         this.isFocusMode = false;
         break;
       case 'dashboard':

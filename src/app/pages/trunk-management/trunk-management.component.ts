@@ -4,6 +4,9 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angul
 import { MaterialModule } from '../../shared/material-module';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { TrunksService } from '../../services/trunks.service';
+import { ArticlesService, Article } from '../../services/articles.service';
+import { combineLatest } from 'rxjs';
 
 interface Trunk {
   id: string;
@@ -29,81 +32,8 @@ export class TrunkManagementComponent implements OnInit {
   
   searchForm: FormGroup;
   
-  // Données de démonstration
-  trunks: Trunk[] = [
-    {
-      id: '1',
-      name: 'Tronc Atelier Urbain',
-      type: 'TAC',
-      status: 'actif',
-      articlesCount: 145,
-      storesCount: 12,
-      createdDate: new Date('2024-01-15'),
-      lastModified: new Date('2024-12-20'),
-      groups: ['URBAIN', 'ZONE À FORTE FRÉQUENTATION', 'PILOTE'],
-      attributes: ['ATELIER_REPARATION']
-    },
-    {
-      id: '2',
-      name: 'Tronc Gaming',
-      type: 'TAC',
-      status: 'actif',
-      articlesCount: 89,
-      storesCount: 8,
-      createdDate: new Date('2024-02-10'),
-      lastModified: new Date('2024-12-18'),
-      groups: ['URBAIN', 'PERIURBAIN', 'ZONE ÉTUDIANTE'],
-      attributes: ['EXPERTISE_GAMING']
-    },
-    {
-      id: '3',
-      name: 'Tronc Cinema Ouest',
-      type: 'TAC',
-      status: 'actif',
-      articlesCount: 67,
-      storesCount: 6,
-      createdDate: new Date('2024-03-05'),
-      lastModified: new Date('2024-12-15'),
-      groups: ['OUEST', 'LITTORAL'],
-      attributes: ['EXPERTISE_CINEMA']
-    },
-    {
-      id: '4',
-      name: 'Tronc Services Centre',
-      type: 'TAC',
-      status: 'actif',
-      articlesCount: 123,
-      storesCount: 15,
-      createdDate: new Date('2024-04-12'),
-      lastModified: new Date('2024-12-10'),
-      groups: ['URBAIN', 'PERIURBAIN', 'RURAL', 'ZONE TOURISTIQUE'],
-      attributes: ['B2B', 'RETRAIT_1H']
-    },
-    {
-      id: '5',
-      name: 'Tronc Cuisine Nord',
-      type: 'TAC',
-      status: 'actif',
-      articlesCount: 78,
-      storesCount: 9,
-      createdDate: new Date('2024-05-20'),
-      lastModified: new Date('2024-12-08'),
-      groups: ['NORD', 'PERIURBAIN', 'ZONE À FORTE FRÉQUENTATION'],
-      attributes: ['CUISINE_PRO']
-    },
-    {
-      id: '6',
-      name: 'Tronc National',
-      type: 'TAN',
-      status: 'actif',
-      articlesCount: 0,
-      storesCount: 0,
-      createdDate: new Date('2024-06-01'),
-      lastModified: new Date('2024-12-22'),
-      groups: [],
-      attributes: []
-    }
-  ];
+  // Données des troncs (chargées depuis troncs.json)
+  trunks: Trunk[] = [];
 
   filteredTrunks: Trunk[] = [];
   
@@ -133,7 +63,9 @@ export class TrunkManagementComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private trunksService: TrunksService,
+    private articlesService: ArticlesService
   ) {
     this.searchForm = this.fb.group({
       searchTerm: [''],
@@ -143,13 +75,34 @@ export class TrunkManagementComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.filteredTrunks = [...this.trunks];
-    this.calculateStats();
-    
+    // Charger les troncs et les articles pour calculer le nombre réel d'articles rattachés
+    combineLatest([
+      this.trunksService.getTrunks(),
+      this.articlesService.getArticles()
+    ]).subscribe(([trunks, articles]) => {
+      const countsByTrunk = this.computeArticlesCountByTrunk(articles);
+      const updatedTrunks = trunks.map(t => ({
+        ...t,
+        articlesCount: countsByTrunk.get(t.id) || 0
+      }));
+      this.trunks = updatedTrunks as any;
+      this.filteredTrunks = [...this.trunks];
+      this.calculateStats();
+    });
+
     // Écouter les changements du formulaire de recherche
     this.searchForm.valueChanges.subscribe(() => {
       this.applyFilters();
     });
+  }
+
+  private computeArticlesCountByTrunk(articles: Article[]): Map<string, number> {
+    const counts = new Map<string, number>();
+    for (const a of articles) {
+      if (!a.trunkId) continue;
+      counts.set(a.trunkId, (counts.get(a.trunkId) || 0) + 1);
+    }
+    return counts;
   }
 
   calculateStats(): void {

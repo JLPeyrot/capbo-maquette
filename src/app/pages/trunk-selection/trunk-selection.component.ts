@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../shared/material-module';
 import { Router } from '@angular/router';
+import { TrunksService } from '../../services/trunks.service';
 
 interface Trunk {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   createdDate: Date;
   isNew?: boolean; // Pour identifier les nouveaux troncs créés
 }
@@ -33,14 +34,8 @@ export class TrunkSelectionComponent implements OnInit {
   trunkInput: string = '';
   filteredTrunks: Trunk[] = [];
 
-  // Données simulées des troncs existants
-  availableTrunks: Trunk[] = [
-    { id: '1', name: 'TAC MONTAGNE 2025', description: 'Tronc assortiment montagne', createdDate: new Date('2024-01-15') },
-    { id: '2', name: 'TAC URBAIN 2025', description: 'Tronc assortiment urbain', createdDate: new Date('2024-02-01') },
-    { id: '3', name: 'TAC ÉTÉ 2025', description: 'Tronc assortiment été', createdDate: new Date('2024-03-10') },
-    { id: '4', name: 'TAC SPORT 2025', description: 'Tronc assortiment sport', createdDate: new Date('2024-01-20') },
-    { id: '5', name: 'TAC CASUAL 2025', description: 'Tronc assortiment casual', createdDate: new Date('2024-02-15') }
-  ];
+  // Troncs existants (chargés via service)
+  availableTrunks: Trunk[] = [];
 
   // Niveaux de tronc disponibles
   trunkLevels: TrunkLevel[] = [
@@ -51,10 +46,19 @@ export class TrunkSelectionComponent implements OnInit {
     { id: 5, name: 'geant', label: '5 - Géant' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private trunksService: TrunksService) {}
 
   ngOnInit(): void {
-    this.filteredTrunks = [...this.availableTrunks];
+    this.trunksService.getTrunks().subscribe(items => {
+      // Adapter au format local (description optionnelle)
+      this.availableTrunks = items.map(i => ({
+        id: i.id,
+        name: i.name,
+        createdDate: i.createdDate,
+        description: undefined
+      }));
+      this.filteredTrunks = [...this.availableTrunks];
+    });
   }
 
   // Méthodes pour la recherche et filtrage
@@ -65,9 +69,9 @@ export class TrunkSelectionComponent implements OnInit {
     } else {
       this.filteredTrunks = this.availableTrunks.filter(trunk =>
         trunk.name.toLowerCase().includes(query) ||
-        trunk.description.toLowerCase().includes(query)
+        (trunk.description || '').toLowerCase().includes(query)
       );
-    }
+  }
   }
 
   // Méthode pour afficher le tronc sélectionné dans l'input

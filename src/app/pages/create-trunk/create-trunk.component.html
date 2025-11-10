@@ -45,30 +45,6 @@
               </div>
             </div>
 
-            <!-- Type de tronc -->
-            <div class="form-field">
-              <label class="field-label">Type de tronc :</label>
-              <div class="field-input">
-                <mat-form-field appearance="outline">
-                  <mat-select formControlName="selectedTrunkType" placeholder="Sélectionner un type">
-                    <mat-option *ngFor="let type of trunkTypes" [value]="type.id">
-                      {{ type.name }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-            </div>
-
-            <!-- Niveau -->
-            <div class="form-field">
-              <label class="field-label">Niveau :</label>
-              <div class="field-input">
-                <mat-form-field appearance="outline">
-                  <input matInput formControlName="level" placeholder="Niveau" type="number">
-                </mat-form-field>
-              </div>
-            </div>
-
             <!-- Groupes -->
             <div class="form-field">
               <label class="field-label">Groupes :</label>
@@ -155,22 +131,12 @@
     <!-- MAGASINS CIBLÉS -->
     <div class="stores-card">
       <mat-card>
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>store</mat-icon>
-            Magasins correspondants
-          </mat-card-title>
-          <mat-card-subtitle>
-            {{ getMatchingStoresCount() }} magasin(s) trouvé(s)
-          </mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="stores-list">
-            <div class="store-item" *ngFor="let store of getMatchingStores()">
-              <mat-icon class="store-icon">store</mat-icon>
-              <span class="store-name">{{ store.name }}</span>
-            </div>
+        <mat-card-content class="stores-content">
+          <div class="stores-title">Magasin(s) ciblé(s) :</div>
+          <div class="stores-box">
+            <div class="store-line" *ngFor="let store of getMatchingStores()">{{ store.name }}</div>
           </div>
+          <div class="stores-count">{{ getMatchingStoresCount() }}</div>
         </mat-card-content>
       </mat-card>
     </div>

@@ -6,8 +6,15 @@ import { TreeViewComponent } from '../../components/tree-view/tree-view.componen
 import { TrunkHierarchyNode, TreeViewConfig, TreeNodeAction } from '../../interfaces/trunk-hierarchy.interface';
 import { ArticlesService, Article } from '../../services/articles.service';
 import { ActivatedRoute } from '@angular/router';
+import { TrunksService, TrunkOption } from '../../services/trunks.service';
+import { combineLatest } from 'rxjs';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
+import { AddToTrunkDialogComponent } from '../assortments-bulk-management/add-to-trunk-dialog.component';
+import { ConfirmAddToTrunkDialogComponent } from '../assortments-bulk-management/confirm-add-to-trunk-dialog.component';
+import { EditAttributesDialogComponent } from '../assortments-bulk-management/edit-attributes-dialog.component';
+import { ConfirmAttributesDialogComponent } from '../assortments-bulk-management/confirm-attributes-dialog.component';
 
 @Component({
   selector: 'app-trunk-control',
@@ -31,6 +38,11 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   selectAll: boolean = false;
   viewMode: 'list' | 'grid' = 'grid'; // Mode d'affichage par défaut
   trunkName: string = 'TRONC ACTUEL'; // Nom du tronc, par défaut "TRONC ACTUEL"
+  trunkId?: string; // Identifiant du tronc sélectionné
+  // Interface bulk: flags et mapping
+  showAssignedOnly: boolean = false;
+  showOnlyAssigned: boolean = false;
+  trunkNameById: Record<string, string> = {};
 
   treeConfig: TreeViewConfig = {
     showIcons: true,
@@ -43,7 +55,9 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
 
   constructor(
     private articlesService: ArticlesService,
-    private route: ActivatedRoute
+    private trunksService: TrunksService,
+    private route: ActivatedRoute,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -56,8 +70,16 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
       }
     });
     
-    this.loadHierarchy();
-    this.loadAllArticles();
+    this.initTrunkData();
+
+    // Charger le mapping des noms de troncs pour affichage des pills
+    this.trunksService.getTrunkOptions()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((options: TrunkOption[]) => {
+        const map: Record<string, string> = {};
+        options.forEach(opt => { map[opt.id] = opt.name; });
+        this.trunkNameById = map;
+      });
   }
 
   ngOnDestroy(): void {
@@ -66,28 +88,113 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Charge la hiérarchie des rayons
+   * Initialise les données du tronc: identifiant, articles filtrés et hiérarchie dérivée
    */
-  private loadHierarchy(): void {
-    this.articlesService.getHierarchy()
+  private initTrunkData(): void {
+    combineLatest([
+      this.trunksService.getTrunks(),
+      this.articlesService.getArticles()
+    ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(hierarchy => {
-        this.hierarchyNodes = hierarchy;
+      .subscribe(([trunks, articles]) => {
+        // Trouver le tronc par nom (insensible à la casse)
+        const match = trunks.find(t => t.name.toLowerCase() === this.trunkName.toLowerCase());
+        this.trunkId = match?.id;
+
+        // Filtrer les articles rattachés à ce tronc (si trouvé), sinon aucun
+        const trunkArticles = this.trunkId 
+          ? articles.filter(a => a.trunkId === this.trunkId)
+          : [];
+
+        // Mettre à jour les listes d'articles
+        this.allArticles = trunkArticles;
+        this.filteredArticles = [...trunkArticles];
+
+        // Construire la hiérarchie dérivée basée sur les articles du tronc
+        this.hierarchyNodes = this.buildHierarchyFor(this.allArticles, this.trunkName);
         this.isLoading = false;
+        this.updateSelectAllState();
       });
   }
 
   /**
-   * Charge tous les articles au démarrage
+   * Construit une hiérarchie à partir d'une liste d'articles et d'un nom de tronc
    */
-  private loadAllArticles(): void {
-    this.articlesService.getArticles()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(articles => {
-        this.allArticles = articles;
-        this.filteredArticles = [...articles]; // Afficher tous les articles par défaut
-        this.updateSelectAllState();
+  private buildHierarchyFor(articles: Article[], trunkDisplayName: string): TrunkHierarchyNode[] {
+    const hierarchy: TrunkHierarchyNode[] = [];
+
+    const trunkRoot: TrunkHierarchyNode = {
+      id: 'trunk-root',
+      name: trunkDisplayName,
+      type: 'trunk',
+      level: 0,
+      children: []
+    };
+
+    const universByName = new Map<string, Article[]>();
+    for (const a of articles) {
+      const key = a.univers || '';
+      universByName.set(key, [...(universByName.get(key) || []), a]);
+    }
+
+    universByName.forEach((universArticles, universName) => {
+      const universNode: TrunkHierarchyNode = {
+        id: `univers-${universName.toLowerCase().replace(/\s+/g, '-')}`,
+        name: universName,
+        type: 'department',
+        level: 1,
+        articlesCount: universArticles.length,
+        children: []
+      };
+
+      const famillesByName = new Map<string, Article[]>();
+      for (const a of universArticles) {
+        const key = a.famille || '';
+        famillesByName.set(key, [...(famillesByName.get(key) || []), a]);
+      }
+
+      famillesByName.forEach((familleArticles, familleName) => {
+        const familleNode: TrunkHierarchyNode = {
+          id: `famille-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}`,
+          name: familleName,
+          type: 'family',
+          level: 2,
+          articlesCount: familleArticles.length,
+          children: []
+        };
+
+        const sousFamillesByName = new Map<string, Article[]>();
+        for (const a of familleArticles) {
+          const key = a.sousFamille || '';
+          sousFamillesByName.set(key, [...(sousFamillesByName.get(key) || []), a]);
+        }
+
+        sousFamillesByName.forEach((sousFamilleArticles, sousFamilleName) => {
+          const sousFamilleNode: TrunkHierarchyNode = {
+            id: `sous-famille-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}-${sousFamilleName.toLowerCase().replace(/\s+/g, '-')}`,
+            name: sousFamilleName,
+            type: 'sub-family',
+            level: 3,
+            articlesCount: sousFamilleArticles.length
+          };
+          familleNode.children!.push(sousFamilleNode);
+        });
+
+        // Trier les sous-familles
+        familleNode.children!.sort((a, b) => a.name.localeCompare(b.name));
+        universNode.children!.push(familleNode);
       });
+
+      // Trier les familles
+      universNode.children!.sort((a, b) => a.name.localeCompare(b.name));
+      trunkRoot.children!.push(universNode);
+    });
+
+    // Trier les univers
+    trunkRoot.children!.sort((a, b) => a.name.localeCompare(b.name));
+
+    hierarchy.push(trunkRoot);
+    return hierarchy;
   }
 
   /**
@@ -253,6 +360,42 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Met à jour la liste filtrée (arborescence + recherche) pour l'interface bulk
+   * Dans le contexte tronc, allArticles est déjà limité au tronc courant.
+   */
+  private updateFilteredArticles(): void {
+    // Base: filtre hiérarchique
+    const base = this.getFilteredArticlesByHierarchy();
+    const term = this.searchQuery.trim().toLowerCase();
+    if (!term) {
+      this.filteredArticles = base;
+    } else {
+      this.filteredArticles = base.filter(a =>
+        a.libelle.toLowerCase().includes(term) ||
+        a.code.toLowerCase().includes(term) ||
+        a.univers.toLowerCase().includes(term) ||
+        a.famille.toLowerCase().includes(term) ||
+        (a.sousFamille || '').toLowerCase().includes(term)
+      );
+    }
+    this.updateSelectAllState();
+  }
+
+  applySearch(): void {
+    this.updateFilteredArticles();
+  }
+
+  toggleShowAssignedOnly(): void {
+    // Sans effet ici (déjà sur un tronc), mais nécessaire pour la parité UI
+    this.updateFilteredArticles();
+  }
+
+  toggleShowOnlyAssigned(): void {
+    // Sans effet ici (déjà sur un tronc), mais nécessaire pour la parité UI
+    this.updateFilteredArticles();
+  }
+
+  /**
    * Obtient les articles filtrés par la hiérarchie (sans la recherche textuelle)
    */
   private getFilteredArticlesByHierarchy(): Article[] {
@@ -333,6 +476,12 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Interface bulk: bascule sélection globale
+  toggleSelectAll(): void {
+    this.onSelectAll(!this.selectAll);
+    this.updateSelectAllState();
+  }
+
   /**
    * Met à jour l'état du checkbox "Tout sélectionner"
    */
@@ -347,7 +496,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
    * Retourne le nombre d'articles sélectionnés
    */
   getSelectedCount(): number {
-    return this.selectedArticles.size;
+    // Parité avec bulk: compter seulement les visibles sélectionnés
+    return this.filteredArticles.filter(a => this.selectedArticles.has(a.code)).length;
   }
 
   /**
@@ -469,8 +619,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   getSelectedCountForNode(node: TrunkHierarchyNode): number {
     switch (node.type) {
       case 'trunk':
-        // Pour le nœud racine "TRONC ACTUEL", retourner le total des articles sélectionnés
-        return this.selectedArticles.size;
+        // Pour le nœud racine, retourner le total des visibles sélectionnés
+        return this.getSelectedCount();
       case 'sub-family':
         return this.getSelectedCountForSousFamille(node.name);
       case 'family':
@@ -480,5 +630,170 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
       default:
         return 0;
     }
+  }
+
+  /**
+   * Actions de la sidebar droite (parité avec l'interface bulk)
+   */
+  onAddToTrunk(): void {
+    const dialogRef = this.dialog.open(AddToTrunkDialogComponent, {
+      width: '460px',
+      data: { selectedCount: this.selectedArticles.size }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const { trunkId, trunkName, trunkType, level, levelLabel } = result;
+        const selectedCount = this.getSelectedCount();
+        this.dialog.open(ConfirmAddToTrunkDialogComponent, {
+          width: '520px',
+          data: { selectedCount, trunkName, trunkType, level, levelLabel }
+        }).afterClosed().subscribe(confirmed => {
+          if (confirmed) {
+            const articleCodes = Array.from(this.selectedArticles);
+            this.articlesService.assignArticlesToTrunk(articleCodes, trunkId)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: (result) => {
+                  this.allArticles = result.articles.filter(a => !this.trunkId || a.trunkId === this.trunkId);
+                  this.updateFilteredArticles();
+                },
+                error: (err) => {
+                  console.error('Erreur lors de l\'assignation au tronc:', err);
+                }
+              });
+          }
+        });
+      }
+    });
+  }
+
+  onAddAttributes(): void {
+    const selectedArticleObjs = this.allArticles.filter(a => this.selectedArticles.has(a.code));
+    let preSelectedStoreAttributeCodes: string[] = [];
+    if (selectedArticleObjs.length === 1) {
+      preSelectedStoreAttributeCodes = [...(selectedArticleObjs[0].attributes || [])];
+    } else if (selectedArticleObjs.length > 1) {
+      const attributeLists = selectedArticleObjs.map(a => a.attributes || []);
+      if (attributeLists.length > 0) {
+        preSelectedStoreAttributeCodes = attributeLists[0].filter(code => attributeLists.every(list => list.includes(code)));
+      }
+    }
+
+    const dialogRef = this.dialog.open(EditAttributesDialogComponent, {
+      width: '640px',
+      data: { preSelectedStoreAttributeCodes, mode: 'add' }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      const selectedCodes: string[] | undefined = result?.selectedStoreAttributeCodes;
+      const articlesCount = this.getSelectedCount();
+
+      if (selectedCodes && selectedCodes.length > 0 && articlesCount > 0) {
+        const attributesCount = selectedCodes.length;
+        this.dialog.open(ConfirmAttributesDialogComponent, {
+          width: '560px',
+          data: { attributesCount, articlesCount, mode: 'apply' }
+        }).afterClosed().subscribe(confirmed => {
+          if (confirmed) {
+            const articleCodes = Array.from(this.selectedArticles);
+            const codesSet = new Set(articleCodes);
+            const addedSet = new Set(selectedCodes!);
+            this.allArticles = this.allArticles.map(a => {
+              if (!codesSet.has(a.code)) return a;
+              const current = Array.isArray(a.attributes) ? a.attributes : [];
+              const union = Array.from(new Set([...current, ...addedSet]));
+              return { ...a, attributes: union };
+            });
+            this.updateFilteredArticles();
+            this.articlesService.updateAttributesForArticles(articleCodes, selectedCodes!)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe(() => {});
+          }
+        });
+      }
+    });
+  }
+
+  onRemoveAttributes(): void {
+    const selectedArticleObjs = this.allArticles.filter(a => this.selectedArticles.has(a.code));
+    let preSelectedStoreAttributeCodes: string[] = [];
+    if (selectedArticleObjs.length === 1) {
+      preSelectedStoreAttributeCodes = [...(selectedArticleObjs[0].attributes || [])];
+    } else if (selectedArticleObjs.length > 1) {
+      const attributeLists = selectedArticleObjs.map(a => a.attributes || []);
+      if (attributeLists.length > 0) {
+        preSelectedStoreAttributeCodes = attributeLists[0].filter(code => attributeLists.every(list => list.includes(code)));
+      }
+    }
+
+    const dialogRef = this.dialog.open(EditAttributesDialogComponent, {
+      width: '640px',
+      data: { preSelectedStoreAttributeCodes, mode: 'remove' }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      const deleteCodes: string[] | undefined = result?.deleteStoreAttributeCodes;
+      const deleteAll: boolean | undefined = result?.deleteAllAttributes;
+      const articlesCount = this.getSelectedCount();
+
+      if (deleteCodes && deleteCodes.length > 0 && articlesCount > 0) {
+        const attributesCount = deleteCodes.length;
+        this.dialog.open(ConfirmAttributesDialogComponent, {
+          width: '560px',
+          data: { attributesCount, articlesCount, mode: 'remove' }
+        }).afterClosed().subscribe(confirmed => {
+          if (confirmed) {
+            const articleCodes = Array.from(this.selectedArticles);
+            const codesSet = new Set(articleCodes);
+            const removeSet = new Set(deleteCodes!);
+            this.allArticles = this.allArticles.map(a => {
+              if (!codesSet.has(a.code)) return a;
+              const current = Array.isArray(a.attributes) ? a.attributes : [];
+              const filtered = current.filter(code => !removeSet.has(code));
+              const copy = { ...a } as Article & { attributes?: string[] };
+              if (filtered.length > 0) {
+                copy.attributes = filtered;
+              } else {
+                delete copy.attributes;
+              }
+              return copy;
+            });
+            this.updateFilteredArticles();
+            this.articlesService.removeAttributesForArticles(articleCodes, deleteCodes!)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe(() => {});
+          }
+        });
+      }
+
+      if (deleteAll && articlesCount > 0) {
+        this.dialog.open(ConfirmAttributesDialogComponent, {
+          width: '560px',
+          data: { attributesCount: 0, articlesCount, mode: 'remove_all' }
+        }).afterClosed().subscribe(confirmed => {
+          if (confirmed) {
+            const articleCodes = Array.from(this.selectedArticles);
+            const codesSet = new Set(articleCodes);
+            this.allArticles = this.allArticles.map(a => {
+              if (!codesSet.has(a.code)) return a;
+              const copy = { ...a } as Article & { attributes?: string[] };
+              delete copy.attributes;
+              return copy;
+            });
+            this.updateFilteredArticles();
+            this.articlesService.removeAllAttributesForArticles(articleCodes)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe(() => {});
+          }
+        });
+      }
+    });
+  }
+
+  onPauseAssortments(): void {
+    console.log('Mettre en pause', Array.from(this.selectedArticles));
+  }
+
+  onEditDates(): void {
+    console.log('Modifier les dates', Array.from(this.selectedArticles));
   }
 }

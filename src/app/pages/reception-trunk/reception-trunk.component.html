@@ -23,7 +23,7 @@
       <mat-card-header>
         <mat-card-title class="tabs-title">
           <mat-icon>tab</mat-icon>
-          Types d'articles
+          Liste d'assortiments
         </mat-card-title>
       </mat-card-header>
       <mat-card-content>
@@ -31,8 +31,11 @@
           <mat-tab-group [(selectedIndex)]="selectedTabIndex" (selectedTabChange)="onTabChange($event)">
             <mat-tab>
               <ng-template mat-tab-label>
-                <mat-icon>lock</mat-icon>
-                <span>Fermé</span>
+                <span class="tab-label">
+                  <mat-icon>lock</mat-icon>
+                  <span class="tab-title">Fermé</span>
+                  <span class="tab-count badge-ferme">{{ getSelectedCountByTab('ferme') }}</span>
+                </span>
               </ng-template>
               <div class="tab-content">
                 <ng-container *ngTemplateOutlet="tabContentTemplate"></ng-container>
@@ -41,8 +44,11 @@
             
             <mat-tab>
               <ng-template mat-tab-label>
-                <mat-icon>settings</mat-icon>
-                <span>Mixte</span>
+                <span class="tab-label">
+                  <mat-icon>settings</mat-icon>
+                  <span class="tab-title">Mixte</span>
+                  <span class="tab-count badge-mixte">{{ getSelectedCountByTab('mixte') }}</span>
+                </span>
               </ng-template>
               <div class="tab-content">
                 <ng-container *ngTemplateOutlet="tabContentTemplate"></ng-container>
@@ -51,8 +57,11 @@
             
             <mat-tab>
               <ng-template mat-tab-label>
-                <mat-icon>check_circle</mat-icon>
-                <span>Ouvert</span>
+                <span class="tab-label">
+                  <mat-icon>check_circle</mat-icon>
+                  <span class="tab-title">Ouvert</span>
+                  <span class="tab-count badge-ouvert">{{ getSelectedCountByTab('ouvert') }}</span>
+                </span>
               </ng-template>
               <div class="tab-content">
                 <ng-container *ngTemplateOutlet="tabContentTemplate"></ng-container>
@@ -83,7 +92,7 @@
             <div class="action-buttons">
               <div class="selection-counter">
                 <mat-icon>check_circle</mat-icon>
-                <span>{{ getTotalSelectedCount() }} article(s) sélectionné(s)</span>
+                <span>{{ getSelectedCountByTab(selectedTab) }} / {{ filteredArticles.length }}</span>
               </div>
             </div>
           </div>
@@ -111,6 +120,7 @@
                   [indeterminate]="isIndeterminate()"
                   [disabled]="isCheckboxDisabled()">
                 </mat-checkbox>
+                <mat-icon class="lock-icon" *ngIf="isCheckboxDisabled()" matTooltip="Cases verrouillées">lock</mat-icon>
               </th>
               <td mat-cell *matCellDef="let article">
                 <div class="checkbox-container">
@@ -119,6 +129,7 @@
                     [(ngModel)]="article.checked"
                     [disabled]="isCheckboxDisabled()">
                   </mat-checkbox>
+                  <mat-icon class="lock-icon" *ngIf="isCheckboxDisabled()" matTooltip="Case verrouillée">lock</mat-icon>
                 </div>
               </td>
             </ng-container>
@@ -147,8 +158,8 @@
     </div>
 
     <!-- Informations de sélection -->
-    <div class="selection-info" *ngIf="getTotalSelectedCount() > 0">
-      <p>{{ getTotalSelectedCount() }} article(s) sélectionné(s) sur {{ filteredArticles.length }}</p>
+    <div class="selection-info" *ngIf="getSelectedCountByTab(selectedTab) > 0">
+      <p>{{ getSelectedCountByTab(selectedTab) }} / {{ filteredArticles.length }}</p>
     </div>
           </mat-card-content>
         </mat-card>

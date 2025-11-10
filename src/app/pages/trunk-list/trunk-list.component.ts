@@ -12,13 +12,14 @@ import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
+import { TrunksService } from '../../services/trunks.service';
 
 export interface Trunk {
   id: string;
   name: string;
-  type: 'national' | 'complementaire';
-  enseigne: string;
-  status: 'actif' | 'inactif' | 'brouillon';
+  type: 'TAC' | 'TAN' | 'complementaire';
+  enseigne?: string; // non présent dans troncs.json
+  status: 'actif' | 'brouillon' | 'archive' | 'inactif';
   articlesCount: number;
   createdDate: Date;
   lastModified: Date;
@@ -46,64 +47,8 @@ export interface Trunk {
 })
 export class TrunkListComponent implements OnInit {
   
-  // Données des troncs
-  trunks: Trunk[] = [
-    {
-      id: '1',
-      name: 'TRG-GUP-NATIONAL',
-      type: 'national',
-      enseigne: 'Carrefour',
-      status: 'actif',
-      articlesCount: 1250,
-      createdDate: new Date('2024-01-15'),
-      lastModified: new Date('2024-01-20'),
-      description: 'Tronc national pour tous les magasins Carrefour'
-    },
-    {
-      id: '2',
-      name: 'TRG-COMP-PARIS',
-      type: 'complementaire',
-      enseigne: 'E.Leclerc',
-      status: 'actif',
-      articlesCount: 450,
-      createdDate: new Date('2024-01-10'),
-      lastModified: new Date('2024-01-18'),
-      description: 'Tronc complémentaire pour la région parisienne'
-    },
-    {
-      id: '3',
-      name: 'TRG-SAISONNIER-ETE',
-      type: 'complementaire',
-      enseigne: 'Intermarché',
-      status: 'brouillon',
-      articlesCount: 0,
-      createdDate: new Date('2024-01-22'),
-      lastModified: new Date('2024-01-22'),
-      description: 'Tronc saisonnier pour les produits d\'été'
-    },
-    {
-      id: '4',
-      name: 'TRG-PROMO-JANVIER',
-      type: 'complementaire',
-      enseigne: 'Super U',
-      status: 'inactif',
-      articlesCount: 320,
-      createdDate: new Date('2024-01-01'),
-      lastModified: new Date('2024-01-31'),
-      description: 'Tronc promotionnel pour janvier'
-    },
-    {
-      id: '5',
-      name: 'TRG-BIO-NATIONAL',
-      type: 'national',
-      enseigne: 'Casino',
-      status: 'actif',
-      articlesCount: 890,
-      createdDate: new Date('2024-01-08'),
-      lastModified: new Date('2024-01-25'),
-      description: 'Tronc national pour les produits bio'
-    }
-  ];
+  // Données des troncs (chargées via service)
+  trunks: Trunk[] = [];
 
   filteredTrunks: Trunk[] = [];
   
@@ -129,11 +74,26 @@ export class TrunkListComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private trunksService: TrunksService
   ) {}
 
   ngOnInit(): void {
-    this.filteredTrunks = [...this.trunks];
+    this.trunksService.getTrunks().subscribe(items => {
+      // Adapter au format local; champ enseigne non disponible
+      this.trunks = items.map(i => ({
+        id: i.id,
+        name: i.name,
+        type: i.type,
+        status: i.status as any,
+        articlesCount: i.articlesCount,
+        createdDate: i.createdDate,
+        lastModified: i.lastModified,
+        enseigne: '',
+        description: undefined
+      }));
+      this.filteredTrunks = [...this.trunks];
+    });
   }
 
   /**
@@ -143,11 +103,11 @@ export class TrunkListComponent implements OnInit {
     this.filteredTrunks = this.trunks.filter(trunk => {
       const matchesSearch = !this.searchTerm || 
         trunk.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        trunk.enseigne.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (trunk.enseigne || '').toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         (trunk.description && trunk.description.toLowerCase().includes(this.searchTerm.toLowerCase()));
 
       const matchesType = !this.selectedType || trunk.type === this.selectedType;
-      const matchesEnseigne = !this.selectedEnseigne || trunk.enseigne.toLowerCase() === this.selectedEnseigne;
+      const matchesEnseigne = !this.selectedEnseigne || !trunk.enseigne || (trunk.enseigne.toLowerCase() === this.selectedEnseigne);
       const matchesStatus = !this.selectedStatus || trunk.status === this.selectedStatus;
 
       return matchesSearch && matchesType && matchesEnseigne && matchesStatus;

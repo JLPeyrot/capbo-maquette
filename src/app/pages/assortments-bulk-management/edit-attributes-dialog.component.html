@@ -1,0 +1,49 @@
+<h2 mat-dialog-title>{{ (data?.mode === 'remove') ? 'Supprimer des attributs' : 'Ajouter des attributs' }}</h2>
+
+<div mat-dialog-content class="dialog-content">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Rechercher un code</mat-label>
+    <input matInput [(ngModel)]="searchTerm" placeholder="Code attribut">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="36"></mat-spinner>
+    <span>Chargement des attributs...</span>
+  </div>
+
+  <!-- Section: Attributs magasins -->
+  <div *ngIf="!isLoading" class="chips-section">
+    <div class="list-subheader">Attributs magasins</div>
+    <ng-container *ngIf="filteredStoreAttributes.length > 0; else emptyStore">
+      <mat-chip-set aria-label="Liste des attributs magasins" class="chips-container">
+        <mat-chip *ngFor="let s of filteredStoreAttributes"
+                  class="chip"
+                  [class.selected]="isSelected(s.code)"
+                  (click)="toggleSelection(s.code)"
+                  tabindex="0"
+                  role="button">
+          {{ s.code }}
+        </mat-chip>
+      </mat-chip-set>
+    </ng-container>
+  </div>
+
+  <ng-template #emptyStore>
+    <div class="empty-state">
+      <mat-icon>info</mat-icon>
+      <span>Aucun attribut magasin ne correspond à votre recherche.</span>
+    </div>
+  </ng-template>
+</div>
+
+<div mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-stroked-button class="btn-cancel" (click)="onCancel()">Annuler</button>
+  <ng-container *ngIf="data?.mode === 'remove'; else addActions">
+    <button mat-stroked-button color="warn" class="btn-delete-selected" (click)="onDelete()">Supprimer les attributs sélectionnés</button>
+    <button mat-stroked-button color="warn" class="btn-delete-all" (click)="onDeleteAll()">Supprimer tous les attributs</button>
+  </ng-container>
+  <ng-template #addActions>
+    <button mat-raised-button color="primary" class="btn-validate" (click)="onValidate()">Valider</button>
+  </ng-template>
+</div>

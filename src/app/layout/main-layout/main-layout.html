@@ -147,6 +147,10 @@
                 <mat-icon matListItemIcon>add_box</mat-icon>
                 <div matListItemTitle>Ajout Assortiments</div>
               </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('assortments-bulk')">
+                <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
+                <div matListItemTitle>Gestion en masse des assortiments</div>
+              </mat-list-item>
             </div>
           </div>
 
@@ -429,6 +433,11 @@
       <!-- PAGE TRUNK CONTROL -->
       <div *ngSwitchCase="'trunk-control'" class="page-container">
         <app-trunk-control></app-trunk-control>
+      </div>
+
+      <!-- PAGE ASSORTMENTS BULK MANAGEMENT -->
+      <div *ngSwitchCase="'assortments-bulk-management'" class="page-container">
+        <app-assortments-bulk-management></app-assortments-bulk-management>
       </div>
 
       <!-- PAGE DE DONNÉES -->

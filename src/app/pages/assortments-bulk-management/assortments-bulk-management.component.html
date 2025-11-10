@@ -3,16 +3,16 @@
   <div class="page-header">
     <div class="header-content">
       <div class="title-section">
-        <mat-icon class="page-icon">account_tree</mat-icon>
+        <mat-icon class="page-icon">playlist_add_check_circle</mat-icon>
         <div>
-          <h1>Gestion des articles du tronc</h1>
-          <p class="subtitle">Gérez précisément les articles rattachés au tronc sélectionné</p>
+          <h1>Gestion en masse des assortiments</h1>
+          <p class="subtitle">Gérez précisément une liste d'assortiments, indépendante de tout tronc</p>
         </div>
       </div>
       <div class="header-actions">
         <button mat-raised-button color="primary" class="orange-btn">
           <mat-icon>add</mat-icon>
-          Ajouter un article
+          Ajouter un assortiment
         </button>
         <button mat-stroked-button>
           <mat-icon>import_export</mat-icon>
@@ -73,17 +73,16 @@
         <mat-card-content class="filters-content">
           <div class="filters-row">
             <mat-form-field class="filter-field" appearance="outline">
-              <mat-label>Rechercher un article</mat-label>
+              <mat-label>Rechercher un assortiment</mat-label>
               <input matInput [(ngModel)]="searchQuery" (ngModelChange)="applySearch()" placeholder="Nom, code, univers, famille, sous-famille">
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
 
-            <!-- Filtres d'assignation (sans effet en contexte tronc) -->
-            <mat-checkbox [disabled]="true" [(ngModel)]="showAssignedOnly" (change)="toggleShowAssignedOnly()" matTooltip="Déjà rattaché: le contexte tronc affiche uniquement les articles du tronc">
+            <mat-checkbox [(ngModel)]="showAssignedOnly" (change)="toggleShowAssignedOnly()" matTooltip="Inclure les assortiments déjà rattachés à un tronc">
               Inclure les assortiments rattachés
             </mat-checkbox>
 
-            <mat-checkbox [disabled]="true" [(ngModel)]="showOnlyAssigned" (change)="toggleShowOnlyAssigned()" matTooltip="Déjà rattaché: le contexte tronc affiche uniquement les articles du tronc">
+            <mat-checkbox [(ngModel)]="showOnlyAssigned" (change)="toggleShowOnlyAssigned()" matTooltip="N'afficher que les assortiments déjà rattachés à un tronc">
               N'afficher que les assortiments rattachés
             </mat-checkbox>
 
@@ -108,7 +107,7 @@
         </mat-card-content>
       </mat-card>
 
-      <!-- Liste des articles -->
+      <!-- Liste des assortiments -->
       <div class="articles-list">
         <div *ngIf="filteredArticles.length > 0; else noArticles"
              class="articles-grid"
@@ -142,8 +141,8 @@
         <ng-template #noArticles>
           <div class="empty-articles">
             <mat-icon>inventory_2</mat-icon>
-            <h3>Aucun article trouvé</h3>
-            <p>Affinez votre recherche ou importez des articles.</p>
+            <h3>Aucun assortiment trouvé</h3>
+            <p>Affinez votre recherche ou importez des assortiments.</p>
           </div>
         </ng-template>
       </div>
@@ -159,11 +158,11 @@
           <mat-icon>account_tree</mat-icon>
           Ajouter à un tronc
         </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onAddAttributes()" matTooltip="Ajouter des attributs aux articles sélectionnés">
+        <button mat-stroked-button class="action-btn orange-action" (click)="onAddAttributes()" matTooltip="Ajouter des attributs aux assortiments sélectionnés">
           <mat-icon>add_circle</mat-icon>
           Ajouter des attributs
         </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onRemoveAttributes()" matTooltip="Supprimer des attributs des articles sélectionnés">
+        <button mat-stroked-button class="action-btn orange-action" (click)="onRemoveAttributes()" matTooltip="Supprimer des attributs des assortiments sélectionnés">
           <mat-icon>remove_circle</mat-icon>
           Supprimer des attributs
         </button>

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, map, catchError, of } from 'rxjs';
+import { Observable, BehaviorSubject, map, catchError, of, tap } from 'rxjs';
 import { TrunkHierarchyNode } from '../interfaces/trunk-hierarchy.interface';
 
 export interface Article {
@@ -9,6 +9,8 @@ export interface Article {
   univers: string;
   famille: string;
   sousFamille: string;
+  attributes?: string[]; // Codes d’attributs magasin appliqués
+  trunkId?: string; // Identifiant du tronc assigné (unique)
 }
 
 export interface ArticlesData {
@@ -49,9 +51,13 @@ export class ArticlesService {
       )
       .subscribe({
         next: (data) => {
-          console.log('Articles chargés avec succès:', data.articles.length, 'articles');
-          this.articlesSubject.next(data.articles);
-          this.buildHierarchy(data.articles);
+          const normalized = (data.articles || []).map((a: any) => {
+            const trunkId = a.trunkId ?? a.trunk_id;
+            return trunkId ? { ...a, trunkId } : a;
+          });
+          console.log('Articles chargés avec succès:', normalized.length, 'articles');
+          this.articlesSubject.next(normalized);
+          this.buildHierarchy(normalized as Article[]);
         },
         error: (error) => {
           console.error('Erreur dans subscribe:', error);
@@ -232,5 +238,86 @@ export class ArticlesService {
     if (currentArticles.length > 0) {
       this.buildHierarchy(currentArticles);
     }
+  }
+
+  /**
+   * Met à jour les attributs pour une liste d’articles côté serveur
+   */
+  updateAttributesForArticles(articleCodes: string[], attributes: string[]): Observable<{ updated: number, articles: Article[] }> {
+    return this.http.post<{ updated: number, articles: Article[] }>(
+      '/api/articles/update-attributes',
+      { articleCodes, attributes }
+    ).pipe(
+      catchError(error => {
+        console.error('Erreur MAJ attributs:', error);
+        return of({ updated: 0, articles: this.articlesSubject.value });
+      }),
+      tap(result => {
+        // Mettre à jour le store local immédiatement
+        this.articlesSubject.next(result.articles);
+        this.buildHierarchy(result.articles);
+      })
+    );
+  }
+
+  /**
+   * Supprime une liste d’attributs des articles côté serveur (set-difference)
+   */
+  removeAttributesForArticles(articleCodes: string[], attributesToRemove: string[]): Observable<{ updated: number, articles: Article[] }> {
+    return this.http.post<{ updated: number, articles: Article[] }>(
+      '/api/articles/remove-attributes',
+      { articleCodes, attributesToRemove }
+    ).pipe(
+      catchError(error => {
+        console.error('Erreur suppression attributs:', error);
+        return of({ updated: 0, articles: this.articlesSubject.value });
+      }),
+      tap(result => {
+        this.articlesSubject.next(result.articles);
+        this.buildHierarchy(result.articles);
+      })
+    );
+  }
+
+  /**
+   * Supprime tous les attributs des articles côté serveur (retire la clé attributes)
+   */
+  removeAllAttributesForArticles(articleCodes: string[]): Observable<{ updated: number, articles: Article[] }> {
+    return this.http.post<{ updated: number, articles: Article[] }>(
+      '/api/articles/remove-all-attributes',
+      { articleCodes }
+    ).pipe(
+      catchError(error => {
+        console.error('Erreur suppression totale attributs:', error);
+        return of({ updated: 0, articles: this.articlesSubject.value });
+      }),
+      tap(result => {
+        this.articlesSubject.next(result.articles);
+        this.buildHierarchy(result.articles);
+      })
+    );
+  }
+
+  /**
+   * Assigne un tronc unique à une liste d’articles côté serveur (écrit trunkId)
+   */
+  assignArticlesToTrunk(articleCodes: string[], trunkId: string): Observable<{ updated: number, articles: Article[] }> {
+    return this.http.post<{ updated: number, articles: Article[] }>(
+      '/api/articles/assign-trunk',
+      { articleCodes, trunkId }
+    ).pipe(
+      catchError(error => {
+        console.error('Erreur assignation tronc:', error);
+        return of({ updated: 0, articles: this.articlesSubject.value });
+      }),
+      tap(result => {
+        const normalized = (result.articles || []).map((a: any) => {
+          const tid = a.trunkId ?? a.trunk_id;
+          return tid ? { ...a, trunkId: tid } : a;
+        });
+        this.articlesSubject.next(normalized as Article[]);
+        this.buildHierarchy(normalized as Article[]);
+      })
+    );
   }
 }

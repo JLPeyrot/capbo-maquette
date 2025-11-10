@@ -379,3 +379,67 @@
     transform: translateY(0);
   }
 }
+
+/* Icône cadenas à côté des checkboxes verrouillées */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lock-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #9e9e9e; /* Couleur neutre pour indiquer le verrouillage */
+}
+
+/* Alignement dans l’en-tête du tableau */
+.articles-table th.mat-header-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Labels des onglets avec badges de compte */
+.tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-title {
+  font-weight: 500;
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.badge-ferme {
+  background-color: #fdecea;
+  color: #d32f2f;
+  border-color: #f4c7c7;
+}
+
+.badge-mixte {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-color: #bbdefb;
+}
+
+.badge-ouvert {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-color: #c8e6c9;
+}

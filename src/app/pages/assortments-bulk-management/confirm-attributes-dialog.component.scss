@@ -1,0 +1,34 @@
+.confirm-content {
+  display: grid;
+  gap: 12px;
+  min-width: 420px;
+}
+
+.warning-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff7ed; /* léger orange pâle */
+  border: 1px solid #fde3c8;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.warning-icon {
+  color: #ff8c00;
+}
+
+.warning-text {
+  font-weight: 600;
+}
+
+.hint-text {
+  color: #6b7280;
+  margin: 0;
+}
+
+.confirm-actions {
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+

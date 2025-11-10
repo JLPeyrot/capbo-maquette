@@ -4,9 +4,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { Router } from '@angular/router';
 import { MaterialModule } from '../../shared/material-module';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MasterdataService } from '../../services/masterdata.service';
 import { SiteGroupsService, GroupOption } from '../../services/site-groups.service';
-import { Group, Attribute, Store, TrunkType, StoreSelection } from '../../shared/interfaces/masterdata.interfaces';
+import { Group, Attribute, Store, StoreSelection } from '../../shared/interfaces/masterdata.interfaces';
+import { HttpClient } from '@angular/common/http';
 
 interface AttributeSelect {
   id: string;
@@ -27,54 +27,36 @@ export class CreateTrunkComponent implements OnInit {
   // Valeurs sélectionnées pour les dropdowns
   selectedGroupValue: string = '';
   selectedAttributeValue: string = '';
-  selectedTrunkType: string = '';
   
   // Données chargées depuis le service
-  trunkTypes: TrunkType[] = [];
   availableGroups: GroupOption[] = []; // Changé de Group[] à GroupOption[]
   availableAttributes: Attribute[] = [];
   availableStores: StoreSelection[] = [];
   
   // Sélections
   selectedGroups: GroupOption[] = []; // Changé de Group[] à GroupOption[]
-  selectedGroupToAdd: GroupOption | null = null; // Changé de Group à GroupOption
   selectedAttributes: Attribute[] = [];
-  selectedAttributeToAdd: Attribute | null = null;
   attributeSelects: AttributeSelect[] = [{ id: 'attr-1', selectedValue: null }];
 
   // Magasins disponibles et ciblés
   allStores: StoreSelection[] = [];
   targetStores: StoreSelection[] = [];
 
+  // Données magasins JSON pour matching par groupes/attributs
+  private magasins: { code_magasin: string; nom_magasin: string; taille: number; ville: string; groupes: string[]; attributs: string[] }[] = [];
+
   // Mapping des groupes/attributs vers les magasins (sera remplacé par la logique du service)
-  storeMapping: { [key: string]: string[] } = {
-    'group-1': ['store-1', 'store-3', 'store-5'], // Électronique
-    'group-2': ['store-2', 'store-3', 'store-4'], // Mobilier
-    'group-3': ['store-1', 'store-2', 'store-4'], // Véhicules
-    'group-4': ['store-4', 'store-1'], // Outillage
-    'group-5': ['store-3', 'store-5'], // Informatique
-    'attr-1': ['store-1', 'store-3'], // Marque
-    'attr-2': ['store-1', 'store-3'], // Modèle
-    'attr-3': ['store-1', 'store-2', 'store-3'], // Couleur
-    'attr-4': ['store-2', 'store-4'], // Dimensions
-    'attr-5': ['store-1', 'store-2', 'store-3', 'store-4'], // Poids
-    'attr-6': ['store-1', 'store-2', 'store-3', 'store-4', 'store-5'], // Année
-    'attr-7': ['store-1', 'store-2', 'store-3', 'store-4', 'store-5'], // État
-    'attr-8': ['store-1', 'store-3', 'store-5'] // Numéro de série
-  };
+  // Ancienne table de mapping supprimée au profit du matching JSON
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private snackBar: MatSnackBar,
-    private masterdataService: MasterdataService,
-    private siteGroupsService: SiteGroupsService
+    private siteGroupsService: SiteGroupsService,
+    private http: HttpClient
   ) {
     this.trunkForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      type: ['', Validators.required],
-      level: ['', Validators.required],
-      selectedTrunkType: [''],
       selectedGroupValue: ['']
     });
   }
@@ -84,25 +66,43 @@ export class CreateTrunkComponent implements OnInit {
   }
 
   private loadMasterData(): void {
-    // Charger les types de tronc
-    this.masterdataService.getTrunkTypes().subscribe(types => {
-      this.trunkTypes = types;
-    });
-
     // Charger les groupes de sites
     this.siteGroupsService.getGroupOptions().subscribe(groups => {
       this.availableGroups = groups;
     });
 
-    // Charger les attributs
-    this.masterdataService.getAttributes().subscribe(attributes => {
-      this.availableAttributes = attributes;
+    // Charger les attributs magasins depuis /data/attributs-magasins.json
+    this.http.get<{ attributs_magasins: { code: string; description: string }[] }>(
+      '/data/attributs-magasins.json'
+    ).subscribe(res => {
+      const attrs = res?.attributs_magasins || [];
+      // Adapter au type Attribute attendu par l’UI: id = code, name = code
+      this.availableAttributes = attrs.map(a => ({
+        id: a.code,
+        name: a.code,
+        description: a.description,
+        type: 'text',
+        required: false,
+        groupIds: []
+      }));
     });
 
-    // Charger les magasins
-    this.masterdataService.getStores().subscribe(stores => {
-      this.availableStores = stores.map(store => ({ ...store, selected: false }));
-      this.allStores = stores.map(store => ({ ...store, selected: false }));
+    // Charger les magasins depuis /data/magasins.json
+    this.http.get<{ magasins: { code_magasin: string; nom_magasin: string; taille: number; ville: string; groupes: string[]; attributs: string[] }[] }>(
+      '/data/magasins.json'
+    ).subscribe(res => {
+      this.magasins = res?.magasins || [];
+      // Mapper vers StoreSelection minimal pour l’affichage (name utilisé dans le template)
+      this.allStores = this.magasins.map(m => ({
+        id: m.code_magasin,
+        name: m.nom_magasin,
+        description: `Magasin ${m.ville}`,
+        location: m.ville,
+        capacity: m.taille,
+        type: 'office',
+        selected: false
+      }));
+      this.availableStores = [...this.allStores];
     });
   }
 
@@ -130,55 +130,51 @@ export class CreateTrunkComponent implements OnInit {
     );
   }
 
-  // Méthodes pour gérer les attributs
-  addAttribute(): void {
-    const selectedAttributeValue = this.trunkForm.get('selectedAttributeValue')?.value;
-    if (selectedAttributeValue) {
-      const attribute = this.availableAttributes.find(a => a.id === selectedAttributeValue);
-      if (attribute && !this.selectedAttributes.find(a => a.id === attribute.id)) {
-        this.selectedAttributes.push(attribute);
-        this.trunkForm.get('selectedAttributeValue')?.setValue('');
-        this.updateTargetStores();
-      }
-    }
-  }
+  // Méthodes pour gérer les attributs (gérées via selects dynamiques)
 
-  removeAttribute(index: number): void {
-    this.selectedAttributes.splice(index, 1);
-    this.updateTargetStores();
-  }
-
-  get availableAttributesFiltered(): Attribute[] {
-    return this.availableAttributes.filter(attribute => 
-      !this.selectedAttributes.find(selected => selected.id === attribute.id)
-    );
-  }
-
-  // Mise à jour dynamique de la liste des magasins
+  // Mise à jour dynamique de la liste des magasins (basée sur magasins.json)
   updateTargetStores(): void {
-    const storesFromGroups = this.selectedGroups.flatMap(group => this.storeMapping[group.id] || []);
-    const storesFromAttributes = this.selectedAttributes.flatMap(attr => this.storeMapping[attr.id] || []);
-    
-    // Union des magasins des groupes et attributs sélectionnés
-    const allTargetStoreIds = [...new Set([...storesFromGroups, ...storesFromAttributes])];
-    
-    // Filtrer les magasins ciblés depuis allStores
-    this.targetStores = this.allStores.filter(store => allTargetStoreIds.includes(store.id));
-    
-    // Réinitialiser la sélection
-    this.targetStores.forEach(store => store.selected = false);
+    const selectedGroupValues = this.selectedGroups.map(g => g.name);
+    const selectedAttributeCodes = this.selectedAttributes.map(a => a.id);
+
+    // Un magasin correspond s’il possède tous les groupes sélectionnés
+    const matches = this.magasins.filter(m => {
+      const groupsOk = selectedGroupValues.length === 0 || selectedGroupValues.every(val => m.groupes.includes(val));
+      const attrsOk = selectedAttributeCodes.length === 0 || selectedAttributeCodes.every(code => m.attributs.includes(code));
+      return groupsOk && attrsOk;
+    });
+
+    this.targetStores = matches.map(m => ({
+      id: m.code_magasin,
+      name: m.nom_magasin,
+      description: `Magasin ${m.ville}`,
+      location: m.ville,
+      capacity: m.taille,
+      type: 'office',
+      selected: false
+    }));
   }
 
-  // Gestion des magasins correspondants
+  // Gestion des magasins correspondants (calcul dynamique)
   getMatchingStores(): StoreSelection[] {
-    const storesFromGroups = this.selectedGroups.flatMap(group => this.storeMapping[group.id] || []);
-    const storesFromAttributes = this.selectedAttributes.flatMap(attr => this.storeMapping[attr.id] || []);
-    
-    // Union des magasins des groupes et attributs sélectionnés
-    const allTargetStoreIds = [...new Set([...storesFromGroups, ...storesFromAttributes])];
-    
-    // Filtrer les magasins correspondants depuis allStores
-    return this.allStores.filter(store => allTargetStoreIds.includes(store.id));
+    const selectedGroupValues = this.selectedGroups.map(g => g.name);
+    const selectedAttributeCodes = this.selectedAttributes.map(a => a.id);
+
+    const matches = this.magasins.filter(m => {
+      const groupsOk = selectedGroupValues.length === 0 || selectedGroupValues.every(val => m.groupes.includes(val));
+      const attrsOk = selectedAttributeCodes.length === 0 || selectedAttributeCodes.every(code => m.attributs.includes(code));
+      return groupsOk && attrsOk;
+    });
+
+    return matches.map(m => ({
+      id: m.code_magasin,
+      name: m.nom_magasin,
+      description: `Magasin ${m.ville}`,
+      location: m.ville,
+      capacity: m.taille,
+      type: 'office',
+      selected: false
+    }));
   }
 
   getMatchingStoresCount(): number {

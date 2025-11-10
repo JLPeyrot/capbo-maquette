@@ -1,0 +1,324 @@
+{
+  "magasins": [
+    {
+      "code_magasin": "M001",
+      "nom_magasin": "Boulanger Lille Flandres",
+      "taille": 3,
+      "ville": "LILLE",
+      "groupes": ["NORD", "URBAIN", "ZONE ÉTUDIANTE", "INTÉGRÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M002",
+      "nom_magasin": "Boulanger Marseille Prado",
+      "taille": 4,
+      "ville": "MARSEILLE",
+      "groupes": ["SUD", "URBAIN", "ZONE TOURISTIQUE", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_CINEMA", "RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "M003",
+      "nom_magasin": "Boulanger Lyon Part-Dieu",
+      "taille": 5,
+      "ville": "LYON",
+      "groupes": ["CENTRE", "URBAIN", "ZONE À FORTE FRÉQUENTATION", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_GAMING"]
+    },
+    {
+      "code_magasin": "M004",
+      "nom_magasin": "Boulanger Bordeaux Lac",
+      "taille": 3,
+      "ville": "BORDEAUX",
+      "groupes": ["OUEST", "PERIURBAIN", "ZONE TOURISTIQUE", "AFFILIÉ"],
+      "attributs": ["CUISINE_PRO", "B2B"]
+    },
+    {
+      "code_magasin": "M005",
+      "nom_magasin": "Boulanger Nice Lingostière",
+      "taille": 5,
+      "ville": "NICE",
+      "groupes": ["SUD", "URBAIN", "ZONE TOURISTIQUE", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "M006",
+      "nom_magasin": "Boulanger Toulouse Labège",
+      "taille": 4,
+      "ville": "TOULOUSE",
+      "groupes": ["SUD", "PERIURBAIN", "ZONE ÉTUDIANTE", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_GAMING", "RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "M007",
+      "nom_magasin": "Boulanger Nantes Atlantis",
+      "taille": 3,
+      "ville": "NANTES",
+      "groupes": ["OUEST", "URBAIN", "ZONE À FORTE FRÉQUENTATION", "INTÉGRÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M008",
+      "nom_magasin": "Boulanger Strasbourg Sud",
+      "taille": 2,
+      "ville": "STRASBOURG",
+      "groupes": ["EST", "PERIURBAIN", "ZONE ÉTUDIANTE", "AFFILIÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "M009",
+      "nom_magasin": "Boulanger Rennes Longchamps",
+      "taille": 2,
+      "ville": "RENNES",
+      "groupes": ["OUEST", "PERIURBAIN", "ZONE ÉTUDIANTE", "FRANCHISÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M010",
+      "nom_magasin": "Boulanger Grenoble Comboire",
+      "taille": 3,
+      "ville": "GRENOBLE",
+      "groupes": ["CENTRE", "MONTAGNE", "PERIURBAIN", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "M011",
+      "nom_magasin": "Boulanger Montpellier Sud",
+      "taille": 4,
+      "ville": "MONTPELLIER",
+      "groupes": ["SUD", "URBAIN", "ZONE TOURISTIQUE", "AFFILIÉ"],
+      "attributs": ["EXPERTISE_GAMING", "RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "M012",
+      "nom_magasin": "Boulanger Dijon Toison d'Or",
+      "taille": 2,
+      "ville": "DIJON",
+      "groupes": ["CENTRE", "URBAIN", "ZONE ÉTUDIANTE", "INTÉGRÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M013",
+      "nom_magasin": "Boulanger Le Havre Océane",
+      "taille": 3,
+      "ville": "LE HAVRE",
+      "groupes": ["OUEST", "LITTORAL", "ZONE TOURISTIQUE", "AFFILIÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "M014",
+      "nom_magasin": "Boulanger Reims Cormontreuil",
+      "taille": 3,
+      "ville": "REIMS",
+      "groupes": ["NORD", "PERIURBAIN", "ZONE ÉTUDIANTE", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "M015",
+      "nom_magasin": "Boulanger Clermont-Ferrand",
+      "taille": 2,
+      "ville": "CLERMONT-FERRAND",
+      "groupes": ["CENTRE", "MONTAGNE", "PERIURBAIN", "PILOTE"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M016",
+      "nom_magasin": "Boulanger Paris Beaugrenelle",
+      "taille": 5,
+      "ville": "PARIS",
+      "groupes": ["CENTRE", "URBAIN", "ZONE À FORTE FRÉQUENTATION", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_CINEMA", "RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "M017",
+      "nom_magasin": "Boulanger Metz Actisud",
+      "taille": 3,
+      "ville": "METZ",
+      "groupes": ["EST", "PERIURBAIN", "ZONE ÉTUDIANTE", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_GAMING"]
+    },
+    {
+      "code_magasin": "M018",
+      "nom_magasin": "Boulanger Perpignan Sud",
+      "taille": 3,
+      "ville": "PERPIGNAN",
+      "groupes": ["SUD", "LITTORAL", "ZONE TOURISTIQUE", "AFFILIÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M019",
+      "nom_magasin": "Boulanger Amiens Nord",
+      "taille": 2,
+      "ville": "AMIENS",
+      "groupes": ["NORD", "PERIURBAIN", "ZONE ÉTUDIANTE", "INTÉGRÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "M020",
+      "nom_magasin": "Boulanger Caen Mondeville",
+      "taille": 3,
+      "ville": "CAEN",
+      "groupes": ["OUEST", "URBAIN", "ZONE TOURISTIQUE", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "M021",
+      "nom_magasin": "Boulanger Rouen Barentin",
+      "taille": 3,
+      "ville": "ROUEN",
+      "groupes": ["NORD", "PERIURBAIN", "ZONE ÉTUDIANTE", "AFFILIÉ"],
+      "attributs": ["CUISINE_PRO", "RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "M022",
+      "nom_magasin": "Boulanger Brest Guipavas",
+      "taille": 2,
+      "ville": "BREST",
+      "groupes": ["OUEST", "LITTORAL", "ZONE TOURISTIQUE", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "M023",
+      "nom_magasin": "Boulanger Besançon Châteaufarine",
+      "taille": 2,
+      "ville": "BESANÇON",
+      "groupes": ["EST", "PERIURBAIN", "ZONE ÉTUDIANTE", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_GAMING"]
+    },
+    {
+      "code_magasin": "M024",
+      "nom_magasin": "Boulanger Angers Atoll",
+      "taille": 3,
+      "ville": "ANGERS",
+      "groupes": ["OUEST", "URBAIN", "ZONE À FORTE FRÉQUENTATION", "INTÉGRÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M025",
+      "nom_magasin": "Boulanger Tours Chambray",
+      "taille": 3,
+      "ville": "TOURS",
+      "groupes": ["CENTRE", "URBAIN", "ZONE ÉTUDIANTE", "AFFILIÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "M026",
+      "nom_magasin": "Boulanger Pau Lescar",
+      "taille": 2,
+      "ville": "PAU",
+      "groupes": ["SUD", "MONTAGNE", "PERIURBAIN", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "M027",
+      "nom_magasin": "Boulanger Avignon Nord",
+      "taille": 3,
+      "ville": "AVIGNON",
+      "groupes": ["SUD", "URBAIN", "ZONE TOURISTIQUE", "INTÉGRÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M028",
+      "nom_magasin": "Boulanger Valenciennes Petite-Forêt",
+      "taille": 2,
+      "ville": "VALENCIENNES",
+      "groupes": ["NORD", "PERIURBAIN", "ZONE ÉTUDIANTE", "AFFILIÉ"],
+      "attributs": ["EXPERTISE_GAMING"]
+    },
+    {
+      "code_magasin": "M029",
+      "nom_magasin": "Boulanger Toulon Grand Var",
+      "taille": 4,
+      "ville": "TOULON",
+      "groupes": ["SUD", "LITTORAL", "ZONE TOURISTIQUE", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "M030",
+      "nom_magasin": "Boulanger Annecy Epagny",
+      "taille": 3,
+      "ville": "ANNECY",
+      "groupes": ["EST", "MONTAGNE", "ZONE TOURISTIQUE", "INTÉGRÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M031",
+      "nom_magasin": "Boulanger Colmar Nord",
+      "taille": 2,
+      "ville": "COLMAR",
+      "groupes": ["EST", "PERIURBAIN", "ZONE ÉTUDIANTE", "AFFILIÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "M032",
+      "nom_magasin": "Boulanger Nancy Houdemont",
+      "taille": 3,
+      "ville": "NANCY",
+      "groupes": ["EST", "URBAIN", "ZONE ÉTUDIANTE", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_GAMING"]
+    },
+    {
+      "code_magasin": "M033",
+      "nom_magasin": "Boulanger Bayonne Anglet",
+      "taille": 3,
+      "ville": "BAYONNE",
+      "groupes": ["SUD", "LITTORAL", "ZONE TOURISTIQUE", "INTÉGRÉ"],
+      "attributs": ["CUISINE_PRO", "RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "M034",
+      "nom_magasin": "Boulanger Chartres Barjouville",
+      "taille": 2,
+      "ville": "CHARTRES",
+      "groupes": ["CENTRE", "PERIURBAIN", "ZONE ÉTUDIANTE", "AFFILIÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "M035",
+      "nom_magasin": "Boulanger Poitiers Sud",
+      "taille": 3,
+      "ville": "POITIERS",
+      "groupes": ["OUEST", "URBAIN", "ZONE ÉTUDIANTE", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "M036",
+      "nom_magasin": "Boulanger La Rochelle Beaulieu",
+      "taille": 2,
+      "ville": "LA ROCHELLE",
+      "groupes": ["OUEST", "LITTORAL", "ZONE TOURISTIQUE", "FRANCHISÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M037",
+      "nom_magasin": "Boulanger Nîmes Cap Costières",
+      "taille": 3,
+      "ville": "NÎMES",
+      "groupes": ["SUD", "URBAIN", "ZONE TOURISTIQUE", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "M038",
+      "nom_magasin": "Boulanger Chambéry Chamnord",
+      "taille": 3,
+      "ville": "CHAMBÉRY",
+      "groupes": ["CENTRE", "MONTAGNE", "ZONE TOURISTIQUE", "AFFILIÉ"],
+      "attributs": ["CUISINE_PRO"]
+    },
+    {
+      "code_magasin": "M039",
+      "nom_magasin": "Boulanger Limoges Family Village",
+      "taille": 2,
+      "ville": "LIMOGES",
+      "groupes": ["CENTRE", "PERIURBAIN", "ZONE ÉTUDIANTE", "INTÉGRÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "M040",
+      "nom_magasin": "Boulanger Mulhouse Morschwiller",
+      "taille": 3,
+      "ville": "MULHOUSE",
+      "groupes": ["EST", "URBAIN", "ZONE À FORTE FRÉQUENTATION", "PILOTE"],
+      "attributs": ["EXPERTISE_GAMING", "RETRAIT_1H"]
+    }
+  ]
+}
