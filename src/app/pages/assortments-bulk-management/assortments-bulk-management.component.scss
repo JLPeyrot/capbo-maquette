@@ -28,19 +28,13 @@
 }
 
 .filters-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 50% 1fr; /* la recherche occupe exactement 50% du bloc */
+  grid-template-rows: auto auto;
   align-items: center;
-  gap: 16px;
+  column-gap: 16px;
+  row-gap: 8px;
   width: 100%;
-}
-
-/* Harmoniser l'alignement du checkbox de filtre */
-.filters-row .mat-mdc-checkbox {
-  margin-left: 8px;
-}
-
-.filter-field {
-  flex: 1;
 }
 
 .action-buttons {
@@ -49,9 +43,65 @@
   gap: 12px;
 }
 
-.selection-counter {
+/* Mise en forme cohérente des contrôles de la zone Filtres et actions */
+.action-buttons .mat-mdc-button,
+.action-buttons .mat-mdc-unelevated-button {
+  height: 40px;
+  padding: 0 14px;
   display: inline-flex;
   align-items: center;
+}
+.action-buttons .mat-icon-button {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Harmoniser l'alignement du checkbox de filtre */
+.filters-row .mat-mdc-checkbox {
+  margin-left: 8px;
+}
+
+/* Superposer verticalement les filtres d'assortiments rattachés */
+.assigned-filters {
+  grid-column: 1;
+  grid-row: 2; /* Ligne 2 à gauche */
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* étire les deux cases */
+  column-gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+.assigned-filters .mat-mdc-checkbox {
+  width: 100%;
+  white-space: nowrap; /* empêcher les retours à la ligne dans les libellés */
+  display: inline-flex;
+  align-items: center;
+}
+
+.filter-field {
+  grid-column: 1;
+  grid-row: 1; /* Ligne 1 */
+  width: 100%;
+}
+
+.action-buttons {
+  grid-column: 2; /* à droite */
+  grid-row: 1; /* Ligne 1 */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selection-counter {
+  grid-column: 2; /* à droite */
+  grid-row: 2; /* Ligne 2 */
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  height: 40px; /* aligner la hauteur avec les boutons */
   gap: 6px;
   font-weight: 500;
 }
@@ -286,4 +336,64 @@
 }
 .sidebar-right {
   border-left: 4px solid #ff8c00;
+}
+/* Responsive: adapter filtres et actions sur petits écrans */
+@media (max-width: 1024px) {
+  .filters-card .filters-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .filters-row {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .filter-field {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .assigned-filters {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .action-buttons {
+    grid-column: 1;
+    grid-row: 3;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-row {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    gap: 12px;
+  }
+  .filter-field {
+    width: 100%;
+  }
+  .assigned-filters {
+    width: 100%;
+  }
+  .action-buttons {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .action-buttons button,
+  .action-buttons .mat-icon-button {
+    width: 100%;
+  }
+  .selection-counter {
+    justify-self: end;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
+  .selection-counter {
+    justify-self: start;
+  }
 }

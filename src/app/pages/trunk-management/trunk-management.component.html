@@ -152,28 +152,16 @@
               
               <div class="trunk-actions">
                 <button mat-icon-button 
-                        class="action-btn view-btn"
-                        (click)="viewTrunkDetails(trunk)"
-                        matTooltip="Voir les détails">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-                <button mat-icon-button 
                         class="action-btn edit-btn"
                         (click)="editTrunk(trunk)"
-                        matTooltip="Modifier">
+                        matTooltip="Modifier le tronc">
                   <mat-icon>edit</mat-icon>
                 </button>
                 <button mat-icon-button 
-                        class="action-btn duplicate-btn"
-                        (click)="duplicateTrunk(trunk)"
-                        matTooltip="Dupliquer">
-                  <mat-icon>content_copy</mat-icon>
-                </button>
-                <button mat-icon-button 
-                        class="action-btn delete-btn"
-                        (click)="deleteTrunk(trunk)"
-                        matTooltip="Supprimer">
-                  <mat-icon>delete</mat-icon>
+                        class="action-btn list-btn"
+                        (click)="manageAssortments(trunk)"
+                        matTooltip="Modifier les assortiments du tronc">
+                  <mat-icon>format_list_bulleted</mat-icon>
                 </button>
               </div>
             </div>

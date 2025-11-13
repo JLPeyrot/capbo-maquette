@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MaterialModule } from '../../shared/material-module';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SiteGroupsService, GroupOption } from '../../services/site-groups.service';
@@ -9,6 +9,11 @@ import { Group, Attribute, Store, StoreSelection } from '../../shared/interfaces
 import { HttpClient } from '@angular/common/http';
 
 interface AttributeSelect {
+  id: string;
+  selectedValue: string | null;
+}
+
+interface GroupSelect {
   id: string;
   selectedValue: string | null;
 }
@@ -36,7 +41,8 @@ export class CreateTrunkComponent implements OnInit {
   // Sélections
   selectedGroups: GroupOption[] = []; // Changé de Group[] à GroupOption[]
   selectedAttributes: Attribute[] = [];
-  attributeSelects: AttributeSelect[] = [{ id: 'attr-1', selectedValue: null }];
+  attributeSelects: AttributeSelect[] = [];
+  groupsSelects: GroupSelect[] = [];
 
   // Magasins disponibles et ciblés
   allStores: StoreSelection[] = [];
@@ -53,7 +59,8 @@ export class CreateTrunkComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     private siteGroupsService: SiteGroupsService,
-    private http: HttpClient
+    private http: HttpClient,
+    private route: ActivatedRoute
   ) {
     this.trunkForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -62,13 +69,41 @@ export class CreateTrunkComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Récupération des paramètres pour pré-remplir (nom, groupes, attributs)
+    this.route.queryParamMap.subscribe(params => {
+      const name = params.get('name');
+      const groups = params.getAll('groups');
+      const attributes = params.getAll('attributes');
+
+      if (name) {
+        this.trunkForm.get('name')?.setValue(name);
+      }
+
+      // Stocker temporairement pour application après chargement des données
+      if (groups && groups.length > 0) {
+        this.prefillGroupsBuffer = groups;
+      }
+      if (attributes && attributes.length > 0) {
+        this.prefillAttributesBuffer = attributes;
+      }
+
+      // Essayer d'appliquer immédiatement si données déjà chargées
+      this.tryApplyPrefill();
+    });
+
     this.loadMasterData();
   }
+
+  // Buffers pour pré-remplissage depuis la page Gestion des Troncs
+  private prefillGroupsBuffer: string[] = [];
+  private prefillAttributesBuffer: string[] = [];
+  private prefillApplied = false;
 
   private loadMasterData(): void {
     // Charger les groupes de sites
     this.siteGroupsService.getGroupOptions().subscribe(groups => {
       this.availableGroups = groups;
+      this.tryApplyPrefill();
     });
 
     // Charger les attributs magasins depuis /data/attributs-magasins.json
@@ -85,6 +120,7 @@ export class CreateTrunkComponent implements OnInit {
         required: false,
         groupIds: []
       }));
+      this.tryApplyPrefill();
     });
 
     // Charger les magasins depuis /data/magasins.json
@@ -106,6 +142,46 @@ export class CreateTrunkComponent implements OnInit {
     });
   }
 
+  /**
+   * Applique le pré-remplissage si possible, une seule fois.
+   */
+  private tryApplyPrefill(): void {
+    if (this.prefillApplied) return;
+
+    const canApplyGroups = this.availableGroups.length > 0 && this.prefillGroupsBuffer.length > 0;
+    const canApplyAttrs = this.availableAttributes.length > 0 && this.prefillAttributesBuffer.length > 0;
+
+    if (!canApplyGroups && !canApplyAttrs) {
+      return;
+    }
+
+    // Pré-remplir les groupes (match par name)
+    if (canApplyGroups) {
+      this.prefillGroupsBuffer.forEach(groupName => {
+        const opt = this.availableGroups.find(g => g.name === groupName);
+        if (opt && !this.selectedGroups.find(g => g.id === opt.id)) {
+          this.selectedGroups.push(opt);
+        }
+      });
+    }
+
+    // Pré-remplir les attributs (match par id/code)
+    if (canApplyAttrs) {
+      this.prefillAttributesBuffer.forEach(attrCode => {
+        const attr = this.availableAttributes.find(a => a.id === attrCode);
+        if (attr && !this.selectedAttributes.find(a => a.id === attr.id)) {
+          this.selectedAttributes.push(attr);
+        }
+      });
+      // Ne pas garder de selects ouverts après préremplissage; afficher uniquement les bignettes
+      this.attributeSelects = [];
+    }
+
+    // Mettre à jour les magasins cibles après sélection
+    this.updateTargetStores();
+    this.prefillApplied = true;
+  }
+
   // Méthodes pour gérer les groupes
   addGroup(): void {
     const selectedGroupValue = this.trunkForm.get('selectedGroupValue')?.value;
@@ -122,12 +198,38 @@ export class CreateTrunkComponent implements OnInit {
   removeGroup(index: number): void {
     this.selectedGroups.splice(index, 1);
     this.updateTargetStores();
+    // Rouvrir un sélecteur si des options restent et qu'aucune ligne n'est ouverte
+    const remainingGroups = this.availableGroups.filter(g => !this.selectedGroups.find(sel => sel.id === g.id));
+    if (remainingGroups.length > 0 && this.groupsSelects.length === 0) {
+      const newId = `grp-${this.groupsSelects.length + 1}`;
+      this.groupsSelects.push({ id: newId, selectedValue: null });
+    }
   }
 
   get availableGroupsFiltered(): GroupOption[] {
     return this.availableGroups.filter(group => 
       !this.selectedGroups.find(selected => selected.id === group.id)
     );
+  }
+
+  // Gestion dynamique des selects de groupes
+  addGroupSelect(): void {
+    const newId = `grp-${this.groupsSelects.length + 1}`;
+    this.groupsSelects.push({ id: newId, selectedValue: null });
+  }
+
+  onGroupSelectionChange(selectIndex: number, groupId: string): void {
+    const group = this.availableGroups.find(g => g.id === groupId);
+    if (group && !this.selectedGroups.find(g => g.id === group.id)) {
+      this.selectedGroups.push(group);
+    }
+    // Retirer la ligne de sélection une fois choisi
+    this.groupsSelects.splice(selectIndex, 1);
+    this.updateTargetStores();
+  }
+
+  getAvailableGroupsForSelect(): GroupOption[] {
+    return this.availableGroups.filter(g => !this.selectedGroups.find(sel => sel.id === g.id));
   }
 
   // Méthodes pour gérer les attributs (gérées via selects dynamiques)
@@ -249,41 +351,20 @@ export class CreateTrunkComponent implements OnInit {
   }
 
   onAttributeSelectionChange(selectIndex: number, attributeId: string): void {
-    const attributeSelect = this.attributeSelects[selectIndex];
-    const oldValue = attributeSelect.selectedValue;
-    
-    // Supprimer l'ancien attribut sélectionné s'il existe
-    if (oldValue) {
-      const oldAttributeIndex = this.selectedAttributes.findIndex(attr => attr.id === oldValue);
-      if (oldAttributeIndex > -1) {
-        this.selectedAttributes.splice(oldAttributeIndex, 1);
-      }
-    }
-    
-    // Ajouter le nouvel attribut sélectionné
     if (attributeId) {
       const attribute = this.availableAttributes.find(attr => attr.id === attributeId);
       if (attribute && !this.selectedAttributes.find(attr => attr.id === attributeId)) {
         this.selectedAttributes.push(attribute);
       }
     }
-    
-    // Mettre à jour la valeur sélectionnée
-    attributeSelect.selectedValue = attributeId;
+    // Retirer la ligne de sélection une fois choisi
+    this.attributeSelects.splice(selectIndex, 1);
+    this.updateTargetStores();
   }
 
   getAvailableAttributesForSelect(selectIndex: number): Attribute[] {
-    const currentSelect = this.attributeSelects[selectIndex];
-    const currentValue = currentSelect.selectedValue;
-    
-    // Retourner tous les attributs qui ne sont pas déjà sélectionnés dans d'autres selects
-    // ou qui sont la valeur actuelle de ce select
-    return this.availableAttributes.filter(attr => {
-      const isSelectedInOtherSelect = this.attributeSelects.some((select, index) => 
-        index !== selectIndex && select.selectedValue === attr.id
-      );
-      return !isSelectedInOtherSelect || attr.id === currentValue;
-    });
+    // Retourner les attributs non encore sélectionnés
+    return this.availableAttributes.filter(attr => !this.selectedAttributes.find(sel => sel.id === attr.id));
   }
 
   removeSelectedAttribute(index: number): void {
@@ -299,6 +380,7 @@ export class CreateTrunkComponent implements OnInit {
     
     // Supprimer l'attribut de la liste
     this.selectedAttributes.splice(index, 1);
+    this.updateTargetStores();
   }
 
   goBack(): void {

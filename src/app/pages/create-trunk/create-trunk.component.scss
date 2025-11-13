@@ -64,6 +64,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 40px;
     
     .title-section {
       display: flex;
@@ -115,8 +116,11 @@
         color: white;
         border-radius: 8px;
         font-weight: 500;
-        padding: 12px 24px;
-        height: auto;
+        padding: 0 16px;
+        height: 40px; /* standardisation hauteur */
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         transition: all 0.3s ease;
 
         .mat-icon {
@@ -143,7 +147,8 @@
   max-width: 1400px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 50% 1fr; /* uniformisation avec autres pages */
+  align-items: start;
   gap: 24px;
 }
 
@@ -194,8 +199,8 @@
 
   .form-field {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    align-items: flex-start;
+    gap: 12px;
 
     .field-label {
       min-width: 140px;
@@ -207,7 +212,7 @@
     .field-input,
     .field-select {
       flex: 1;
-      max-width: 300px;
+      max-width: 320px; /* uniformisation */
 
       .mat-mdc-form-field {
         width: 100%;
@@ -217,7 +222,7 @@
         }
 
         .mat-mdc-text-field-wrapper {
-          height: 48px;
+          height: 40px; /* standardiser à 40px */
         }
 
         .mat-mdc-form-field-subscript-wrapper {
@@ -228,12 +233,13 @@
 
     .field-with-button {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
       flex: 1;
 
       .field-select {
-        max-width: 280px;
+        max-width: 320px;
       }
 
       .add-button {
@@ -258,6 +264,52 @@
 
         .mat-icon {
           font-size: 20px;
+          color: #ff8c00;
+        }
+      }
+    }
+
+    // Conteneur de sélecteurs pour Groupes (dynamique)
+    .groups-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      flex: 1;
+      max-width: 320px;
+
+      .group-select-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .field-select {
+          flex: 1;
+          max-width: 320px;
+        }
+      }
+
+      .add-group-row {
+        margin-top: 4px;
+        .add-button {
+          width: 40px;
+          height: 40px;
+          min-width: 40px;
+          border: 1px solid #ddd;
+          background: white;
+          color: #ff8c00;
+          transition: all 0.3s ease;
+
+          &:hover:not(:disabled) {
+            background: rgba(255, 140, 0, 0.1);
+            border-color: #ff8c00;
+            transform: scale(1.05);
+          }
+
+          .mat-icon {
+            font-size: 20px;
+            color: #ff8c00;
+          }
         }
       }
     }
@@ -267,16 +319,19 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin-left: 156px;
+      align-items: flex-start;
+      flex: 1;
+      max-width: 320px;
+      margin-left: 0;
 
       .attribute-select-row {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
 
         .field-select {
           flex: 1;
-          max-width: 280px;
+          max-width: 320px;
         }
 
         .remove-button {
@@ -304,20 +359,28 @@
         margin-top: 8px;
 
         .add-attribute-btn {
-          background: rgba(255, 140, 0, 0.1);
+          width: 40px;
+          height: 40px;
+          min-width: 40px;
+          border: 1px solid #ddd;
+          background: white;
           color: #ff8c00;
-          border: 1px solid rgba(255, 140, 0, 0.3);
           transition: all 0.3s ease;
 
-          &:hover {
-            background: rgba(255, 140, 0, 0.2);
+          &:hover:not(:disabled) {
+            background: rgba(255, 140, 0, 0.1);
             border-color: #ff8c00;
-            transform: translateY(-2px);
+            transform: scale(1.05);
+          }
+
+          &:disabled {
+            color: #ccc;
+            border-color: #eee;
           }
 
           .mat-icon {
-            margin-right: 8px;
-            font-size: 18px;
+            font-size: 20px;
+            color: #ff8c00;
           }
         }
       }
@@ -326,7 +389,7 @@
 
   .selected-items {
     margin-left: 156px;
-    margin-top: -16px;
+    margin-top: 8px;
     margin-bottom: 8px;
 
     .mat-mdc-chip-set {
@@ -344,8 +407,8 @@
 }
 
 /* ===== CARTE MAGASINS ===== */
-.stores-card {
-  .mat-mdc-card {
+  .stores-card {
+    .mat-mdc-card {
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
@@ -389,11 +452,21 @@
     font-weight: 600;
     line-height: 1.2;
   }
+  .stores-box .store-line::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff8c00;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
 
   .stores-count {
     position: absolute;
     right: 16px;
-    bottom: 12px;
+    top: 12px;
     color: #ff8c00;
     font-weight: 700;
     font-size: 20px;
@@ -566,5 +639,83 @@
 
   .stores-count {
     color: #ffb74d;
+  }
+}
+
+// Adaptation des bignettes en mode sombre
+@media (prefers-color-scheme: dark) {
+  .trunk-form .selected-items {
+    .vignette {
+      background: rgba(255, 180, 100, 0.1);
+      border-color: #666;
+      color: #eee;
+    }
+    .vignette-meta { color: #bbb; }
+    .vignette-remove {
+      background: #4a4a4a;
+      border-color: #777;
+      color: #eee;
+      &:hover { background: #5a5a5a; border-color: #999; }
+    }
+  }
+}
+
+/* ====== Apparence des bignettes (mode clair) ====== */
+.trunk-form .selected-items {
+  .vignettes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .vignette {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #f7f2e8; /* beige doux */
+    border: 1px solid #d0c7b8; /* gris chaud doux */
+    border-radius: 22px;
+    color: #333;
+  }
+
+  .vignette-text {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .vignette-title {
+    font-weight: 700;
+    color: #2a2a2a;
+  }
+
+  .vignette-meta {
+    color: #6f6f6f;
+  }
+
+  .vignette-remove {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    border-radius: 50%;
+    border: 1px solid #bfbfbf;
+    background: #f3f3f3;
+    color: #333;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+      background: #eaeaea;
+      border-color: #a9a9a9;
+    }
+  }
+
+  .remove-icon {
+    font-size: 14px;
+    line-height: 1;
   }
 }

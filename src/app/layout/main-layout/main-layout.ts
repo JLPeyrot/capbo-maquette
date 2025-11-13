@@ -25,6 +25,8 @@ import { TrunkManagementComponent } from '../../pages/trunk-management/trunk-man
 import { TrunkControlComponent } from '../../pages/trunk-control/trunk-control.component';
 import { DataPageComponent } from '../../pages/data-page/data-page.component';
 import { AssortmentsBulkManagementComponent } from '../../pages/assortments-bulk-management/assortments-bulk-management.component';
+import { ReferencementComponent } from '../../pages/referencement/referencement.component';
+import { ReferencementReviewComponent } from '../../pages/referencement-review/referencement-review.component';
 
 interface Notification {
   id: number;
@@ -69,6 +71,8 @@ interface ExpandedGroups {
       TrunkControlComponent,
       DataPageComponent,
       AssortmentsBulkManagementComponent,
+      ReferencementComponent,
+      ReferencementReviewComponent,
       AlertPopupComponent  // NOUVEAU
     ],
   templateUrl: './main-layout.html',
@@ -94,7 +98,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   };
   
   // AJOUT : État de navigation
-  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'assortment-trunk' | 'reception-trunk' | 'trunk-selection' | 'add-assortments' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'assortments-bulk-management' | 'data-page' = 'dashboard';
+  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'assortment-trunk' | 'reception-trunk' | 'trunk-selection' | 'add-assortments' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'assortments-bulk-management' | 'data-page' | 'referencement' | 'referencement-review' = 'dashboard';
   
   // NOUVEAU : Mode focus
   isFocusMode: boolean = false;
@@ -235,6 +239,13 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     const url = this.router.url;
     console.log('Route actuelle:', url);
     
+    if (url.includes('/referencement/review')) {
+      this.currentView = 'referencement-review';
+      this.isFocusMode = false;
+    } else if (url.includes('/referencement')) {
+      this.currentView = 'referencement';
+      this.isFocusMode = false;
+    } else 
     if (url.includes('/trunk-selection')) {
       this.currentView = 'trunk-selection';
       this.isFocusMode = false;
@@ -375,6 +386,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         break;
       case 'assortments-bulk':
         this.currentView = 'assortments-bulk-management';
+        this.isFocusMode = false;
+        break;
+      case 'referencement':
+        this.currentView = 'referencement';
         this.isFocusMode = false;
         break;
       case 'dashboard':

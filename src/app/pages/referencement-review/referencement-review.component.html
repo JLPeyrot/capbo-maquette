@@ -1,0 +1,97 @@
+<div class="review-container">
+  <!-- En-tête -->
+  <div class="page-header">
+    <button mat-icon-button class="back-button" (click)="goBack()" aria-label="Retour" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <mat-icon class="title-icon">playlist_add_check_circle</mat-icon>
+          Référencement des articles sélectionnés
+          <span class="count-badge" *ngIf="selectionCount > 0">{{ selectionCount }}</span>
+        </h1>
+        <p class="page-subtitle">{{ selectionCount }} article(s) à valider</p>
+      </div>
+      <div class="header-actions">
+        <button mat-stroked-button (click)="skipStep()" class="action-btn" matTooltip="Passer cette étape">
+          <mat-icon>arrow_forward</mat-icon>
+          Passer cette étape
+        </button>
+        <button mat-stroked-button color="primary" (click)="createAssortimentCommandableSelected()" class="action-btn" [disabled]="checkedCount === 0" matTooltip="Créer un assortiment commandable pour les articles cochés">
+          <mat-icon>shopping_cart</mat-icon>
+          Assortiment commandable
+        </button>
+        <button mat-stroked-button color="accent" (click)="createAssortimentVendableSelected()" class="action-btn" [disabled]="checkedCount === 0" matTooltip="Créer un assortiment vendable pour les articles cochés">
+          <mat-icon>point_of_sale</mat-icon>
+          Assortiment vendable
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <mat-card class="review-card" *ngIf="selection?.length; else emptyState">
+    <mat-card-header>
+      <mat-card-title>Résumé de votre sélection</mat-card-title>
+      <mat-card-subtitle>{{selection.length}} article(s) prêt(s) à être référencés</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <table class="review-table" mat-table [dataSource]="selection">
+        <!-- Sélection -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef class="select-col">
+            <mat-checkbox
+              [checked]="isAllSelected()"
+              (change)="toggleAll($event.checked)"
+              [indeterminate]="!isAllSelected() && checkedCount > 0"
+              aria-label="Tout sélectionner">
+            </mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let a" class="select-col">
+            <mat-checkbox
+              [checked]="isSelected(a)"
+              (change)="toggleArticle(a, $event.checked)"
+              aria-label="Sélectionner l'article">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+        <!-- Référence -->
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef class="reference-col">Référence</th>
+          <td mat-cell *matCellDef="let a" class="reference-col">
+            <span class="reference-text">{{a.reference}}</span>
+          </td>
+        </ng-container>
+
+        <!-- Désignation -->
+        <ng-container matColumnDef="designation">
+          <th mat-header-cell *matHeaderCellDef class="designation-col">Désignation</th>
+          <td mat-cell *matCellDef="let a" class="designation-col">
+            <span class="designation-text">{{a.designation}}</span>
+          </td>
+        </ng-container>
+
+        
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-stroked-button (click)="goBack()">Retour au référencement</button>
+      <button mat-flat-button color="primary" (click)="validateReferencing()">Valider le référencement</button>
+    </mat-card-actions>
+  </mat-card>
+
+  <ng-template #emptyState>
+    <mat-card class="empty-card">
+      <mat-card-content class="empty-state">
+        <mat-icon>info</mat-icon>
+        <span>Aucun article sélectionné.</span>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-stroked-button color="primary" (click)="goBack()">Retour au référencement</button>
+      </mat-card-actions>
+    </mat-card>
+  </ng-template>
+</div>

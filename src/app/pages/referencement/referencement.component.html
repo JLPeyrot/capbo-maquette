@@ -1,0 +1,289 @@
+<div class="referencement-container">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <mat-icon class="title-icon">playlist_add_check_circle</mat-icon>
+          Référencement
+        </h1>
+        <p class="page-subtitle">Catalogue fournisseur et sélection de masse</p>
+      </div>
+
+      <div class="header-actions">
+        <button mat-stroked-button color="primary" class="action-btn" [disabled]="selectedIds.size === 0" (click)="onReferencerSelection()">
+          <mat-icon>check_circle</mat-icon>
+          Référencer ({{selectedIds.size}})
+        </button>
+        <button mat-stroked-button color="accent" class="action-btn" (click)="showAddForm = !showAddForm">
+          <mat-icon>add</mat-icon>
+          {{ showAddForm ? 'Fermer le formulaire' : 'Ajouter un article' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire d'ajout -->
+  <mat-card class="filters-card" *ngIf="showAddForm">
+    <mat-card-header>
+      <mat-card-title class="filters-title">
+        <mat-icon>playlist_add</mat-icon>
+        Nouvel article (pré-référencement)
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="filters-content">
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Code</mat-label>
+          <input matInput [(ngModel)]="newArticle.Code" placeholder="Code unique" required>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Libellé</mat-label>
+          <input matInput [(ngModel)]="newArticle['Libellé']" placeholder="Désignation" required>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Marque</mat-label>
+          <input matInput [(ngModel)]="newArticle.Marque">
+        </mat-form-field>
+      </div>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Famille</mat-label>
+          <input matInput [(ngModel)]="newArticle.Famille">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Sous-famille</mat-label>
+          <input matInput [(ngModel)]="newArticle.SousFamille">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Fournisseur</mat-label>
+          <input matInput [(ngModel)]="newArticle.Fournisseur">
+        </mat-form-field>
+      </div>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Prix achat HT</mat-label>
+          <input matInput type="number" [(ngModel)]="newArticle.PrixAchatHT">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Prix vente TTC</mat-label>
+          <input matInput type="number" [(ngModel)]="newArticle.PrixVenteTTC">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>TVA %</mat-label>
+          <input matInput type="number" [(ngModel)]="newArticle.TVA">
+        </mat-form-field>
+      </div>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>EAN</mat-label>
+          <input matInput [(ngModel)]="newArticle.EAN">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Conditionnement</mat-label>
+          <input matInput [(ngModel)]="newArticle.Conditionnement">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>MOQ</mat-label>
+          <input matInput type="number" [(ngModel)]="newArticle.MOQ">
+        </mat-form-field>
+      </div>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Délai livraison (J)</mat-label>
+          <input matInput type="number" [(ngModel)]="newArticle['DélaiLivraisonJ']">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Origine</mat-label>
+          <input matInput [(ngModel)]="newArticle.Origine">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Statut</mat-label>
+          <input matInput [(ngModel)]="newArticle.Statut">
+        </mat-form-field>
+      </div>
+      <div class="filter-actions">
+        <button mat-raised-button color="primary" (click)="addArticle()">
+          <mat-icon>save</mat-icon>
+          Créer
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <!-- Filtres -->
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-card-title class="filters-title">
+        <mat-icon>filter_list</mat-icon>
+        Filtres
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="filters-content">
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field search-field">
+          <mat-label>Recherche</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [(ngModel)]="search" (ngModelChange)="applyFilters()" placeholder="Référence, désignation, EAN">
+          <mat-icon matSuffix *ngIf="search" class="clear-icon" (click)="search=''; applyFilters()">close</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Famille</mat-label>
+          <mat-select [(ngModel)]="selectedFamille" (ngModelChange)="applyFilters()">
+            <mat-option value="">Toutes les familles</mat-option>
+            <mat-option *ngFor="let f of familleOptions" [value]="f">{{f}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Fournisseur</mat-label>
+          <mat-select [(ngModel)]="selectedFournisseur" (ngModelChange)="applyFilters()">
+            <mat-option value="">Tous les fournisseurs</mat-option>
+            <mat-option *ngFor="let s of fournisseurOptions" [value]="s">{{s}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-stroked-button (click)="resetFilters()" class="reset-btn">
+            <mat-icon>clear_all</mat-icon>
+            Réinitialiser
+          </button>
+          <div class="results-count">
+            <span class="count-badge">{{filtered.length}}</span>
+            article(s)
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tableau -->
+  <mat-card class="table-card">
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Chargement du catalogue fournisseur...</p>
+    </div>
+
+    <div *ngIf="!isLoading" class="table-container">
+      <div *ngIf="selectedIds.size > 0" class="bulk-actions">
+        <div class="selection-info">
+          <mat-icon>check_circle</mat-icon>
+          {{selectedIds.size}} article(s) sélectionné(s)
+        </div>
+        <div class="bulk-buttons">
+          <button mat-stroked-button color="primary" (click)="onReferencerSelection()">
+            <mat-icon>how_to_reg</mat-icon>
+            Référencer sélection
+          </button>
+          <button mat-stroked-button (click)="selectedIds.clear()">
+            <mat-icon>close</mat-icon>
+            Vider la sélection
+          </button>
+        </div>
+      </div>
+
+      <div class="mat-elevation-1 table-wrapper">
+        <table mat-table [dataSource]="paged" class="articles-table">
+
+          <!-- Sélection -->
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef class="select-column">
+              <mat-checkbox (change)="toggleAll()" [checked]="areAllPagedSelected()" [indeterminate]="areSomePagedSelected()"></mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let a" class="select-column">
+              <mat-checkbox [checked]="selectedIds.has(a.id)" (change)="toggleSelection(a)"></mat-checkbox>
+            </td>
+          </ng-container>
+
+          <!-- Référence -->
+          <ng-container matColumnDef="reference">
+            <th mat-header-cell *matHeaderCellDef class="reference-column">Référence</th>
+            <td mat-cell *matCellDef="let a" class="reference-column">
+              <div class="reference-cell">
+                <span class="reference-text">{{a.reference}}</span>
+                <span class="ean-text">EAN: {{a.codeEan}}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Désignation -->
+          <ng-container matColumnDef="designation">
+            <th mat-header-cell *matHeaderCellDef class="designation-column">Désignation</th>
+            <td mat-cell *matCellDef="let a" class="designation-column">
+              <div class="designation-cell" *ngIf="editingCode !== a.reference; else editDesig">
+                <span class="designation-text">{{a.designation}}</span>
+                <span class="subfamily-text">{{a.sousFamille}}</span>
+              </div>
+              <ng-template #editDesig>
+                <input matInput [(ngModel)]="editDesignation" placeholder="Désignation" />
+                <span class="subfamily-text">{{a.sousFamille}}</span>
+              </ng-template>
+            </td>
+          </ng-container>
+
+          <!-- Famille -->
+          <ng-container matColumnDef="famille">
+            <th mat-header-cell *matHeaderCellDef class="famille-column">Famille</th>
+            <td mat-cell *matCellDef="let a" class="famille-column">{{a.famille}}</td>
+          </ng-container>
+
+          <!-- Marque -->
+          <ng-container matColumnDef="marque">
+            <th mat-header-cell *matHeaderCellDef class="marque-column">Marque</th>
+            <td mat-cell *matCellDef="let a" class="marque-column">{{a.marque}}</td>
+          </ng-container>
+
+          <!-- Fournisseur -->
+          <ng-container matColumnDef="fournisseur">
+            <th mat-header-cell *matHeaderCellDef class="fournisseur-column">Fournisseur</th>
+            <td mat-cell *matCellDef="let a" class="fournisseur-column">{{a.fournisseurPrincipal}}</td>
+          </ng-container>
+
+          <!-- Prix achat -->
+          <ng-container matColumnDef="prixAchat">
+            <th mat-header-cell *matHeaderCellDef class="price-column">Prix Achat</th>
+            <td mat-cell *matCellDef="let a" class="price-column">
+              <ng-container *ngIf="editingCode !== a.reference; else editPa">
+                {{a.prixAchat | number:'1.2-2'}} €
+              </ng-container>
+              <ng-template #editPa>
+                <input matInput type="number" [(ngModel)]="editPrixAchat" placeholder="Prix Achat HT" />
+              </ng-template>
+            </td>
+          </ng-container>
+
+
+          <tr mat-header-row *matHeaderRowDef="displayed"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayed"></tr>
+        </table>
+      </div>
+
+      <!-- Pagination simple -->
+      <div class="pagination">
+        <button mat-stroked-button (click)="prevPage()" [disabled]="currentPage === 0">
+          <mat-icon>chevron_left</mat-icon>
+          Précédent
+        </button>
+        <span class="page-indicator">Page {{currentPage + 1}}</span>
+        <button mat-stroked-button (click)="nextPage()" [disabled]="(currentPage + 1) * pageSize >= filtered.length">
+          Suivant
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </div>
+  </mat-card>
+
+  <!-- Dialog: Information sélection -->
+  <ng-template #selectionInfoDialog>
+    <h2 mat-dialog-title>Référencer la sélection</h2>
+    <mat-dialog-content>
+      Souhaitez-vous référencer les {{selectedIds.size}} article(s) sélectionné(s) ?
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-stroked-button mat-dialog-close>Annuler</button>
+      <button mat-flat-button color="primary" (click)="confirmReferencer()" mat-dialog-close>Oui</button>
+    </mat-dialog-actions>
+  </ng-template>
+
+</div>

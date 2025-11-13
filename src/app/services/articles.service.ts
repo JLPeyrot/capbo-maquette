@@ -38,7 +38,7 @@ export class ArticlesService {
    */
   private loadArticles(): void {
     console.log('Tentative de chargement des articles...');
-    this.http.get<ArticlesData>('/data/articles.json')
+    this.http.get<ArticlesData>('/data/articles_ref.json')
       .pipe(
         catchError(error => {
           console.error('Erreur lors du chargement des articles:', error);

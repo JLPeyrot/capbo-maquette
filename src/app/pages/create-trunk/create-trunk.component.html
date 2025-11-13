@@ -48,36 +48,45 @@
             <!-- Groupes -->
             <div class="form-field">
               <label class="field-label">Groupes :</label>
-              <div class="field-with-button">
-                <mat-form-field appearance="outline" class="field-select">
-                  <mat-select formControlName="selectedGroupValue" placeholder="Sélectionner un groupe">
-                    <mat-option *ngFor="let group of availableGroupsFiltered" [value]="group.id">
-                      <span class="group-option">
-                        <strong>{{ group.name }}</strong>
-                        <small class="group-category"> - {{ group.category }}</small>
-                      </span>
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <button mat-icon-button class="add-button" (click)="addGroup()" 
-                        [disabled]="!trunkForm.get('selectedGroupValue')?.value">
-                  <mat-icon>add</mat-icon>
-                </button>
+              <div class="groups-container">
+                <div class="group-select-row" *ngFor="let groupSelect of groupsSelects; let gi = index">
+                  <mat-form-field appearance="outline" class="field-select">
+                    <mat-select [value]="groupSelect.selectedValue"
+                               (selectionChange)="onGroupSelectionChange(gi, $event.value)"
+                               placeholder="Sélectionner un groupe">
+                      <mat-option *ngFor="let group of getAvailableGroupsForSelect()" [value]="group.id">
+                        <span class="group-option">
+                          <strong>{{ group.name }}</strong>
+                          <small class="group-category"> - {{ group.category }}</small>
+                        </span>
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
               </div>
             </div>
 
-            <!-- Groupes sélectionnés -->
+            <!-- Groupes sélectionnés (bignettes) -->
             <div class="selected-items" *ngIf="selectedGroups.length > 0">
-              <mat-chip-set>
-                <mat-chip *ngFor="let group of selectedGroups; let i = index" 
-                          (removed)="removeGroup(i)">
-                  <span class="chip-content">
-                    <strong>{{ group.name }}</strong>
-                    <small> ({{ group.category }})</small>
+              <div class="vignettes">
+                <div class="vignette" *ngFor="let group of selectedGroups; let i = index">
+                  <span class="vignette-text">
+                    <span class="vignette-title">{{ group.name }}</span>
+                    <span class="vignette-meta">({{ group.category }})</span>
                   </span>
-                  <mat-icon matChipRemove>cancel</mat-icon>
-                </mat-chip>
-              </mat-chip-set>
+                  <button type="button" class="vignette-remove" (click)="removeGroup(i)" aria-label="Supprimer">
+                    <span class="remove-icon">×</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bouton + sous les bignettes (affiché si aucun sélecteur ouvert) -->
+            <div class="add-group-row" *ngIf="groupsSelects.length === 0">
+              <button mat-icon-button class="add-button" (click)="addGroupSelect()"
+                      [disabled]="getAvailableGroupsForSelect().length === 0" title="Ajouter un groupe">
+                <mat-icon>add</mat-icon>
+              </button>
             </div>
 
             <!-- Attributs -->
@@ -102,26 +111,29 @@
                     <mat-icon>remove</mat-icon>
                   </button>
                 </div>
-                
-                <!-- Bouton pour ajouter une nouvelle liste -->
-                <div class="add-attribute-row">
-                  <button mat-raised-button class="add-attribute-btn" (click)="addAttributeSelect()">
-                    <mat-icon>add</mat-icon>
-                    Ajouter un attribut
+              </div>
+            </div>
+
+            <!-- Attributs sélectionnés (bignettes) -->
+            <div class="selected-items" *ngIf="selectedAttributes.length > 0">
+              <div class="vignettes">
+                <div class="vignette" *ngFor="let attribute of selectedAttributes; let i = index">
+                  <span class="vignette-text">
+                    <span class="vignette-title">{{ attribute.name }}</span>
+                  </span>
+                  <button type="button" class="vignette-remove" (click)="removeSelectedAttribute(i)" aria-label="Supprimer">
+                    <span class="remove-icon">×</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <!-- Attributs sélectionnés (affichage) -->
-            <div class="selected-items" *ngIf="selectedAttributes.length > 0">
-              <mat-chip-set>
-                <mat-chip *ngFor="let attribute of selectedAttributes; let i = index" 
-                          (removed)="removeSelectedAttribute(i)">
-                  {{ attribute.name }}
-                  <mat-icon matChipRemove>cancel</mat-icon>
-                </mat-chip>
-              </mat-chip-set>
+            <!-- Bouton + sous les bignettes (affiché si aucun sélecteur ouvert) -->
+            <div class="add-attribute-row" *ngIf="attributeSelects.length === 0">
+              <button mat-icon-button class="add-attribute-btn" (click)="addAttributeSelect()"
+                      [disabled]="getAvailableAttributesForSelect(0).length === 0" title="Ajouter un attribut">
+                <mat-icon>add</mat-icon>
+              </button>
             </div>
           </form>
         </mat-card-content>

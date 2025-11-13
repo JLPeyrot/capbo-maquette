@@ -11,6 +11,14 @@ export const routes: Routes = [
     component: MainLayoutComponent
   },
   {
+    path: 'referencement',
+    component: MainLayoutComponent
+  },
+  {
+    path: 'referencement/review',
+    component: MainLayoutComponent
+  },
+  {
     path: 'create-article',
     component: MainLayoutComponent
   },

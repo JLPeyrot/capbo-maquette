@@ -28,9 +28,12 @@
 }
 
 .filters-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 50% 1fr; /* recherche à 50% comme en masse */
+  grid-template-rows: auto; /* une seule ligne désormais */
   align-items: center;
-  gap: 16px;
+  column-gap: 16px;
+  row-gap: 8px;
   width: 100%;
 }
 
@@ -40,18 +43,59 @@
 }
 
 .filter-field {
-  flex: 1;
+  grid-column: 1;
+  grid-row: 1; /* Ligne 1 à gauche */
+  width: 100%;
 }
 
 .action-buttons {
+  grid-column: 2; /* Ligne 1 à droite */
+  grid-row: 1;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.selection-counter {
+/* Mise en forme cohérente des contrôles (parité avec gestion en masse) */
+.action-buttons .mat-mdc-button,
+.action-buttons .mat-mdc-unelevated-button {
+  height: 40px;
+  padding: 0 14px;
   display: inline-flex;
   align-items: center;
+}
+.action-buttons .mat-icon-button {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Checkboxes ligne 2, étirées et sans retour de ligne */
+.assigned-filters {
+  grid-column: 1;
+  grid-row: 2; /* Ligne 2 à gauche */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+.assigned-filters .mat-mdc-checkbox {
+  width: 100%;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+.selection-counter {
+  grid-column: 2; /* Ligne 1 à droite */
+  grid-row: 1;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
   gap: 6px;
   font-weight: 500;
 }

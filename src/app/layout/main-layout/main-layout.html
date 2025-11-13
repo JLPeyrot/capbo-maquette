@@ -116,6 +116,10 @@
                 <mat-icon matListItemIcon>local_offer</mat-icon>
                 <div matListItemTitle>Tarification</div>
               </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('referencement')">
+                <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
+                <div matListItemTitle>Référencement</div>
+              </mat-list-item>
             </div>
           </div>
 
@@ -443,6 +447,16 @@
       <!-- PAGE DE DONNÉES -->
       <div *ngSwitchCase="'data-page'" class="page-container">
         <app-data-page></app-data-page>
+      </div>
+
+      <!-- PAGE RÉFÉRENCEMENT -->
+      <div *ngSwitchCase="'referencement'" class="page-container">
+        <app-referencement></app-referencement>
+      </div>
+
+      <!-- PAGE RÉFÉRENCEMENT REVIEW -->
+      <div *ngSwitchCase="'referencement-review'" class="page-container">
+        <app-referencement-review></app-referencement-review>
       </div>
 
     </div>

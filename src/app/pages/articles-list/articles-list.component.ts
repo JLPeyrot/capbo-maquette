@@ -116,7 +116,7 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     
     // Chargement du fichier JSON
-    fetch('/assets/data/articles.json')
+    fetch('/assets/data/articles_ref.json')
       .then(response => response.json())
       .then(data => {
         this.articles = data.articles.map((article: any) => ({

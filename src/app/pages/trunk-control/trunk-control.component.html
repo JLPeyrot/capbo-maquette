@@ -78,15 +78,6 @@
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
 
-            <!-- Filtres d'assignation (sans effet en contexte tronc) -->
-            <mat-checkbox [disabled]="true" [(ngModel)]="showAssignedOnly" (change)="toggleShowAssignedOnly()" matTooltip="Déjà rattaché: le contexte tronc affiche uniquement les articles du tronc">
-              Inclure les assortiments rattachés
-            </mat-checkbox>
-
-            <mat-checkbox [disabled]="true" [(ngModel)]="showOnlyAssigned" (change)="toggleShowOnlyAssigned()" matTooltip="Déjà rattaché: le contexte tronc affiche uniquement les articles du tronc">
-              N'afficher que les assortiments rattachés
-            </mat-checkbox>
-
             <div class="action-buttons">
               <button mat-stroked-button (click)="toggleSelectAll()">
                 <mat-icon>{{ selectAll ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
@@ -98,11 +89,11 @@
               <button mat-icon-button matTooltip="Vue en liste" [class.active]="isListView()" (click)="setListView()">
                 <mat-icon>view_list</mat-icon>
               </button>
+            </div>
 
-              <div class="selection-counter">
-                <mat-icon>check_circle</mat-icon>
-                <span>{{ getSelectedCount() }} / {{ filteredArticles.length }}</span>
-              </div>
+            <div class="selection-counter">
+              <mat-icon>check_circle</mat-icon>
+              <span>{{ getSelectedCount() }} / {{ filteredArticles.length }}</span>
             </div>
           </div>
         </mat-card-content>

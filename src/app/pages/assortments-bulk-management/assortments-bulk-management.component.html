@@ -6,7 +6,6 @@
         <mat-icon class="page-icon">playlist_add_check_circle</mat-icon>
         <div>
           <h1>Gestion en masse des assortiments</h1>
-          <p class="subtitle">Gérez précisément une liste d'assortiments, indépendante de tout tronc</p>
         </div>
       </div>
       <div class="header-actions">
@@ -78,13 +77,14 @@
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
 
-            <mat-checkbox [(ngModel)]="showAssignedOnly" (change)="toggleShowAssignedOnly()" matTooltip="Inclure les assortiments déjà rattachés à un tronc">
-              Inclure les assortiments rattachés
-            </mat-checkbox>
-
-            <mat-checkbox [(ngModel)]="showOnlyAssigned" (change)="toggleShowOnlyAssigned()" matTooltip="N'afficher que les assortiments déjà rattachés à un tronc">
-              N'afficher que les assortiments rattachés
-            </mat-checkbox>
+            <div class="assigned-filters">
+              <mat-checkbox [(ngModel)]="showAssignedOnly" (change)="toggleShowAssignedOnly()" matTooltip="Inclure les assortiments déjà rattachés à un tronc">
+                Inclure les assortiments rattachés
+              </mat-checkbox>
+              <mat-checkbox [(ngModel)]="showOnlyAssigned" (change)="toggleShowOnlyAssigned()" matTooltip="N'afficher que les assortiments déjà rattachés à un tronc">
+                N'afficher que les assortiments rattachés
+              </mat-checkbox>
+            </div>
 
             <div class="action-buttons">
               <button mat-stroked-button (click)="toggleSelectAll()">
@@ -97,11 +97,12 @@
               <button mat-icon-button matTooltip="Vue en liste" [class.active]="isListView()" (click)="setListView()">
                 <mat-icon>view_list</mat-icon>
               </button>
+            </div>
 
-              <div class="selection-counter">
-                <mat-icon>check_circle</mat-icon>
-                <span>{{ getSelectedCount() }} / {{ filteredArticles.length }}</span>
-              </div>
+            <!-- Ligne 2: compteur séparé à droite -->
+            <div class="selection-counter">
+              <mat-icon>check_circle</mat-icon>
+              <span>{{ getSelectedCount() }} / {{ filteredArticles.length }}</span>
             </div>
           </div>
         </mat-card-content>

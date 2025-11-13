@@ -137,8 +137,24 @@ export class TrunkManagementComponent implements OnInit {
   }
 
   editTrunk(trunk: Trunk): void {
-    console.log('Éditer le tronc:', trunk.name);
-    // Naviguer vers trunk-control avec le nom du tronc en paramètre
+    console.log('Éditer le tronc (pré-rempli):', trunk.name);
+    // Rediriger vers la page de création de tronc avec pré-remplissage
+    this.router.navigate(['/create-trunk'], {
+      queryParams: {
+        name: trunk.name,
+        // Angular encode les tableaux en params répétés; lecture via getAll()
+        groups: trunk.groups,
+        attributes: trunk.attributes
+      }
+    });
+  }
+
+  /**
+   * Modifier les assortiments du tronc (action Liste)
+   */
+  manageAssortments(trunk: Trunk): void {
+    console.log('Modifier les assortiments du tronc:', trunk.name);
+    // Naviguer vers la page de contrôle du tronc pour gérer ses assortiments
     this.router.navigate(['/trunk-control', encodeURIComponent(trunk.name)]);
   }
 

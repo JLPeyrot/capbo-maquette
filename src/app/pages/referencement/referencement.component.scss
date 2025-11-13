@@ -1,0 +1,102 @@
+/* Mise en page inspirée de ArticlesList, simplifiée */
+.referencement-container {
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.page-header {
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  border-bottom: 3px solid #1976d2;
+
+  .header-content {
+    padding: 32px 32px 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+
+    .title-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 28px;
+        font-weight: 300;
+        color: #64b5f6;
+        margin: 0 0 8px 0;
+
+        .title-icon { color: #64b5f6; }
+      }
+
+      .page-subtitle { color: #666; margin: 0; font-size: 16px; }
+    }
+  }
+}
+
+.filters-card {
+  margin: 0 32px 24px 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  .mat-mdc-card-header {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    color: white;
+    padding: 20px 24px;
+  }
+
+  .filters-content { padding: 24px !important; }
+  .filters-row {
+    display: grid;
+    grid-template-columns: 40% minmax(0, 30%) minmax(0, 30%) auto; /* Recherche 40%, Famille ≤ 30%, Fournisseur ≤ 30% */
+    gap: 20px;
+    align-items: center; /* aligne verticalement tous les éléments */
+  }
+  .search-field { width: 100%; }
+
+  .filter-field { width: 100%; }
+  .filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: flex-end;
+    min-height: 56px; /* hauteur des mat-form-field outline pour alignement visuel */
+  }
+  .results-count { color: #666; display: flex; align-items: center; gap: 8px; }
+  .count-badge { background: #1976d2; color: white; padding: 4px 8px; border-radius: 12px; font-weight: 600; font-size: 12px; }
+}
+
+.table-card { margin: 0 32px; border-radius: 16px; }
+.loading-container { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px; }
+.table-container { padding: 16px; }
+
+.bulk-actions { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 16px; }
+.bulk-buttons { display: flex; gap: 12px; }
+
+.table-wrapper { overflow: auto; border-radius: 12px; }
+.articles-table { width: 100%; }
+.select-column { width: 56px; }
+.reference-cell { display: flex; gap: 12px; align-items: center; }
+.reference-text { font-weight: 600; }
+.ean-text { color: #777; font-size: 12px; }
+.designation-cell { display: flex; flex-direction: column; }
+.designation-text { font-weight: 500; }
+.subfamily-text { color: #777; font-size: 12px; }
+
+.pagination { display: flex; gap: 16px; align-items: center; justify-content: center; padding: 16px; }
+.page-indicator { color: #555; }
+
+/* Dark mode */
+:host-context(.dark-theme) {
+  .referencement-container { background: #0e1420; }
+  .page-header { background: #101522; border-bottom-color: #263238; }
+  .filters-card { background: #101522; }
+  .results-count, .ean-text, .subfamily-text, .page-indicator { color: #aaa; }
+}

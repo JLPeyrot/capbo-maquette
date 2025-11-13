@@ -1,0 +1,59 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+
+<!-- Affichage cohérent selon sélection -->
+<div class="subtitle" *ngIf="selectedCount === 1 && data?.article">
+  <span class="ref">Référence&nbsp;: {{ data.article.reference }}</span>
+  <span class="sep">•</span>
+  <span class="desig">{{ data.article.designation }}</span>
+  <span class="mode" *ngIf="data?.mode">— {{ data.mode }}</span>
+</div>
+<div class="multi-subtitle" *ngIf="selectedCount > 1">
+  <mat-icon>playlist_add_check</mat-icon>
+  <span>{{ selectedCount }} article(s) sélectionné(s)</span>
+  <span class="mode" *ngIf="data?.mode">— {{ data.mode }}</span>
+</div>
+<mat-dialog-content class="dialog-content">
+  <div class="section-title">Paramètres de l’assortiment</div>
+
+  <!-- Ligne 1 : Type d’assortiment -->
+  <div class="field-row row-1">
+    <mat-form-field appearance="outline" floatLabel="always" class="field">
+      <mat-label>Type d'assortiment</mat-label>
+      <mat-select [(ngModel)]="type" (ngModelChange)="onTypeChanged($event)" required>
+        <mat-option value="permanent">Permanent</mat-option>
+        <mat-option value="catalogue">Catalogue</mat-option>
+        <mat-option value="promotion">Promotion</mat-option>
+      </mat-select>
+      <mat-hint align="start">Permanent, Catalogue, Promotion</mat-hint>
+    </mat-form-field>
+  </div>
+
+  <!-- Ligne 2 : Dates -->
+  <div class="field-row">
+    <mat-form-field appearance="outline" floatLabel="always" class="field">
+      <mat-label>Date de début</mat-label>
+      <input matInput [matDatepicker]="pickerStart" [(ngModel)]="startDate" required>
+      <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+      <mat-datepicker #pickerStart></mat-datepicker>
+      <mat-hint align="start">JJ/MM/AAAA</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" floatLabel="always" class="field">
+      <mat-label>Date de fin</mat-label>
+      <input matInput [matDatepicker]="pickerEnd" [(ngModel)]="endDate">
+      <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+      <mat-datepicker #pickerEnd></mat-datepicker>
+      <mat-hint align="start">JJ/MM/AAAA</mat-hint>
+    </mat-form-field>
+  </div>
+
+  <div class="hint" *ngIf="startDate && endDate && endDate < startDate">
+    <mat-icon>error_outline</mat-icon>
+    La date de fin doit être postérieure à la date de début.
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button (click)="cancel()">Annuler</button>
+  <button mat-raised-button color="primary" (click)="create()" [disabled]="isInvalid()">Créer</button>
+</mat-dialog-actions>

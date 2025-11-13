@@ -1,0 +1,140 @@
+.review-container {
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.page-header {
+  position: relative;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  border-bottom: 3px solid #1976d2;
+
+  .header-content {
+    padding: 32px 32px 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+
+    .title-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      .page-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 28px;
+        font-weight: 300;
+        color: #64b5f6;
+        margin: 0 0 8px 0;
+
+        .title-icon { color: #64b5f6; }
+      }
+
+      .page-subtitle { color: #666; margin: 0; font-size: 16px; }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      .action-btn { min-width: 180px; }
+    }
+  }
+}
+
+.back-button {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  
+  // Assure le bleu même si le thème primaire diffère
+  mat-icon {
+    color: #1976d2;
+  }
+}
+
+.review-card {
+  margin: 0 32px 24px 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.empty-card {
+  margin: 0 32px 24px 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.review-table {
+  width: 100%;
+  margin-bottom: 16px;
+  table-layout: fixed;
+}
+
+.review-table .mat-mdc-cell,
+.review-table .mat-mdc-header-cell {
+  vertical-align: middle;
+  padding: 12px 16px;
+}
+
+.reference-text { font-weight: 600; }
+.reference-col { white-space: nowrap; }
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #555;
+}
+
+/* Dark mode */
+:host-context(.dark-theme) {
+  .review-container { background: #0e1420; }
+  .page-header { background: #101522; border-bottom-color: #263238; }
+  .review-card, .empty-card { background: #101522; }
+}
+
+.actions-header { text-align: right; }
+.actions-cell {
+  display: flex;
+  justify-content: flex-end;
+}
+.row-actions { display: flex; gap: 8px; }
+.count-badge {
+  background: #1976d2;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
+}
+.reference-col { width: 180px; }
+.select-col { width: 56px; text-align: center; }
+.actions-col { display: none; }
+.designation-text {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.action-btn-sm {
+  line-height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.row-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+/* Pied de carte simplifié : boutons de navigation uniquement */
+
+@media (max-width: 1024px) {
+  .actions-col { min-width: 320px; }
+  .action-btn-sm { padding: 0 8px; }
+}
