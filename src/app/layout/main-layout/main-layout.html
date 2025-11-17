@@ -107,20 +107,24 @@
               <span>PRODUITS & CATALOGUE</span>
               <mat-icon class="expand-icon" [class.expanded]="expandedGroups.products">expand_more</mat-icon>
             </button>
-            <div class="submenu" [class.expanded]="expandedGroups.products">
-              <mat-list-item class="submenu-item" (click)="navigateTo('articles')">
-                <mat-icon matListItemIcon>inventory_2</mat-icon>
-                <div matListItemTitle>Articles</div>
-              </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('pricing')">
-                <mat-icon matListItemIcon>local_offer</mat-icon>
-                <div matListItemTitle>Tarification</div>
-              </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('referencement')">
-                <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
-                <div matListItemTitle>Référencement</div>
-              </mat-list-item>
-            </div>
+          <div class="submenu" [class.expanded]="expandedGroups.products">
+            <mat-list-item class="submenu-item" (click)="navigateTo('supplier-import')">
+              <mat-icon matListItemIcon>file_upload</mat-icon>
+              <div matListItemTitle>Imports catalogues</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('referencement')">
+              <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
+              <div matListItemTitle>Référencement</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('articles')">
+              <mat-icon matListItemIcon>inventory_2</mat-icon>
+              <div matListItemTitle>Articles</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('pricing')">
+              <mat-icon matListItemIcon>local_offer</mat-icon>
+              <div matListItemTitle>Tarification</div>
+            </mat-list-item>
+          </div>
           </div>
 
           <!-- ASSORTIMENTS -->
@@ -139,21 +143,26 @@
                 <mat-icon matListItemIcon>manage_accounts</mat-icon>
                 <div matListItemTitle>Gestion des Troncs</div>
               </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('assortment-trunk')">
-                <mat-icon matListItemIcon>account_tree</mat-icon>
-                <div matListItemTitle>Troncs d'Assortiment</div>
-              </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('reception-trunk')">
-                <mat-icon matListItemIcon>inbox</mat-icon>
-                <div matListItemTitle>Réception Tronc</div>
-              </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('trunk-selection')">
-                <mat-icon matListItemIcon>add_box</mat-icon>
-                <div matListItemTitle>Ajout Assortiments</div>
-              </mat-list-item>
+              
+              
               <mat-list-item class="submenu-item" (click)="navigateTo('assortments-bulk')">
                 <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
                 <div matListItemTitle>Gestion en masse des assortiments</div>
+              </mat-list-item>
+            </div>
+          </div>
+
+          <!-- MAGASIN -->
+          <div class="menu-group">
+            <button mat-button class="group-header" (click)="toggleGroup('store')">
+              <mat-icon>store</mat-icon>
+              <span>MAGASIN</span>
+              <mat-icon class="expand-icon" [class.expanded]="expandedGroups.store">expand_more</mat-icon>
+            </button>
+            <div class="submenu" [class.expanded]="expandedGroups.store">
+              <mat-list-item class="submenu-item" (click)="navigateTo('reception-trunk')">
+                <mat-icon matListItemIcon>inbox</mat-icon>
+                <div matListItemTitle>Réception Tronc</div>
               </mat-list-item>
             </div>
           </div>
@@ -385,9 +394,6 @@
       </div>
 
       <!-- PAGE ASSORTMENT TRUNK -->
-      <div *ngSwitchCase="'assortment-trunk'" class="page-container">
-        <app-assortment-trunk></app-assortment-trunk>
-      </div>
 
       <!-- PAGE RECEPTION TRUNK -->
       <div *ngSwitchCase="'reception-trunk'" class="page-container">
@@ -400,9 +406,6 @@
       </div>
 
       <!-- PAGE ADD ASSORTMENTS (mode normal avec navigation) -->
-      <div *ngSwitchCase="'add-assortments'" class="page-container">
-        <app-add-assortments [isFocusMode]="isFocusMode"></app-add-assortments>
-      </div>
 
       <!-- PAGE TRUNK LIST -->
       <div *ngSwitchCase="'trunk-list'" class="page-container">
@@ -457,6 +460,11 @@
       <!-- PAGE RÉFÉRENCEMENT REVIEW -->
       <div *ngSwitchCase="'referencement-review'" class="page-container">
         <app-referencement-review></app-referencement-review>
+      </div>
+
+      <!-- PAGE IMPORT FOURNISSEURS -->
+      <div *ngSwitchCase="'supplier-import'" class="page-container">
+        <app-supplier-import></app-supplier-import>
       </div>
 
     </div>

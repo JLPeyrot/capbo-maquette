@@ -78,11 +78,11 @@
             </mat-form-field>
 
             <div class="assigned-filters">
-              <mat-checkbox [(ngModel)]="showAssignedOnly" (change)="toggleShowAssignedOnly()" matTooltip="Inclure les assortiments déjà rattachés à un tronc">
-                Inclure les assortiments rattachés
+              <mat-checkbox [(ngModel)]="showAssignedOnly" (change)="toggleShowAssignedOnly()" matTooltip="Inclure les assortiments rattachés à un tronc">
+                Inclure les assortiments rattachés à un tronc
               </mat-checkbox>
-              <mat-checkbox [(ngModel)]="showOnlyAssigned" (change)="toggleShowOnlyAssigned()" matTooltip="N'afficher que les assortiments déjà rattachés à un tronc">
-                N'afficher que les assortiments rattachés
+              <mat-checkbox [(ngModel)]="showOnlyAssigned" (change)="toggleShowOnlyAssigned()" matTooltip="N'afficher que les assortiments rattachés à un tronc">
+                N'afficher que les assortiments rattachés à un tronc
               </mat-checkbox>
             </div>
 
@@ -130,11 +130,16 @@
                 <span class="pill pill-trunk">Tronc: {{ trunkNameById[article.trunkId] || article.trunkId }}</span>
               </div>
 
+              <!-- Suppression de l’affichage du niveau -->
+
               <!-- Attributs appliqués à l’article -->
               <div class="meta-pills inline" *ngIf="article.attributes?.length">
                 <span class="pill pill-attribute" *ngFor="let attr of article.attributes">{{ attr }}</span>
               </div>
 
+            </div>
+            <div class="article-level" *ngIf="article.level">
+              <em>{{ getLevelLabel(article.level) }}</em>
             </div>
           </div>
         </div>
@@ -159,22 +164,7 @@
           <mat-icon>account_tree</mat-icon>
           Ajouter à un tronc
         </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onAddAttributes()" matTooltip="Ajouter des attributs aux assortiments sélectionnés">
-          <mat-icon>add_circle</mat-icon>
-          Ajouter des attributs
-        </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onRemoveAttributes()" matTooltip="Supprimer des attributs des assortiments sélectionnés">
-          <mat-icon>remove_circle</mat-icon>
-          Supprimer des attributs
-        </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onPauseAssortments()">
-          <mat-icon>pause_circle</mat-icon>
-          Mettre en pause
-        </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onEditDates()">
-          <mat-icon>event</mat-icon>
-          Modifier les dates
-        </button>
+        <!-- Actions simplifiées: ne conserver que "Ajouter à un tronc" -->
       </div>
     </div>
   </div>

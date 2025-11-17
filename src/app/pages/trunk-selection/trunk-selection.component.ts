@@ -96,7 +96,7 @@ export class TrunkSelectionComponent implements OnInit {
     
     if (selectedTrunk.isNew) {
       // Rediriger vers la création d'un nouveau tronc avec le nom pré-rempli
-      this.router.navigate(['/assortment-trunk'], {
+      this.router.navigate(['/create-trunk'], {
         queryParams: { name: selectedTrunk.name }
       });
     } else {
@@ -115,8 +115,8 @@ export class TrunkSelectionComponent implements OnInit {
   // Navigation vers la création d'un nouveau tronc
   navigateToCreateTrunk(): void {
     console.log('navigateToCreateTrunk appelée');
-    console.log('Tentative de navigation vers /assortment-trunk');
-    this.router.navigate(['/assortment-trunk']).then(
+    console.log('Tentative de navigation vers /create-trunk');
+    this.router.navigate(['/create-trunk']).then(
       (success) => console.log('Navigation réussie:', success),
       (error) => console.error('Erreur de navigation:', error)
     );
@@ -129,9 +129,9 @@ export class TrunkSelectionComponent implements OnInit {
     console.log('selectedTrunkLevel:', this.selectedTrunkLevel);
     
     if (this.selectedTrunk && this.selectedTrunkLevel) {
-      console.log('Tentative de navigation vers /add-assortments');
+      console.log('Tentative de navigation vers /create-assortments');
       // Passer les données sélectionnées à la page suivante
-      this.router.navigate(['/add-assortments'], {
+      this.router.navigate(['/create-assortments'], {
         queryParams: {
           trunkId: this.selectedTrunk.id,
           trunkName: this.selectedTrunk.name,
@@ -139,8 +139,8 @@ export class TrunkSelectionComponent implements OnInit {
           trunkLevelName: this.selectedTrunkLevel.name
         }
       }).then(
-        (success) => console.log('Navigation vers add-assortments réussie:', success),
-        (error) => console.error('Erreur de navigation vers add-assortments:', error)
+        (success) => console.log('Navigation vers create-assortments réussie:', success),
+        (error) => console.error('Erreur de navigation vers create-assortments:', error)
       );
     } else {
       console.log('Navigation impossible: tronc ou niveau manquant');

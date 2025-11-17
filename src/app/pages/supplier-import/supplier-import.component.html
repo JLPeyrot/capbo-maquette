@@ -1,0 +1,105 @@
+<div class="supplier-import-container">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <mat-icon class="page-icon">file_upload</mat-icon>
+        <div>
+          <h1>Import de fichiers fournisseurs</h1>
+          <p class="subtitle">Sélectionnez un ou plusieurs fichiers puis lancez l’import</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button mat-stroked-button class="back-btn-outline" (click)="cancelImport()" [disabled]="!isImporting">
+          <mat-icon>cancel</mat-icon>
+          Annuler l’import
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <mat-card class="selection-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>inventory_2</mat-icon>
+        Fichiers fournisseurs disponibles
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="files-list">
+        <div class="file-row" *ngFor="let f of files" (click)="toggleSelection(f.id)" [class.selected]="selectedFileIds.has(f.id)">
+          <mat-checkbox [checked]="selectedFileIds.has(f.id)" (change)="toggleSelection(f.id)" (click)="$event.stopPropagation()"></mat-checkbox>
+          <mat-icon class="file-icon">description</mat-icon>
+          <div class="file-info">
+            <div class="file-name">{{ f.name }}</div>
+            <div class="file-meta">{{ f.sizeKb }} Ko • {{ f.date }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button mat-raised-button color="primary" (click)="startImport()" [disabled]="selectedFileIds.size === 0 || isImporting">
+          <mat-icon>cloud_upload</mat-icon>
+          Importer ({{ selectedFileIds.size }})
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="progress-section" *ngIf="isImporting || progress > 0">
+    <mat-progress-bar [value]="progress" mode="determinate"></mat-progress-bar>
+    <div class="progress-info" *ngIf="isImporting">
+      <span class="current-file">Fichier en cours: {{ currentFileName || '—' }}</span>
+      <span class="current-stats">Lignes traitées: {{ currentProcessed }} • Rejets: {{ currentRejected }}</span>
+    </div>
+  </div>
+
+  <mat-card class="logs-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>article</mat-icon>
+        Suivi de l’import
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="summary-stats">
+        <div class="stat">
+          <mat-icon>task_alt</mat-icon>
+          <div>
+            <div class="stat-label">Validations totales</div>
+            <div class="stat-value">{{ totalValidated }}</div>
+          </div>
+        </div>
+        <div class="stat">
+          <mat-icon>report</mat-icon>
+          <div>
+            <div class="stat-label">Rejets totaux</div>
+            <div class="stat-value">{{ totalRejected }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="log-box">
+        <div class="log-line" *ngFor="let line of logLines">{{ line }}</div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <ng-template #importResultDialog>
+    <h2 mat-dialog-title>Import finalisé</h2>
+    <mat-dialog-content>
+      <div class="result-row">
+        <mat-icon class="result-icon success">task_alt</mat-icon>
+        <span class="result-label">Produits préréférencés</span>
+        <span class="result-value result-green">{{ totalValidated }}</span>
+      </div>
+      <div class="result-row">
+        <mat-icon class="result-icon error">report</mat-icon>
+        <span class="result-label">Lignes rejetées</span>
+        <span class="result-value result-red">{{ totalRejected }}</span>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-stroked-button mat-dialog-close>Fermer</button>
+    </mat-dialog-actions>
+  </ng-template>
+</div>

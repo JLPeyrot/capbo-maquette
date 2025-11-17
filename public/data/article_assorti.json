@@ -1,3 +1,404 @@
 {
-  "assortiments": []
+  "assortiments": [
+    {
+      "id": "5-ART0001",
+      "articleId": "ART0001",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0002",
+      "articleId": "ART0002",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0003",
+      "articleId": "ART0003",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0004",
+      "articleId": "ART0004",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0005",
+      "articleId": "ART0005",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0007",
+      "articleId": "ART0007",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0010",
+      "articleId": "ART0010",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0043",
+      "articleId": "ART0043",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0044",
+      "articleId": "ART0044",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0045",
+      "articleId": "ART0045",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0046",
+      "articleId": "ART0046",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0047",
+      "articleId": "ART0047",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0048",
+      "articleId": "ART0048",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0093",
+      "articleId": "ART0093",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0094",
+      "articleId": "ART0094",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0095",
+      "articleId": "ART0095",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0096",
+      "articleId": "ART0096",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0097",
+      "articleId": "ART0097",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0098",
+      "articleId": "ART0098",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0143",
+      "articleId": "ART0143",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0144",
+      "articleId": "ART0144",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0145",
+      "articleId": "ART0145",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0146",
+      "articleId": "ART0146",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0147",
+      "articleId": "ART0147",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    },
+    {
+      "id": "5-ART0148",
+      "articleId": "ART0148",
+      "metatype": "vendable",
+      "type": "permanent",
+      "commandable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": false
+      },
+      "vendable": {
+        "dateDebut": "04/03/2024",
+        "dateFin": "31/12/2099",
+        "actif": true
+      }
+    }
+  ]
 }

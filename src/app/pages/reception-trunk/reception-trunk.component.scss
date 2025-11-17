@@ -43,7 +43,7 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #ff8c00;
+  border-left: 4px solid #2e7d32;
   margin-bottom: 24px;
   padding: 24px;
 
@@ -59,7 +59,7 @@
     gap: 16px;
 
     .page-icon {
-      color: #ff8c00;
+      color: #2e7d32;
       font-size: 32px;
       width: 32px;
       height: 32px;
@@ -95,11 +95,11 @@
       }
       
       &.save-btn {
-        background-color: #ff8c00 !important;
+        background-color: #2e7d32 !important;
         color: white !important;
         
         &:hover {
-          background-color: #e67e00 !important;
+          background-color: #1b5e20 !important;
         }
       }
     }
@@ -132,7 +132,7 @@
       margin: 0;
       
       mat-icon {
-        color: #ff8c00;
+        color: #2e7d32;
         font-size: 20px;
         width: 20px;
         height: 20px;
@@ -169,13 +169,13 @@
         align-items: center;
         gap: 8px;
         padding: 8px 16px;
-        background-color: #fff3e0;
+        background-color: #e8f5e9;
         border-radius: 20px;
-        color: #e65100;
+        color: #2e7d32;
         font-weight: 500;
         
         mat-icon {
-          color: #ff8c00;
+          color: #2e7d32;
           font-size: 18px;
           width: 18px;
           height: 18px;
@@ -212,7 +212,7 @@
 
     .mat-mdc-tab.mat-mdc-tab-active {
       .mat-mdc-tab-label {
-        color: #ff8c00;
+        color: #2e7d32;
         font-weight: 600;
       }
     }
@@ -314,13 +314,13 @@
   .selection-info {
     text-align: center;
     padding: 16px;
-    background-color: #fff3e0;
+    background-color: #e8f5e9;
     border-radius: 8px;
     
     p {
       margin: 0;
       font-weight: 500;
-      color: #e65100;
+      color: #2e7d32;
     }
   }
 }

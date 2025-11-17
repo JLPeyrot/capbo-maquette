@@ -11,6 +11,9 @@ export interface Article {
   sousFamille: string;
   attributes?: string[]; // Codes d’attributs magasin appliqués
   trunkId?: string; // Identifiant du tronc assigné (unique)
+  level?: number; // Niveau de l’article dans le tronc
+  commandable?: { dateDebut: string | null; dateFin: string | null; actif?: boolean };
+  vendable?: { dateDebut: string | null; dateFin: string | null; actif?: boolean };
 }
 
 export interface ArticlesData {
@@ -27,7 +30,7 @@ export class ArticlesService {
   private hierarchySubject = new BehaviorSubject<TrunkHierarchyNode[]>([]);
   public hierarchy$ = this.hierarchySubject.asObservable();
 
-  private currentTrunkName: string = 'TRONC ACTUEL'; // Nom du tronc actuel
+  private currentTrunkName: string = 'Tronc'; // Nom du tronc affiché
 
   constructor(private http: HttpClient) {
     this.loadArticles();
@@ -38,31 +41,79 @@ export class ArticlesService {
    */
   private loadArticles(): void {
     console.log('Tentative de chargement des articles...');
-    this.http.get<ArticlesData>('/data/articles_ref.json')
+    // Essayer d'abord /assets/data, puis basculer vers /data si indisponible
+    const loadRef = (path: string) => this.http.get<ArticlesData>(path).pipe(
+      catchError(err => {
+        console.warn(`Impossible de charger ${path}, tentative de repli...`, err);
+        return of(undefined as unknown as ArticlesData);
+      })
+    );
+
+    loadRef('/assets/data/articles_ref.json')
       .pipe(
-        catchError(error => {
-          console.error('Erreur lors du chargement des articles:', error);
-          console.error('Type d\'erreur:', error.constructor.name);
-          console.error('Message:', error.message);
-          console.error('Status:', error.status);
-          console.error('URL:', error.url);
-          return of({ articles: [] });
-        })
+        // Si undefined, tenter le repli vers /data
+        map(data => data ?? { articles: [] }),
+        catchError(() => of({ articles: [] }))
       )
       .subscribe({
         next: (data) => {
-          const normalized = (data.articles || []).map((a: any) => {
-            const trunkId = a.trunkId ?? a.trunk_id;
-            return trunkId ? { ...a, trunkId } : a;
-          });
-          console.log('Articles chargés avec succès:', normalized.length, 'articles');
-          this.articlesSubject.next(normalized);
-          this.buildHierarchy(normalized as Article[]);
+          if (!data.articles || data.articles.length === 0) {
+            // Repli explicite vers /data si /assets n'a rien retourné
+            loadRef('/data/articles_ref.json')
+              .pipe(map(d => d ?? { articles: [] }))
+              .subscribe(finalData => {
+                this.processArticles(finalData);
+              });
+            return;
+          }
+          this.processArticles(data);
         },
         error: (error) => {
           console.error('Erreur dans subscribe:', error);
         }
       });
+  }
+
+  private processArticles(data: ArticlesData): void {
+          const normalized = (data.articles || []).map((a: any) => {
+            const trunkId = a.trunkId ?? a.trunk_id;
+            const levelFromJson = typeof a.trunk_level !== 'undefined' ? a.trunk_level : a.level;
+            const level = typeof levelFromJson !== 'undefined' ? Number(levelFromJson) : undefined;
+            if (trunkId) {
+              // Assurer un niveau par défaut à 1 pour les articles rattachés à un tronc
+              return { ...a, trunkId, level: level ?? 1 };
+            }
+            return { ...a, level };
+          });
+          // Charger et fusionner les métadonnées d'assortiments (commandable/vendable) avec fallback
+          const loadAssorti = (path: string) => this.http.get<{ assortiments: { articleId: string; commandable?: { dateDebut: string; dateFin: string; actif?: boolean }; vendable?: { dateDebut: string; dateFin: string; actif?: boolean } }[] }>(path)
+            .pipe(catchError(() => of(undefined)));
+
+          loadAssorti('/assets/data/article_assorti.json').subscribe(first => {
+            if (!first) {
+              loadAssorti('/data/article_assorti.json').subscribe(second => {
+                const assortiments = second?.assortiments ?? [];
+                this.mergeAssortimentsAndBuild(normalized, assortiments);
+              });
+            } else {
+              const assortiments = first.assortiments ?? [];
+              this.mergeAssortimentsAndBuild(normalized, assortiments);
+            }
+          });
+  }
+
+  private mergeAssortimentsAndBuild(normalized: any[], assortiments: { articleId: string; commandable?: { dateDebut: string; dateFin: string; actif?: boolean }; vendable?: { dateDebut: string; dateFin: string; actif?: boolean } }[]): void {
+            const byArticleId = new Map<string, { commandable?: { dateDebut: string; dateFin: string; actif?: boolean }; vendable?: { dateDebut: string; dateFin: string; actif?: boolean } }>();
+            (assortiments || []).forEach(a => byArticleId.set(a.articleId, { commandable: a.commandable, vendable: a.vendable }));
+
+            const merged = normalized.map(a => {
+              const meta = byArticleId.get(a.code);
+              return meta ? { ...a, commandable: meta.commandable || null, vendable: meta.vendable || null } : a;
+            });
+
+            console.log('Articles chargés avec succès:', merged.length, 'articles');
+            this.articlesSubject.next(merged as Article[]);
+            this.buildHierarchy(merged as Article[]);
   }
 
   /**
@@ -71,7 +122,7 @@ export class ArticlesService {
   private buildHierarchy(articles: Article[]): void {
     const hierarchy: TrunkHierarchyNode[] = [];
 
-    // Créer le nœud racine avec le nom du tronc dynamique
+    // Nœud racine: libellé dynamique (ex: "Univers")
     const trunkRoot: TrunkHierarchyNode = {
       id: 'trunk-root',
       name: this.currentTrunkName,
@@ -80,80 +131,72 @@ export class ArticlesService {
       children: []
     };
 
-    // Grouper par univers (Rayon)
+    // 1) Grouper par univers
     const universByName = new Map<string, Article[]>();
     articles.forEach(article => {
-      if (!universByName.has(article.univers)) {
-        universByName.set(article.univers, []);
-      }
-      universByName.get(article.univers)!.push(article);
+      const uni = article.univers || 'Sans univers';
+      if (!universByName.has(uni)) universByName.set(uni, []);
+      universByName.get(uni)!.push(article);
     });
 
-    // Créer les nœuds pour chaque univers (Rayon)
-    universByName.forEach((universArticles, universName) => {
-      const universNode: TrunkHierarchyNode = {
-        id: `univers-${universName.toLowerCase().replace(/\s+/g, '-')}`,
-        name: universName,
-        type: 'department',
-        level: 1,
-        articlesCount: universArticles.length,
-        children: []
-      };
-
-      // Grouper par famille dans cet univers
-      const famillesByName = new Map<string, Article[]>();
-      universArticles.forEach(article => {
-        if (!famillesByName.has(article.famille)) {
-          famillesByName.set(article.famille, []);
-        }
-        famillesByName.get(article.famille)!.push(article);
-      });
-
-      // Créer les nœuds pour chaque famille
-      famillesByName.forEach((familleArticles, familleName) => {
-        const familleNode: TrunkHierarchyNode = {
-          id: `famille-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}`,
-          name: familleName,
-          type: 'family',
-          level: 2,
-          articlesCount: familleArticles.length,
+    Array.from(universByName.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .forEach(([universName, universArticles]) => {
+        const universNode: TrunkHierarchyNode = {
+          id: `univers-${universName.toLowerCase().replace(/\s+/g, '-')}`,
+          name: universName,
+          type: 'department',
+          level: 1,
+          articlesCount: universArticles.length,
           children: []
         };
 
-        // Grouper par sous-famille dans cette famille
-        const sousFamillesByName = new Map<string, Article[]>();
-        familleArticles.forEach(article => {
-          if (!sousFamillesByName.has(article.sousFamille)) {
-            sousFamillesByName.set(article.sousFamille, []);
-          }
-          sousFamillesByName.get(article.sousFamille)!.push(article);
+        // 2) Grouper par famille au sein de l’univers
+        const famillesByName = new Map<string, Article[]>();
+        universArticles.forEach(article => {
+          const fam = article.famille || 'Sans famille';
+          if (!famillesByName.has(fam)) famillesByName.set(fam, []);
+          famillesByName.get(fam)!.push(article);
         });
 
-        // Créer les nœuds pour chaque sous-famille
-        sousFamillesByName.forEach((sousFamilleArticles, sousFamilleName) => {
-          const sousFamilleNode: TrunkHierarchyNode = {
-            id: `sous-famille-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}-${sousFamilleName.toLowerCase().replace(/\s+/g, '-')}`,
-            name: sousFamilleName,
-            type: 'sub-family',
-            level: 3,
-            articlesCount: sousFamilleArticles.length
-          };
+        Array.from(famillesByName.entries())
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .forEach(([familleName, familleArticles]) => {
+            const familleNode: TrunkHierarchyNode = {
+              id: `famille-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}`,
+              name: familleName,
+              type: 'famille',
+              level: 2,
+              articlesCount: familleArticles.length,
+              children: []
+            };
 
-          familleNode.children!.push(sousFamilleNode);
-        });
+            // 3) Grouper par sous-famille au sein de la famille
+            const sousFamillesByName = new Map<string, Article[]>();
+            familleArticles.forEach(article => {
+              const sub = article.sousFamille || 'Sans sous-famille';
+              if (!sousFamillesByName.has(sub)) sousFamillesByName.set(sub, []);
+              sousFamillesByName.get(sub)!.push(article);
+            });
 
-        // Trier les sous-familles par nom
-        familleNode.children!.sort((a, b) => a.name.localeCompare(b.name));
-        universNode.children!.push(familleNode);
+            Array.from(sousFamillesByName.entries())
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .forEach(([sousFamilleName, sousFamilleArticles]) => {
+                const sousFamilleNode: TrunkHierarchyNode = {
+                  id: `sous-famille-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}-${sousFamilleName.toLowerCase().replace(/\s+/g, '-')}`,
+                  name: sousFamilleName,
+                  type: 'sous-famille',
+                  level: 3,
+                  articlesCount: sousFamilleArticles.length
+                };
+                familleNode.children!.push(sousFamilleNode);
+              });
+
+            universNode.children!.push(familleNode);
+          });
+
+        trunkRoot.children!.push(universNode);
       });
-
-      // Trier les familles par nom
-      universNode.children!.sort((a, b) => a.name.localeCompare(b.name));
-      trunkRoot.children!.push(universNode);
-    });
-
-    // Trier les univers par nom
-    trunkRoot.children!.sort((a, b) => a.name.localeCompare(b.name));
 
     hierarchy.push(trunkRoot);
     this.hierarchySubject.next(hierarchy);
@@ -313,10 +356,77 @@ export class ArticlesService {
       tap(result => {
         const normalized = (result.articles || []).map((a: any) => {
           const tid = a.trunkId ?? a.trunk_id;
-          return tid ? { ...a, trunkId: tid } : a;
+          const level = typeof a.level !== 'undefined' ? a.level : undefined;
+          return tid ? { ...a, trunkId: tid, level: level ?? 1 } : a;
         });
         this.articlesSubject.next(normalized as Article[]);
         this.buildHierarchy(normalized as Article[]);
+      })
+    );
+  }
+
+  /**
+   * Met à jour le niveau pour une liste d’articles côté serveur
+   */
+  updateLevelForArticles(articleCodes: string[], level: number): Observable<{ updated: number, articles: Article[] }> {
+    return this.http.post<{ updated: number, articles: Article[] }>(
+      '/api/articles/update-level',
+      { articleCodes, level }
+    ).pipe(
+      catchError(error => {
+        console.error('Erreur MAJ niveau:', error);
+        return of({ updated: 0, articles: this.articlesSubject.value });
+      }),
+      tap(result => {
+        // Met à jour le store local et reconstruit la hiérarchie
+        const normalized = (result.articles || []).map((a: any) => {
+          const tid = a.trunkId ?? a.trunk_id;
+          const levelFromJson = typeof a.trunk_level !== 'undefined' ? a.trunk_level : a.level;
+          const levelVal = typeof levelFromJson !== 'undefined' ? Number(levelFromJson) : undefined;
+          return tid ? { ...a, trunkId: tid, level: levelVal ?? 1 } : { ...a, level: levelVal };
+        });
+        this.articlesSubject.next(normalized as Article[]);
+        this.buildHierarchy(normalized as Article[]);
+      })
+    );
+  }
+
+  /**
+   * Met à jour la date de début (assortiments) pour une liste d’articles côté serveur
+   * N’affecte que article_assorti.json; après succès, recharge les données.
+   */
+  updateStartDateForArticles(articleCodes: string[], trunkId: string, metatype: 'commandable' | 'vendable', dateDebut: string): Observable<{ updated: number }> {
+    return this.http.post<{ updated: number }>(
+      '/api/assortiments/update-start-date-bulk',
+      { articleCodes, trunkId, metatype, dateDebut }
+    ).pipe(
+      catchError(error => {
+        console.error('Erreur MAJ date debut:', error);
+        return of({ updated: 0 });
+      }),
+      tap(() => {
+        // Recharge articles pour re-fusionner avec article_assorti.json
+        this.refreshData();
+      })
+    );
+  }
+
+  /**
+   * Met à jour la date de fin (assortiments) pour une liste d’articles côté serveur
+   * N’affecte que article_assorti.json; après succès, recharge les données.
+   */
+  updateEndDateForArticles(articleCodes: string[], trunkId: string, metatype: 'commandable' | 'vendable', dateFin: string): Observable<{ updated: number }> {
+    return this.http.post<{ updated: number }>(
+      '/api/assortiments/update-end-date-bulk',
+      { articleCodes, trunkId, metatype, dateFin }
+    ).pipe(
+      catchError(error => {
+        console.error('Erreur MAJ date fin:', error);
+        return of({ updated: 0 });
+      }),
+      tap(() => {
+        // Recharge articles pour re-fusionner avec article_assorti.json
+        this.refreshData();
       })
     );
   }

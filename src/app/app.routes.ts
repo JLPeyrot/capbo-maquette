@@ -32,11 +32,11 @@ export const routes: Routes = [
   },
   {
     path: 'assortment-trunk',
-    component: MainLayoutComponent
+    redirectTo: 'trunk-management'
   },
   {
     path: 'add-assortments',
-    component: MainLayoutComponent
+    redirectTo: 'create-assortments'
   },
   {
     path: 'trunk-list',
@@ -76,6 +76,10 @@ export const routes: Routes = [
   },
   {
     path: 'assortments-bulk',
+    component: MainLayoutComponent
+  },
+  {
+    path: 'supplier-import',
     component: MainLayoutComponent
   },
   {

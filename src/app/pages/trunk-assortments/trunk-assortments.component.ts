@@ -168,7 +168,7 @@ export class TrunkAssortmentsComponent implements OnInit {
 
   // Actions
   goBack(): void {
-    this.router.navigate(['/assortment-trunk']);
+    this.router.navigate(['/trunk-list']);
   }
 
   viewAssortment(assortment: AssortmentData): void {

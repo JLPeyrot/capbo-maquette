@@ -11,8 +11,11 @@ import { AddToTrunkDialogComponent } from './add-to-trunk-dialog.component';
 import { EditAttributesDialogComponent } from './edit-attributes-dialog.component';
 import { ConfirmAddToTrunkDialogComponent } from './confirm-add-to-trunk-dialog.component';
 import { ConfirmAttributesDialogComponent } from './confirm-attributes-dialog.component';
+import { AssortmentOptionsDialogComponent, AssortmentOptionsResult } from './assortment-options-dialog.component';
 import { takeUntil } from 'rxjs/operators';
 import { TrunksService, TrunkOption } from '../../services/trunks.service';
+import { HttpClient } from '@angular/common/http';
+import { of, catchError } from 'rxjs';
 
 @Component({
   selector: 'app-assortments-bulk-management',
@@ -51,14 +54,31 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
   currentFilter: { univers?: string; famille?: string; sousFamille?: string } | null = null;
   // Mapping nom de tronc par id pour affichage sur les tuiles
   trunkNameById: Record<string, string> = {};
+  // Mapping des sous-familles par famille (chargé depuis /data/sous-familles.json)
+  private subFamiliesByFamily: Record<string, string[]> = {};
 
-  constructor(private articlesService: ArticlesService, private dialog: MatDialog, private trunksService: TrunksService) {}
+  trunkLevelLabels: Record<number, string> = {};
+
+  constructor(
+    private articlesService: ArticlesService,
+    private dialog: MatDialog,
+    private trunksService: TrunksService,
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
     // Renommer le nœud racine pour cette page (au lieu de "TRONC ACTUEL")
     this.articlesService.setTrunkName('Univers');
+    // Charger l'arborescence immédiatement pour éviter le spinner bloquant
     this.loadHierarchy();
+    // Charger la taxonomie des sous-familles et enrichir l'arbre une fois disponible
+    this.loadSubFamilies(() => {
+      if (this.hierarchyNodes && this.hierarchyNodes.length > 0) {
+        this.hierarchyNodes = this.addMissingSubFamiliesToHierarchy(this.hierarchyNodes);
+      }
+    });
     this.loadAllArticles();
+    this.loadTrunkLevelLabels();
     // Charger le mapping des noms de troncs pour affichage
     this.trunksService.getTrunkOptions()
       .pipe(takeUntil(this.destroy$))
@@ -76,7 +96,7 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
   private loadAllArticles(): void {
     this.articlesService.getArticles()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(articles => {
+      .subscribe((articles: Article[]) => {
         this.allArticles = articles;
         this.updateFilteredArticles();
         this.updateSelectAllState();
@@ -89,10 +109,78 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
   private loadHierarchy(): void {
     this.articlesService.getHierarchy()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(hierarchy => {
-        this.hierarchyNodes = hierarchy;
+      .subscribe((hierarchy: TrunkHierarchyNode[]) => {
+        // Ajouter les sous-familles manquantes depuis la taxonomie sous-familles.json
+        this.hierarchyNodes = this.addMissingSubFamiliesToHierarchy(hierarchy);
         this.isLoading = false;
       });
+  }
+
+  /**
+   * Charge le mapping sous-familles par famille depuis les chemins connus
+   */
+  private loadSubFamilies(onDone: () => void): void {
+    const tryPaths = [
+      '/assets/data/sous-familles.json',
+      '/data/sous-familles.json'
+    ];
+    const tryNext = (idx: number) => {
+      if (idx >= tryPaths.length) { onDone(); return; }
+      fetch(tryPaths[idx])
+        .then(r => r.json())
+        .then((data: { sousFamilles: { famille: string; sousFamilles: { code: string; libelle: string }[] }[] }) => {
+          const map: Record<string, string[]> = {};
+          if (data && Array.isArray(data.sousFamilles)) {
+            for (const entry of data.sousFamilles) {
+              if (Array.isArray(entry.sousFamilles)) {
+                // Utiliser les libellés de sous-famille pour correspondre aux articles_ref.json
+                const labels = entry.sousFamilles
+                  .map(sf => sf?.libelle)
+                  .filter((lbl): lbl is string => typeof lbl === 'string' && lbl.length > 0);
+                map[entry.famille] = labels;
+              }
+            }
+          }
+          this.subFamiliesByFamily = map;
+          onDone();
+        })
+        .catch(() => tryNext(idx + 1));
+    };
+    tryNext(0);
+  }
+
+  /**
+   * Complète l'arborescence en ajoutant les sous-familles définies par la taxonomie
+   * pour chaque famille absente. Les sous-familles ajoutées ont un compteur à 0.
+   */
+  private addMissingSubFamiliesToHierarchy(hierarchy: TrunkHierarchyNode[]): TrunkHierarchyNode[] {
+    const clone = JSON.parse(JSON.stringify(hierarchy)) as TrunkHierarchyNode[];
+
+    const visit = (node: TrunkHierarchyNode) => {
+      if (node.type === 'famille' || node.type === 'family') {
+        const known = this.subFamiliesByFamily[node.name] || [];
+        const existingNames = new Set((node.children || []).map(c => c.name));
+        for (const label of known) {
+          if (!existingNames.has(label)) {
+            const id = `${node.id}-sf-${label.toLowerCase().replace(/\s+/g, '-')}`;
+            (node.children = node.children || []).push({
+              id,
+              name: label,
+              type: 'sous-famille',
+              level: (node.level || 0) + 1,
+              articlesCount: 0
+            } as any);
+          }
+        }
+        if (node.children) {
+          node.children.sort((a, b) => a.name.localeCompare(b.name));
+        }
+      }
+      if (node.children) node.children.forEach(visit);
+    };
+
+    clone.forEach(root => visit(root));
+    return clone;
   }
 
   /**
@@ -117,21 +205,12 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
   }
 
   private applyFilterForNode(node: TrunkHierarchyNode): void {
-    if (node.type === 'department') {
-      this.currentFilter = { univers: node.name };
-    } else if (node.type === 'family') {
-      const universParent = this.findParentUnivers(node);
-      this.currentFilter = {
-        univers: universParent?.name || '',
-        famille: node.name
-      };
-    } else if (node.type === 'sub-family') {
+    // Supporter les types FR et EN, la hiérarchie ne contient pas d'univers explicite
+    if (node.type === 'famille' || node.type === 'family') {
+      this.currentFilter = { famille: node.name };
+    } else if (node.type === 'sous-famille' || node.type === 'sub-family') {
       const parents = this.findParentHierarchy(node);
-      this.currentFilter = {
-        univers: parents.univers?.name || '',
-        famille: parents.famille?.name || '',
-        sousFamille: node.name
-      };
+      this.currentFilter = { famille: parents.famille?.name || '', sousFamille: node.name };
     } else {
       this.currentFilter = null;
     }
@@ -278,8 +357,10 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
     switch (node.type) {
       case 'trunk':
         return this.selectedArticles.size;
+      case 'sous-famille':
       case 'sub-family':
         return this.allArticles.filter(a => a.sousFamille === node.name && this.selectedArticles.has(a.code)).length;
+      case 'famille':
       case 'family':
         return this.allArticles.filter(a => a.famille === node.name && this.selectedArticles.has(a.code)).length;
       case 'department':
@@ -298,31 +379,61 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
       data: { selectedCount: this.selectedArticles.size }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result: { trunkId: string; trunkName: string; trunkType: string; level: number; levelLabel: string } | undefined) => {
       if (result) {
         const { trunkId, trunkName, trunkType, level, levelLabel } = result;
         const selectedCount = this.getSelectedCount();
         this.dialog.open(ConfirmAddToTrunkDialogComponent, {
           width: '520px',
           data: { selectedCount, trunkName, trunkType, level, levelLabel }
-        }).afterClosed().subscribe(confirmed => {
-          if (confirmed) {
-            const articleCodes = Array.from(this.selectedArticles);
-            console.log('Ajout au tronc validé', { trunkId, trunkName, trunkType, level, levelLabel, articles: articleCodes });
-            // Appel du service pour écrire trunkId côté serveur et rafraîchir le store
+        }).afterClosed().subscribe((confirmed: boolean) => {
+          if (!confirmed) { return; }
+
+          const articleCodes = Array.from(this.selectedArticles);
+          // Ouvrir la popup des paramètres d’assortiment
+          this.dialog.open(AssortmentOptionsDialogComponent, {
+            width: '520px'
+          }).afterClosed().subscribe((options: AssortmentOptionsResult | undefined) => {
+            // Procéder à l’assignation au tronc d’abord
             this.articlesService.assignArticlesToTrunk(articleCodes, trunkId)
               .pipe(takeUntil(this.destroy$))
               .subscribe({
-                next: (result) => {
-                  // Mettre à jour la vue avec les nouveaux articles depuis le store
-                  this.allArticles = result.articles;
+                next: (assignResult: { updated: number; articles: Article[] }) => {
+                  this.allArticles = assignResult.articles;
                   this.updateFilteredArticles();
+
+                  // Appliquer les dates selon options
+                  if (options && options.commandableEnabled) {
+                    if (options.commandableStart) {
+                      this.articlesService.updateStartDateForArticles(articleCodes, trunkId, 'commandable', options.commandableStart)
+                        .pipe(takeUntil(this.destroy$))
+                        .subscribe();
+                    }
+                    if (options.commandableEnd) {
+                      this.articlesService.updateEndDateForArticles(articleCodes, trunkId, 'commandable', options.commandableEnd)
+                        .pipe(takeUntil(this.destroy$))
+                        .subscribe();
+                    }
+                  }
+
+                  if (options && options.vendableEnabled) {
+                    if (options.vendableStart) {
+                      this.articlesService.updateStartDateForArticles(articleCodes, trunkId, 'vendable', options.vendableStart)
+                        .pipe(takeUntil(this.destroy$))
+                        .subscribe();
+                    }
+                    if (options.vendableEnd) {
+                      this.articlesService.updateEndDateForArticles(articleCodes, trunkId, 'vendable', options.vendableEnd)
+                        .pipe(takeUntil(this.destroy$))
+                        .subscribe();
+                    }
+                  }
                 },
-                error: (err) => {
+                error: (err: unknown) => {
                   console.error('Erreur lors de l\'assignation au tronc:', err);
                 }
               });
-          }
+          });
         });
       } else {
         // Fermeture sans action
@@ -347,7 +458,7 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
       width: '640px',
       data: { preSelectedStoreAttributeCodes, mode: 'add' }
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result: { selectedStoreAttributeCodes?: string[] } | undefined) => {
       const selectedCodes: string[] | undefined = result?.selectedStoreAttributeCodes;
       const articlesCount = this.getSelectedCount();
 
@@ -372,7 +483,7 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
             this.updateFilteredArticles();
             this.articlesService.updateAttributesForArticles(articleCodes, selectedCodes!)
               .pipe(takeUntil(this.destroy$))
-              .subscribe(({ updated }) => {
+              .subscribe(({ updated }: { updated: number }) => {
                 console.log(`Attributs appliqués sur ${updated} article(s)`, { attributes: selectedCodes, articleCodes });
                 // Le service rafraîchit déjà le store; maintien de la vue
               });
@@ -432,7 +543,7 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
             this.updateFilteredArticles();
             this.articlesService.removeAttributesForArticles(articleCodes, deleteCodes!)
               .pipe(takeUntil(this.destroy$))
-              .subscribe(({ updated }) => {
+              .subscribe(({ updated }: { updated: number }) => {
                 console.log(`Attributs supprimés de ${updated} article(s)`, { attributesToRemove: deleteCodes, articleCodes });
                 // Le service met à jour le store et la hiérarchie; maintien de la vue
               });
@@ -460,7 +571,7 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
 
             this.articlesService.removeAllAttributesForArticles(articleCodes)
               .pipe(takeUntil(this.destroy$))
-              .subscribe(({ updated }) => {
+              .subscribe(({ updated }: { updated: number }) => {
                 console.log(`Tous les attributs supprimés pour ${updated} article(s)`, { articleCodes });
               });
           }
@@ -477,5 +588,20 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
   onEditDates(): void {
     // TODO: ouvrir un formulaire pour définir date début/fin en masse
     console.log('Modifier les dates', Array.from(this.selectedArticles));
+  }
+
+  private loadTrunkLevelLabels(): void {
+    this.http.get<{ trunkLevels: { level: number; label: string }[] }>("/data/trunk-levels.json")
+      .pipe(catchError(() => of({ trunkLevels: [] })))
+      .subscribe(({ trunkLevels }) => {
+        const map: Record<number, string> = {};
+        trunkLevels.forEach(({ level, label }) => { map[level] = label.toLowerCase(); });
+        this.trunkLevelLabels = map;
+      });
+  }
+
+  getLevelLabel(level?: number): string {
+    if (typeof level !== 'number') return '';
+    return this.trunkLevelLabels[level] || `niveau ${level}`;
   }
 }

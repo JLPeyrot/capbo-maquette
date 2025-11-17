@@ -91,6 +91,15 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Enseigne</mat-label>
+              <mat-select formControlName="enseigne">
+                <mat-option value="">Toutes</mat-option>
+                <mat-option *ngFor="let e of enseignes" [value]="e.value">{{ e.label }}</mat-option>
+              </mat-select>
+              <mat-icon matSuffix class="filter-icon">store</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
               <mat-label>Type de tronc</mat-label>
               <mat-select formControlName="trunkType">
                 <mat-option *ngFor="let type of trunkTypes" [value]="type.value">
@@ -99,24 +108,6 @@
               </mat-select>
               <mat-icon matSuffix class="filter-icon">category</mat-icon>
             </mat-form-field>
-
-            <mat-form-field appearance="outline" class="filter-field">
-              <mat-label>Statut</mat-label>
-              <mat-select formControlName="status">
-                <mat-option *ngFor="let status of statusOptions" [value]="status.value">
-                  {{ status.label }}
-                </mat-option>
-              </mat-select>
-              <mat-icon matSuffix class="filter-icon">flag</mat-icon>
-            </mat-form-field>
-            
-            <button mat-raised-button 
-                    type="button" 
-                    class="assortment-btn-secondary clear-btn"
-                    (click)="clearFilters()">
-              <mat-icon>refresh</mat-icon>
-              Réinitialiser
-            </button>
           </div>
         </form>
       </mat-card-content>
@@ -225,6 +216,8 @@
                     </mat-chip-set>
                   </div>
                 </div>
+
+                <!-- Suppression des sections Niveaux / Univers / Familles / Sous-familles -->
               </div>
             </div>
           </div>

@@ -6,7 +6,10 @@
       "univers": "Électroménager",
       "famille": "Lavage",
       "sousFamille": "Lave-linge",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": 3,
+      "level": 3
     },
     {
       "code": "ART0002",
@@ -14,63 +17,91 @@
       "univers": "Électroménager",
       "famille": "Lavage",
       "sousFamille": "Sèche-linge",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": 3,
+      "level": 3
     },
     {
       "code": "ART0003",
       "libelle": "Lave-linge séchant LG Dual Inverter",
       "univers": "Électroménager",
       "famille": "Lavage",
-      "sousFamille": "Lave-linge séchant"
+      "sousFamille": "Lave-linge séchant",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0004",
       "libelle": "Réfrigérateur combiné Whirlpool 320L",
       "univers": "Électroménager",
       "famille": "Froid",
-      "sousFamille": "Réfrigérateur"
+      "sousFamille": "Réfrigérateur",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0005",
       "libelle": "Congélateur armoire Beko No Frost",
       "univers": "Électroménager",
       "famille": "Froid",
-      "sousFamille": "Congélateur"
+      "sousFamille": "Congélateur",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0006",
       "libelle": "Cave à vin Liebherr 50 bouteilles",
       "univers": "Électroménager",
       "famille": "Froid",
-      "sousFamille": "Cave à vin"
+      "sousFamille": "Cave à vin",
+      "trunk_id": "4",
+      "trunk_level": 3,
+      "level": 3
     },
     {
       "code": "ART0007",
       "libelle": "Four encastrable pyrolyse Electrolux",
       "univers": "Électroménager",
       "famille": "Cuisson",
-      "sousFamille": "Fours"
+      "sousFamille": "Fours",
+      "trunk_id": "5",
+      "trunk_level": "2",
+      "attributes": [
+        "CUISINE_PRO",
+        "B2B"
+      ]
     },
     {
       "code": "ART0008",
       "libelle": "Table de cuisson induction Siemens",
       "univers": "Électroménager",
       "famille": "Cuisson",
-      "sousFamille": "Tables de cuisson"
+      "sousFamille": "Tables de cuisson",
+      "trunk_id": "4",
+      "trunk_level": 3,
+      "level": 3
     },
     {
       "code": "ART0009",
       "libelle": "Micro-ondes combiné Samsung 32L",
       "univers": "Électroménager",
       "famille": "Cuisson",
-      "sousFamille": "Micro-ondes"
+      "sousFamille": "Micro-ondes",
+      "trunk_id": "4"
     },
     {
       "code": "ART0010",
       "libelle": "Hotte murale Whirlpool 60 cm",
       "univers": "Électroménager",
       "famille": "Cuisson",
-      "sousFamille": "Hottes"
+      "sousFamille": "Hottes",
+      "trunk_id": "5",
+      "trunk_level": "2",
+      "attributes": [
+        "CUISINE_PRO",
+        "B2B"
+      ]
     },
     {
       "code": "ART0011",
@@ -84,7 +115,8 @@
       "libelle": "Nettoyeur vapeur Karcher SC3",
       "univers": "Électroménager",
       "famille": "Entretien",
-      "sousFamille": "Nettoyeurs vapeur"
+      "sousFamille": "Nettoyeurs vapeur",
+      "trunk_id": "4"
     },
     {
       "code": "ART0013",
@@ -105,7 +137,8 @@
       "libelle": "Téléviseur Samsung QLED 55 pouces",
       "univers": "Image & Son",
       "famille": "Téléviseurs",
-      "sousFamille": "Téléviseurs QLED"
+      "sousFamille": "Téléviseurs QLED",
+      "trunk_id": "4"
     },
     {
       "code": "ART0016",
@@ -231,21 +264,24 @@
       "libelle": "Coque silicone iPhone 15",
       "univers": "Téléphonie",
       "famille": "Accessoires",
-      "sousFamille": "Coques & protections"
+      "sousFamille": "Coques & protections",
+      "trunk_id": "1"
     },
     {
       "code": "ART0034",
       "libelle": "Chargeur rapide USB-C 45W",
       "univers": "Téléphonie",
       "famille": "Accessoires",
-      "sousFamille": "Chargeurs & câbles"
+      "sousFamille": "Chargeurs & câbles",
+      "trunk_id": "1"
     },
     {
       "code": "ART0035",
       "libelle": "Ampoule connectée Philips Hue",
       "univers": "Objets connectés",
       "famille": "Maison connectée",
-      "sousFamille": "Éclairage"
+      "sousFamille": "Éclairage",
+      "trunk_id": "1"
     },
     {
       "code": "ART0036",
@@ -259,7 +295,8 @@
       "libelle": "Caméra intérieure Arlo Essential",
       "univers": "Objets connectés",
       "famille": "Maison connectée",
-      "sousFamille": "Sécurité"
+      "sousFamille": "Sécurité",
+      "trunk_id": "1"
     },
     {
       "code": "ART0038",
@@ -294,7 +331,8 @@
       "libelle": "Bouilloire Philips Daily 1,7L",
       "univers": "Cuisine",
       "famille": "Petit-déjeuner",
-      "sousFamille": "Bouilloires"
+      "sousFamille": "Bouilloires",
+      "trunk_id": "2"
     },
     {
       "code": "ART0043",
@@ -302,7 +340,13 @@
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
       "sousFamille": "Robots multifonctions",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": 2,
+      "attributes": [
+        "EXPERTISE_CINEMA"
+      ],
+      "level": 2
     },
     {
       "code": "ART0044",
@@ -310,7 +354,9 @@
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
       "sousFamille": "Blenders",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0045",
@@ -318,7 +364,9 @@
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
       "sousFamille": "Batteurs & mixeurs",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0046",
@@ -327,9 +375,8 @@
       "famille": "Cuisson conviviale",
       "sousFamille": "Raclettes & fondues",
       "trunkId": "4",
-      "attributes": [
-        "CUISINE_PRO"
-      ]
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0047",
@@ -340,7 +387,10 @@
       "trunkId": "4",
       "attributes": [
         "CUISINE_PRO"
-      ]
+      ],
+      "trunk_id": "5",
+      "trunk_level": 4,
+      "level": 4
     },
     {
       "code": "ART0048",
@@ -349,9 +399,8 @@
       "famille": "Cuisson conviviale",
       "sousFamille": "Multicuiseurs",
       "trunkId": "4",
-      "attributes": [
-        "CUISINE_PRO"
-      ]
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0049",
@@ -596,21 +645,24 @@
       "libelle": "Coque iPhone 15 Pro",
       "univers": "Téléphonie",
       "famille": "Accessoires",
-      "sousFamille": "Coques & protections"
+      "sousFamille": "Coques & protections",
+      "trunk_id": "1"
     },
     {
       "code": "ART0084",
       "libelle": "Chargeur sans fil Qi",
       "univers": "Téléphonie",
       "famille": "Accessoires",
-      "sousFamille": "Chargeurs & câbles"
+      "sousFamille": "Chargeurs & câbles",
+      "trunk_id": "1"
     },
     {
       "code": "ART0085",
       "libelle": "Ampoule connectée Xiaomi Yeelight",
       "univers": "Objets connectés",
       "famille": "Maison connectée",
-      "sousFamille": "Éclairage"
+      "sousFamille": "Éclairage",
+      "trunk_id": "1"
     },
     {
       "code": "ART0086",
@@ -624,7 +676,8 @@
       "libelle": "Caméra intérieure Nest Cam",
       "univers": "Objets connectés",
       "famille": "Maison connectée",
-      "sousFamille": "Sécurité"
+      "sousFamille": "Sécurité",
+      "trunk_id": "1"
     },
     {
       "code": "ART0088",
@@ -659,7 +712,8 @@
       "libelle": "Bouilloire Russell Hobbs 1,5L",
       "univers": "Cuisine",
       "famille": "Petit-déjeuner",
-      "sousFamille": "Bouilloires"
+      "sousFamille": "Bouilloires",
+      "trunk_id": "2"
     },
     {
       "code": "ART0093",
@@ -667,7 +721,9 @@
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
       "sousFamille": "Robots multifonctions",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0094",
@@ -675,7 +731,9 @@
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
       "sousFamille": "Blenders",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0095",
@@ -683,7 +741,9 @@
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
       "sousFamille": "Batteurs & mixeurs",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0096",
@@ -692,9 +752,8 @@
       "famille": "Cuisson conviviale",
       "sousFamille": "Raclettes & fondues",
       "trunkId": "4",
-      "attributes": [
-        "CUISINE_PRO"
-      ]
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0097",
@@ -705,7 +764,10 @@
       "trunkId": "4",
       "attributes": [
         "CUISINE_PRO"
-      ]
+      ],
+      "trunk_id": "5",
+      "trunk_level": 4,
+      "level": 4
     },
     {
       "code": "ART0098",
@@ -714,9 +776,8 @@
       "famille": "Cuisson conviviale",
       "sousFamille": "Multicuiseurs",
       "trunkId": "4",
-      "attributes": [
-        "CUISINE_PRO"
-      ]
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0099",
@@ -961,21 +1022,24 @@
       "libelle": "Coque iPhone 15 Silicone",
       "univers": "Téléphonie",
       "famille": "Accessoires",
-      "sousFamille": "Coques & protections"
+      "sousFamille": "Coques & protections",
+      "trunk_id": "1"
     },
     {
       "code": "ART0134",
       "libelle": "Chargeur USB-C Anker 60W",
       "univers": "Téléphonie",
       "famille": "Accessoires",
-      "sousFamille": "Chargeurs & câbles"
+      "sousFamille": "Chargeurs & câbles",
+      "trunk_id": "1"
     },
     {
       "code": "ART0135",
       "libelle": "Ampoule connectée Philips Hue White",
       "univers": "Objets connectés",
       "famille": "Maison connectée",
-      "sousFamille": "Éclairage"
+      "sousFamille": "Éclairage",
+      "trunk_id": "1"
     },
     {
       "code": "ART0136",
@@ -989,7 +1053,8 @@
       "libelle": "Caméra intérieure Netatmo Presence",
       "univers": "Objets connectés",
       "famille": "Maison connectée",
-      "sousFamille": "Sécurité"
+      "sousFamille": "Sécurité",
+      "trunk_id": "1"
     },
     {
       "code": "ART0138",
@@ -1024,7 +1089,8 @@
       "libelle": "Bouilloire Braun 1,7L",
       "univers": "Cuisine",
       "famille": "Petit-déjeuner",
-      "sousFamille": "Bouilloires"
+      "sousFamille": "Bouilloires",
+      "trunk_id": "2"
     },
     {
       "code": "ART0143",
@@ -1032,7 +1098,9 @@
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
       "sousFamille": "Robots multifonctions",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0144",
@@ -1040,7 +1108,9 @@
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
       "sousFamille": "Blenders",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0145",
@@ -1048,7 +1118,9 @@
       "univers": "Cuisine",
       "famille": "Préparation culinaire",
       "sousFamille": "Batteurs & mixeurs",
-      "trunkId": "4"
+      "trunkId": "4",
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0146",
@@ -1057,9 +1129,8 @@
       "famille": "Cuisson conviviale",
       "sousFamille": "Raclettes & fondues",
       "trunkId": "4",
-      "attributes": [
-        "CUISINE_PRO"
-      ]
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0147",
@@ -1070,7 +1141,10 @@
       "trunkId": "4",
       "attributes": [
         "CUISINE_PRO"
-      ]
+      ],
+      "trunk_id": "5",
+      "trunk_level": 4,
+      "level": 4
     },
     {
       "code": "ART0148",
@@ -1079,9 +1153,8 @@
       "famille": "Cuisson conviviale",
       "sousFamille": "Multicuiseurs",
       "trunkId": "4",
-      "attributes": [
-        "CUISINE_PRO"
-      ]
+      "trunk_id": "5",
+      "trunk_level": "1"
     },
     {
       "code": "ART0149",

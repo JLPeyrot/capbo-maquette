@@ -1,0 +1,26 @@
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dates-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.date-field {
+  width: 100%;
+}
+
+.dialog-actions {
+  margin-top: 8px;
+}
+

@@ -124,6 +124,7 @@ export class ReferencementComponent implements OnInit {
         console.error('Erreur chargement pré-référencement:', err);
         this.articles = [];
         this.filtered = [];
+        this.isLoading = false;
       },
       complete: () => this.isLoading = false
     });

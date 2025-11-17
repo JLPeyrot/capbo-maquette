@@ -16,6 +16,7 @@
   align-items: center;
   gap: 12px;
 }
+.title-section h1 { color: #333; }
 
 .page-icon {
   font-size: 32px;
@@ -30,7 +31,7 @@
 .filters-row {
   display: grid;
   grid-template-columns: 50% 1fr; /* recherche à 50% comme en masse */
-  grid-template-rows: auto; /* une seule ligne désormais */
+  grid-template-rows: auto auto auto; /* jusqu'à trois lignes: actions, checkboxes, chips */
   align-items: center;
   column-gap: 16px;
   row-gap: 8px;
@@ -73,7 +74,7 @@
 }
 
 /* Checkboxes ligne 2, étirées et sans retour de ligne */
-.assigned-filters {
+.assortiment-filters {
   grid-column: 1;
   grid-row: 2; /* Ligne 2 à gauche */
   display: grid;
@@ -82,7 +83,7 @@
   align-items: center;
   width: 100%;
 }
-.assigned-filters .mat-mdc-checkbox {
+.assortiment-filters .mat-mdc-checkbox {
   width: 100%;
   white-space: nowrap;
   display: inline-flex;
@@ -98,6 +99,28 @@
   height: 40px;
   gap: 6px;
   font-weight: 500;
+}
+
+.active-filters {
+  grid-column: 1 / span 2; /* toute la largeur sous la ligne des actions */
+  grid-row: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.active-filters .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #1f2937;
+  border-radius: 9999px;
+  padding: 4px 8px 4px 10px;
+}
+.active-filters .chip button.mat-icon-button {
+  width: 28px;
+  height: 28px;
 }
 
 .articles-list {
@@ -119,6 +142,7 @@
   border-radius: 10px;
   padding: 14px;
   background: #ffffff; /* fond blanc pour une meilleure lisibilité */
+  position: relative;
 }
 
 .article-header {
@@ -147,6 +171,13 @@
   color: #666;
   padding: 32px;
 }
+
+.article-dates {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #444;
+}
+.article-dates .date-line { line-height: 18px; }
 
 /* Layout avec sidebar gauche */
 .main-content {
@@ -237,6 +268,15 @@
   box-shadow: 0 6px 14px rgba(17,24,39,0.12);
   border-color: #c5cad3;
   background: #f8fafc; /* gris très léger au survol */
+}
+
+.article-level {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  color: #666;
+  font-style: italic;
+  font-size: 12px;
 }
 
 .article-header {
@@ -331,3 +371,31 @@
 .sidebar-right {
   border-left: 4px solid #ff8c00;
 }
+.page-header {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #ff8c00;
+  margin: 0 0 16px 0;
+  padding: 16px 24px;
+}
+
+.page-icon { color: #ff8c00; }
+
+.title-section h1 { color: #333; font-weight: 600; margin: 0; }
+.title-section .page-subtitle { color: #666; margin: 4px 0 0 0; }
+
+.header-content { display: flex; align-items: center; justify-content: space-between; }
+
+.header-actions .back-btn-outline {
+  border-color: #ff8c00;
+  color: #ff8c00;
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0 16px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-actions .back-btn-outline:hover { background: rgba(255, 140, 0, 0.06); }

@@ -5,19 +5,23 @@
       "familles": [
         {
           "code": "LAVAGE",
-          "libelle": "Lavage"
+          "libelle": "Lavage",
+          "sousFamilles": ["Lave-linge", "Sèche-linge", "Lave-linge séchant"]
         },
         {
           "code": "FROID",
-          "libelle": "Froid"
+          "libelle": "Froid",
+          "sousFamilles": ["Réfrigérateur", "Congélateur", "Cave à vin"]
         },
         {
           "code": "CUISSON",
-          "libelle": "Cuisson"
+          "libelle": "Cuisson",
+          "sousFamilles": ["Fours", "Tables de cuisson", "Micro-ondes", "Hottes"]
         },
         {
           "code": "ENTRETIEN",
-          "libelle": "Entretien"
+          "libelle": "Entretien",
+          "sousFamilles": ["Aspirateurs", "Nettoyeurs vapeur", "Accessoires entretien"]
         }
       ]
     },
@@ -26,15 +30,18 @@
       "familles": [
         {
           "code": "TELEVISEURS",
-          "libelle": "Téléviseurs"
+          "libelle": "Téléviseurs",
+          "sousFamilles": ["Téléviseurs OLED", "Téléviseurs QLED", "Téléviseurs LED"]
         },
         {
           "code": "AUDIO",
-          "libelle": "Audio"
+          "libelle": "Audio",
+          "sousFamilles": ["Barres de son", "Enceintes Bluetooth", "Chaînes Hi-Fi"]
         },
         {
           "code": "PHOTO_VIDEO",
-          "libelle": "Photo & Vidéo"
+          "libelle": "Photo & Vidéo",
+          "sousFamilles": ["Appareils photo", "Caméras", "Accessoires photo"]
         }
       ]
     },
@@ -43,19 +50,23 @@
       "familles": [
         {
           "code": "ORDINATEURS_PORTABLES",
-          "libelle": "Ordinateurs portables"
+          "libelle": "Ordinateurs portables",
+          "sousFamilles": ["Bureautique", "Gaming"]
         },
         {
           "code": "ORDINATEURS_BUREAU",
-          "libelle": "Ordinateurs de bureau"
+          "libelle": "Ordinateurs de bureau",
+          "sousFamilles": ["All-in-One", "Tour"]
         },
         {
           "code": "IMPRESSION",
-          "libelle": "Impression"
+          "libelle": "Impression",
+          "sousFamilles": ["Imprimantes", "Cartouches & toners"]
         },
         {
           "code": "STOCKAGE",
-          "libelle": "Stockage"
+          "libelle": "Stockage",
+          "sousFamilles": ["Disques durs externes", "Clés USB"]
         }
       ]
     },
@@ -64,11 +75,13 @@
       "familles": [
         {
           "code": "SMARTPHONES",
-          "libelle": "Smartphones"
+          "libelle": "Smartphones",
+          "sousFamilles": ["iPhone", "Android"]
         },
         {
           "code": "ACCESSOIRES",
-          "libelle": "Accessoires"
+          "libelle": "Accessoires",
+          "sousFamilles": ["Coques & protections", "Chargeurs & câbles"]
         }
       ]
     },
@@ -77,11 +90,13 @@
       "familles": [
         {
           "code": "MAISON_CONNECTEE",
-          "libelle": "Maison connectée"
+          "libelle": "Maison connectée",
+          "sousFamilles": ["Éclairage", "Prises connectées", "Sécurité"]
         },
         {
           "code": "SANTE_CONNECTEE",
-          "libelle": "Santé connectée"
+          "libelle": "Santé connectée",
+          "sousFamilles": ["Montres connectées", "Balances connectées"]
         }
       ]
     },
@@ -90,15 +105,18 @@
       "familles": [
         {
           "code": "PETIT_DEJEUNER",
-          "libelle": "Petit-déjeuner"
+          "libelle": "Petit-déjeuner",
+          "sousFamilles": ["Cafetières", "Grille-pain", "Bouilloires"]
         },
         {
           "code": "PREPARATION_CULINAIRE",
-          "libelle": "Préparation culinaire"
+          "libelle": "Préparation culinaire",
+          "sousFamilles": ["Robots multifonctions", "Blenders", "Batteurs & mixeurs"]
         },
         {
           "code": "CUISSON_CONVIVIALE",
-          "libelle": "Cuisson conviviale"
+          "libelle": "Cuisson conviviale",
+          "sousFamilles": ["Raclettes & fondues", "Plancha", "Multicuiseurs"]
         }
       ]
     }

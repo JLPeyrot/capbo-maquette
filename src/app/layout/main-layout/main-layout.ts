@@ -11,9 +11,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ArticlesListComponent } from '../../pages/articles-list/articles-list.component';
 import { CreateArticleComponent } from '../../pages/create-article/create-article.component';
 import { SuppliersComponent } from '../../pages/suppliers/suppliers.component';
-import { AssortmentTrunkComponent } from '../../pages/assortment-trunk/assortment-trunk.component';
 import { ReceptionTrunkComponent } from '../../pages/reception-trunk/reception-trunk.component';
-import { AddAssortmentsComponent } from '../../pages/add-assortments/add-assortments.component';
 import { TrunkSelectionComponent } from '../../pages/trunk-selection/trunk-selection.component';
 import { TrunkListComponent } from '../../pages/trunk-list/trunk-list.component';
 import { CreateAssortmentsComponent } from '../../pages/create-assortments/create-assortments.component';
@@ -27,6 +25,7 @@ import { DataPageComponent } from '../../pages/data-page/data-page.component';
 import { AssortmentsBulkManagementComponent } from '../../pages/assortments-bulk-management/assortments-bulk-management.component';
 import { ReferencementComponent } from '../../pages/referencement/referencement.component';
 import { ReferencementReviewComponent } from '../../pages/referencement-review/referencement-review.component';
+import { SupplierImportComponent } from '../../pages/supplier-import/supplier-import.component';
 
 interface Notification {
   id: number;
@@ -46,6 +45,7 @@ interface ExpandedGroups {
   returns: boolean;
   finance: boolean;
   admin: boolean;
+  store: boolean;
 }
 
   @Component({
@@ -58,9 +58,7 @@ interface ExpandedGroups {
       ArticlesListComponent,  // Import du composant liste des articles
       CreateArticleComponent,  // AJOUT de l'import du composant création
       SuppliersComponent,
-      AssortmentTrunkComponent,
       ReceptionTrunkComponent,
-      AddAssortmentsComponent,  // Import du composant ajout assortiments
       TrunkSelectionComponent,  // Import du composant sélection de tronc
       TrunkListComponent,  // Import du composant liste des troncs
       CreateAssortmentsComponent,
@@ -73,6 +71,7 @@ interface ExpandedGroups {
       AssortmentsBulkManagementComponent,
       ReferencementComponent,
       ReferencementReviewComponent,
+      SupplierImportComponent,
       AlertPopupComponent  // NOUVEAU
     ],
   templateUrl: './main-layout.html',
@@ -94,11 +93,12 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     assortments: false,
     returns: false,
     finance: false,
-    admin: false
+    admin: false,
+    store: false
   };
   
   // AJOUT : État de navigation
-  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'assortment-trunk' | 'reception-trunk' | 'trunk-selection' | 'add-assortments' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'assortments-bulk-management' | 'data-page' | 'referencement' | 'referencement-review' = 'dashboard';
+  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'reception-trunk' | 'trunk-selection' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'assortments-bulk-management' | 'data-page' | 'referencement' | 'referencement-review' | 'supplier-import' = 'dashboard';
   
   // NOUVEAU : Mode focus
   isFocusMode: boolean = false;
@@ -253,10 +253,12 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       this.currentView = 'trunk-assortments';
       this.isFocusMode = false;
     } else if (url.includes('/assortment-trunk')) {
-      this.currentView = 'assortment-trunk';
+      // ancienne route, ne rien faire
+      this.currentView = 'trunk-management';
       this.isFocusMode = false;
     } else if (url.includes('/add-assortments')) {
-      this.currentView = 'add-assortments';
+      // ancienne page, basculer vers create-assortments
+      this.currentView = 'create-assortments';
       this.isFocusMode = false;
     } else if (url.includes('/reception-trunk')) {
       this.currentView = 'reception-trunk';
@@ -281,6 +283,9 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       this.isFocusMode = false;
     } else if (url.includes('/assortments-bulk')) {
       this.currentView = 'assortments-bulk-management';
+      this.isFocusMode = false;
+    } else if (url.includes('/supplier-import')) {
+      this.currentView = 'supplier-import';
       this.isFocusMode = false;
     } else if (url.includes('/articles')) {
       this.currentView = 'articles';
@@ -345,8 +350,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         this.isFocusMode = false;
         break;
       case 'assortment-trunk':
-        this.currentView = 'assortment-trunk';
+        // route supprimée, rediriger vers gestion des troncs
+        this.currentView = 'trunk-management';
         this.isFocusMode = false;
+        this.router.navigate(['/trunk-management']);
         break;
       case 'trunk-list':
         this.currentView = 'trunk-list';
@@ -361,8 +368,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         this.isFocusMode = false;
         break;
       case 'add-assortments':
-        this.currentView = 'add-assortments';
-        this.isFocusMode = false; // Désactiver le mode focus pour permettre la navigation
+        // page supprimée, rediriger vers création d’assortiments
+        this.currentView = 'create-assortments';
+        this.isFocusMode = false;
+        this.router.navigate(['/create-assortments']);
         break;
       case 'create-assortments':
         this.currentView = 'create-assortments';
@@ -387,6 +396,11 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       case 'assortments-bulk':
         this.currentView = 'assortments-bulk-management';
         this.isFocusMode = false;
+        break;
+      case 'supplier-import':
+        this.currentView = 'supplier-import';
+        this.isFocusMode = false;
+        this.router.navigate(['/supplier-import']);
         break;
       case 'referencement':
         this.currentView = 'referencement';

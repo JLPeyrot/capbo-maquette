@@ -1,0 +1,46 @@
+<h2 mat-dialog-title>Paramètres de l’assortiment</h2>
+
+<div mat-dialog-content class="dialog-content">
+  <p>Souhaitez-vous rendre l’assortiment&nbsp;:</p>
+
+  <div class="option-block">
+    <mat-checkbox [(ngModel)]="commandableEnabled">Commandable</mat-checkbox>
+    <div class="dates-row" *ngIf="commandableEnabled">
+      <mat-form-field appearance="outline" class="date-field">
+        <mat-label>Date de début</mat-label>
+        <input matInput [matDatepicker]="commandableStartPicker" [(ngModel)]="commandableStart">
+        <mat-datepicker-toggle matIconSuffix [for]="commandableStartPicker"></mat-datepicker-toggle>
+        <mat-datepicker #commandableStartPicker></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="date-field">
+        <mat-label>Date de fin</mat-label>
+        <input matInput [matDatepicker]="commandableEndPicker" [(ngModel)]="commandableEnd">
+        <mat-datepicker-toggle matIconSuffix [for]="commandableEndPicker"></mat-datepicker-toggle>
+        <mat-datepicker #commandableEndPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="option-block">
+    <mat-checkbox [(ngModel)]="vendableEnabled">Vendable</mat-checkbox>
+    <div class="dates-row" *ngIf="vendableEnabled">
+      <mat-form-field appearance="outline" class="date-field">
+        <mat-label>Date de début</mat-label>
+        <input matInput [matDatepicker]="vendableStartPicker" [(ngModel)]="vendableStart">
+        <mat-datepicker-toggle matIconSuffix [for]="vendableStartPicker"></mat-datepicker-toggle>
+        <mat-datepicker #vendableStartPicker></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="date-field">
+        <mat-label>Date de fin</mat-label>
+        <input matInput [matDatepicker]="vendableEndPicker" [(ngModel)]="vendableEnd">
+        <mat-datepicker-toggle matIconSuffix [for]="vendableEndPicker"></mat-datepicker-toggle>
+        <mat-datepicker #vendableEndPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button (click)="cancel()">Annuler</button>
+  <button mat-raised-button color="primary" (click)="confirm()">Valider</button>
+</div>

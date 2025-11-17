@@ -118,7 +118,7 @@ export class TrunkListComponent implements OnInit {
    * Naviguer vers la création d'un nouveau tronc
    */
   navigateToCreateTrunk(): void {
-    this.router.navigate(['/assortment-trunk']);
+    this.router.navigate(['/create-trunk']);
   }
 
   /**
@@ -134,7 +134,7 @@ export class TrunkListComponent implements OnInit {
    */
   editTrunk(trunk: Trunk): void {
     console.log('Modifier le tronc:', trunk);
-    this.router.navigate(['/assortment-trunk'], {
+    this.router.navigate(['/create-trunk'], {
       queryParams: { id: trunk.id, mode: 'edit' }
     });
   }
@@ -144,7 +144,7 @@ export class TrunkListComponent implements OnInit {
    */
   addAssortments(trunk: Trunk): void {
     console.log('Ajouter des assortiments au tronc:', trunk);
-    this.router.navigate(['/add-assortments'], {
+    this.router.navigate(['/create-assortments'], {
       queryParams: {
         trunkId: trunk.id,
         trunkName: trunk.name

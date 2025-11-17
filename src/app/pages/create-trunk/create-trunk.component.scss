@@ -106,37 +106,26 @@
       }
     }
 
-    .header-actions {
-      display: flex;
-      gap: 12px;
-      align-items: center;
+  .header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
 
-      .validate-btn {
-        background: #ff8c00;
-        color: white;
+      .back-btn-outline {
+        border-color: #ff8c00;
+        color: #ff8c00;
         border-radius: 8px;
         font-weight: 500;
         padding: 0 16px;
-        height: 40px; /* standardisation hauteur */
+        height: 40px;
         display: inline-flex;
         align-items: center;
         gap: 8px;
         transition: all 0.3s ease;
 
-        .mat-icon {
-          margin-right: 8px;
-        }
+        .mat-icon { margin-right: 8px; }
 
-        &:hover:not(:disabled) {
-          background: #e67e00;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
-        }
-
-        &:disabled {
-          background: #ccc;
-          color: #999;
-        }
+        &:hover { background: rgba(255, 140, 0, 0.06); }
       }
     }
   }
@@ -167,26 +156,28 @@
     }
 
     .mat-mdc-card-header {
-      background: linear-gradient(135deg, #ff8c00 0%, #ff7700 100%);
-      color: white;
-      padding: 20px 24px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e0e0e0;
+      color: #333;
+      padding: 16px 24px;
 
       .mat-mdc-card-title {
         display: flex;
         align-items: center;
         gap: 12px;
         font-size: 18px;
-        font-weight: 500;
+        font-weight: 600;
         margin: 0;
 
         .mat-icon {
           font-size: 20px;
+          color: #1976d2;
         }
       }
     }
 
     .mat-mdc-card-content {
-      padding: 32px 24px;
+      padding: 24px;
     }
   }
 }
@@ -196,6 +187,14 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  .form-row.two-cols {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+
+    .form-field { flex: 1; }
+  }
 
   .form-field {
     display: flex;

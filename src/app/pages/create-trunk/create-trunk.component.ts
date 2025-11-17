@@ -7,6 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SiteGroupsService, GroupOption } from '../../services/site-groups.service';
 import { Group, Attribute, Store, StoreSelection } from '../../shared/interfaces/masterdata.interfaces';
 import { HttpClient } from '@angular/common/http';
+import { TrunksService } from '../../services/trunks.service';
 
 interface AttributeSelect {
   id: string;
@@ -60,10 +61,13 @@ export class CreateTrunkComponent implements OnInit {
     private snackBar: MatSnackBar,
     private siteGroupsService: SiteGroupsService,
     private http: HttpClient,
+    private trunksService: TrunksService,
     private route: ActivatedRoute
   ) {
     this.trunkForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
+      trunkKind: ['TAN'],
+      enseigne: [''],
       selectedGroupValue: ['']
     });
   }
@@ -140,6 +144,25 @@ export class CreateTrunkComponent implements OnInit {
       }));
       this.availableStores = [...this.allStores];
     });
+  }
+
+  trunkKindOptions = [
+    { value: 'TAN', label: 'National' },
+    { value: 'complementaire', label: 'Complémentaire' }
+  ];
+
+  enseigneOptions = [
+    { value: 'boulanger', label: 'Boulanger' },
+    { value: 'electrodepot', label: 'Electrodépot' }
+  ];
+
+  onTrunkKindChange(kind: string): void {
+    if (kind === 'TAN') {
+      this.selectedGroups = [];
+      this.groupsSelects = [];
+      this.selectedAttributes = [];
+      this.attributeSelects = [];
+    }
   }
 
   /**
@@ -299,25 +322,96 @@ export class CreateTrunkComponent implements OnInit {
   // Actions du formulaire
   onSubmit(): void {
     if (this.trunkForm.valid && this.selectedGroups.length > 0) {
-      const trunkData = {
-        ...this.trunkForm.value,
-        groups: this.selectedGroups,
-        attributes: this.selectedAttributes,
-        targetStores: this.getSelectedStores(),
-        createdDate: new Date(),
-        status: 'brouillon'
+      const payload = {
+        name: String(this.trunkForm.value.name).trim(),
+        groups: this.selectedGroups.map(g => g.name),
+        attributes: this.selectedAttributes.map(a => a.id),
+        status: 'brouillon',
+        type: this.trunkForm.value.trunkKind || 'TAN',
+        enseigne: this.trunkForm.value.enseigne || ''
       };
 
-      console.log('Données du tronc à créer:', trunkData);
-      
-      // Simulation de la sauvegarde
-      this.snackBar.open('Tronc créé avec succès !', 'Fermer', {
-        duration: 3000,
-        panelClass: ['success-snackbar']
-      });
+      // Déterminer si on est en édition à partir des query params
+      const qp = this.route.snapshot.queryParamMap;
+      const mode = qp.get('mode');
+      const id = qp.get('id');
+      const isEdit = (mode && mode.toLowerCase() === 'edit') || !!id;
 
-      // Redirection vers la liste des troncs
-      this.router.navigate(['/assortment-trunk']);
+      if (isEdit) {
+        const putWithId = (tid: string) => {
+          console.log('Mise à jour du tronc via API:', tid, payload);
+          this.http.put<{ updated: number }>(`/api/trunks/${tid}`, payload).subscribe({
+            next: () => {
+              this.trunksService.refreshTrunks();
+              this.snackBar.open('Tronc mis à jour avec succès !', 'Fermer', {
+                duration: 3000,
+                panelClass: ['success-snackbar']
+              });
+              this.router.navigate(['/trunk-management']);
+            },
+            error: (error) => {
+              console.error('Erreur mise à jour tronc:', error);
+              this.snackBar.open('Erreur lors de la mise à jour du tronc', 'Fermer', {
+                duration: 3000,
+                panelClass: ['error-snackbar']
+              });
+            }
+          });
+        };
+
+        if (id) {
+          putWithId(id);
+        } else {
+          // Rechercher l'id du tronc par nom si absent
+          const currentName = String(this.trunkForm.value.name).trim().toLowerCase();
+          this.trunksService.getTrunks().subscribe(items => {
+            const match = items.find(t => t.name.toLowerCase() === currentName);
+            if (match) {
+              putWithId(String(match.id));
+            } else {
+              // Si introuvable, basculer en création pour éviter blocage
+              console.warn('Tronc en édition introuvable, bascule en création.');
+              this.http.post<{ created: number }>('/api/trunks', payload).subscribe({
+                next: () => {
+                  this.trunksService.refreshTrunks();
+                  this.snackBar.open('Tronc créé et sauvegardé !', 'Fermer', {
+                    duration: 3000,
+                    panelClass: ['success-snackbar']
+                  });
+                  this.router.navigate(['/trunk-management']);
+                },
+                error: (error) => {
+                  console.error('Erreur création tronc:', error);
+                  this.snackBar.open('Erreur lors de la sauvegarde du tronc', 'Fermer', {
+                    duration: 3000,
+                    panelClass: ['error-snackbar']
+                  });
+                }
+              });
+            }
+          });
+        }
+      } else {
+        console.log('Création du tronc via API:', payload);
+        this.http.post<{ created: number }>('/api/trunks', payload).subscribe({
+          next: () => {
+            // Rafraîchir la liste des troncs côté service
+            this.trunksService.refreshTrunks();
+            this.snackBar.open('Tronc créé et sauvegardé !', 'Fermer', {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            });
+            this.router.navigate(['/trunk-management']);
+          },
+          error: (error) => {
+            console.error('Erreur création tronc:', error);
+            this.snackBar.open('Erreur lors de la sauvegarde du tronc', 'Fermer', {
+              duration: 3000,
+              panelClass: ['error-snackbar']
+            });
+          }
+        });
+      }
     } else {
       this.snackBar.open('Veuillez remplir tous les champs obligatoires', 'Fermer', {
         duration: 3000,
@@ -384,12 +478,15 @@ export class CreateTrunkComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/assortment-trunk']);
+    this.router.navigate(['/dashboard']);
   }
 
   // Validation du formulaire
   isFormValid(): boolean {
-    return this.trunkForm.valid && 
-           this.selectedGroups.length > 0;
+    const kind = this.trunkForm.value.trunkKind;
+    if (kind === 'TAN') {
+      return this.trunkForm.valid;
+    }
+    return this.trunkForm.valid && this.selectedGroups.length > 0;
   }
 }

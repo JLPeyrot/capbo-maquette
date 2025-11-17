@@ -5,18 +5,14 @@
       <div class="title-section">
         <mat-icon class="page-icon">account_tree</mat-icon>
         <div>
-          <h1>Gestion des articles du tronc</h1>
-          <p class="subtitle">Gérez précisément les articles rattachés au tronc sélectionné</p>
+          <h1>Assortiments du tronc {{ trunkName }}</h1>
+          <p class="page-subtitle">Transformez vos articles référencés en assortiments commandables et/ou vendables</p>
         </div>
       </div>
       <div class="header-actions">
-        <button mat-raised-button color="primary" class="orange-btn">
-          <mat-icon>add</mat-icon>
-          Ajouter un article
-        </button>
-        <button mat-stroked-button>
-          <mat-icon>import_export</mat-icon>
-          Importer/Exporter
+        <button mat-stroked-button class="back-btn-outline" (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Retour au tableau de bord
         </button>
       </div>
     </div>
@@ -29,10 +25,10 @@
       <div class="sidebar-header">
         <h3>Arborescence</h3>
         <div class="sidebar-actions">
-          <button mat-icon-button matTooltip="Développer tout">
+          <button mat-icon-button matTooltip="Développer tout" (click)="expandAllTree()">
             <mat-icon>unfold_more</mat-icon>
           </button>
-          <button mat-icon-button matTooltip="Réduire tout">
+          <button mat-icon-button matTooltip="Réduire tout" (click)="collapseAllTree()">
             <mat-icon>unfold_less</mat-icon>
           </button>
         </div>
@@ -72,16 +68,23 @@
         </mat-card-header>
         <mat-card-content class="filters-content">
           <div class="filters-row">
-            <mat-form-field class="filter-field" appearance="outline">
-              <mat-label>Rechercher un article</mat-label>
-              <input matInput [(ngModel)]="searchQuery" (ngModelChange)="applySearch()" placeholder="Nom, code, univers, famille, sous-famille">
-              <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
+              <mat-form-field class="filter-field" appearance="outline">
+                <mat-label>Rechercher un article</mat-label>
+                <input matInput [(ngModel)]="searchQuery" (ngModelChange)="applySearch()" placeholder="Nom, code, univers, famille, sous-famille">
+                <button *ngIf="searchQuery" mat-icon-button matSuffix (click)="clearSearch()" aria-label="Effacer la recherche" matTooltip="Effacer">
+                  <mat-icon>close</mat-icon>
+                </button>
+                <mat-icon matSuffix>search</mat-icon>
+              </mat-form-field>
 
             <div class="action-buttons">
               <button mat-stroked-button (click)="toggleSelectAll()">
                 <mat-icon>{{ selectAll ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
                 {{ selectAll ? 'Tout désélectionner' : 'Tout sélectionner' }}
+              </button>
+              <button mat-stroked-button (click)="resetFilter()" matTooltip="Réinitialiser tous les filtres">
+                <mat-icon>restart_alt</mat-icon>
+                Réinitialiser filtres
               </button>
               <button mat-icon-button matTooltip="Vue en grille" [class.active]="isGridView()" (click)="setGridView()">
                 <mat-icon>grid_view</mat-icon>
@@ -95,7 +98,29 @@
               <mat-icon>check_circle</mat-icon>
               <span>{{ getSelectedCount() }} / {{ filteredArticles.length }}</span>
             </div>
+
+            <!-- Filtres assortiments -->
+            <div class="assortiment-filters">
+              <mat-checkbox [(ngModel)]="filterVendable" (change)="updateFilteredArticles()">Vendable</mat-checkbox>
+              <mat-checkbox [(ngModel)]="filterCommandable" (change)="updateFilteredArticles()">Commandable</mat-checkbox>
+            </div>
+
+            <!-- Filtres actifs en chips -->
+            <div class="active-filters" *ngIf="hasActiveFilter()">
+              <span class="chip" *ngIf="currentFilter?.level !== undefined">Niveau {{ currentFilter?.level }}
+                <button mat-icon-button (click)="onLevelFilterChange(null)" aria-label="Retirer niveau"><mat-icon>close</mat-icon></button>
+              </span>
+              <span class="chip" *ngIf="currentFilter?.univers">Univers: {{ currentFilter?.univers }}
+                <button mat-icon-button (click)="onUniversFilterChange(null)" aria-label="Retirer univers"><mat-icon>close</mat-icon></button>
+              </span>
+              <span class="chip" *ngIf="currentFilter?.famille">Famille: {{ currentFilter?.famille }}
+                <button mat-icon-button (click)="onFamilleFilterChange(null)" aria-label="Retirer famille"><mat-icon>close</mat-icon></button>
+              </span>
+              <!-- Chip Sous-famille supprimé -->
+            </div>
           </div>
+
+
         </mat-card-content>
       </mat-card>
 
@@ -111,24 +136,37 @@
                 <mat-checkbox [checked]="isArticleSelected(article.code)" (change)="onArticleSelect(article.code, $event.checked)"></mat-checkbox>
               </div>
               <div class="article-number">{{ article.code }}</div>
+          </div>
+
+          <div class="article-content" [ngClass]="{'list-layout': isListView(), 'grid-layout': isGridView()}">
+            <h3 class="article-title">{{ article.libelle }}</h3>
+
+            <!-- Tronc assigné -->
+            <div class="meta-pills inline" *ngIf="article.trunkId">
+              <span class="pill pill-trunk">Tronc: {{ trunkNameById[article.trunkId] || article.trunkId }}</span>
             </div>
 
-            <div class="article-content" [ngClass]="{'list-layout': isListView(), 'grid-layout': isGridView()}">
-              <h3 class="article-title">{{ article.libelle }}</h3>
-
-              <!-- Tronc assigné -->
-              <div class="meta-pills inline" *ngIf="article.trunkId">
-                <span class="pill pill-trunk">Tronc: {{ trunkNameById[article.trunkId] || article.trunkId }}</span>
-              </div>
-
-              <!-- Attributs appliqués à l’article -->
-              <div class="meta-pills inline" *ngIf="article.attributes?.length">
-                <span class="pill pill-attribute" *ngFor="let attr of article.attributes">{{ attr }}</span>
-              </div>
-
+            <!-- Attributs appliqués à l’article -->
+            <div class="meta-pills inline" *ngIf="article.attributes?.length">
+              <span class="pill pill-attribute" *ngFor="let attr of article.attributes">{{ attr }}</span>
             </div>
+
+            <!-- Dates d'assortiment pour les articles rattachés à un tronc -->
+            <div class="article-dates" *ngIf="article.trunkId">
+              <div class="date-line">
+                Commandable : {{ article.commandable?.dateDebut || '-' }} - {{ article.commandable?.dateFin || '-' }}
+              </div>
+              <div class="date-line">
+                Vendable : {{ article.vendable?.dateDebut || '-' }} - {{ article.vendable?.dateFin || '-' }}
+              </div>
+            </div>
+
+          </div>
+          <div class="article-level" *ngIf="article.level">
+            <em>{{ getLevelLabel(article.level) }}</em>
           </div>
         </div>
+      </div>
 
         <ng-template #noArticles>
           <div class="empty-articles">
@@ -146,25 +184,25 @@
         <h3>Actions</h3>
       </div>
       <div class="sidebar-actions-list">
-        <button mat-stroked-button color="primary" class="action-btn" (click)="onAddToTrunk()">
-          <mat-icon>account_tree</mat-icon>
-          Ajouter à un tronc
+        <button mat-stroked-button class="action-btn orange-action" (click)="onChangeLevel()">
+          <mat-icon>swap_vert</mat-icon>
+          Changer le niveau
         </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onAddAttributes()" matTooltip="Ajouter des attributs aux articles sélectionnés">
+        <button mat-stroked-button class="action-btn orange-action" (click)="onAddAttributes()" matTooltip="Ajouter des exceptions aux articles sélectionnés">
           <mat-icon>add_circle</mat-icon>
-          Ajouter des attributs
+          Ajouter des exceptions
         </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onRemoveAttributes()" matTooltip="Supprimer des attributs des articles sélectionnés">
+        <button mat-stroked-button class="action-btn orange-action" (click)="onRemoveAttributes()" matTooltip="Supprimer des exceptions des articles sélectionnés">
           <mat-icon>remove_circle</mat-icon>
-          Supprimer des attributs
+          Supprimer des exceptions
         </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onPauseAssortments()">
-          <mat-icon>pause_circle</mat-icon>
-          Mettre en pause
-        </button>
-        <button mat-stroked-button class="action-btn orange-action" (click)="onEditDates()">
+        <button mat-stroked-button class="action-btn orange-action" (click)="onEditStartDate()">
           <mat-icon>event</mat-icon>
-          Modifier les dates
+          Modifier date de début
+        </button>
+        <button mat-stroked-button class="action-btn orange-action" (click)="onEditEndDate()">
+          <mat-icon>event</mat-icon>
+          Modifier date de fin
         </button>
       </div>
     </div>

@@ -5,16 +5,21 @@ import { MaterialModule } from '../../shared/material-module';
 import { TreeViewComponent } from '../../components/tree-view/tree-view.component';
 import { TrunkHierarchyNode, TreeViewConfig, TreeNodeAction } from '../../interfaces/trunk-hierarchy.interface';
 import { ArticlesService, Article } from '../../services/articles.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TrunksService, TrunkOption } from '../../services/trunks.service';
 import { combineLatest } from 'rxjs';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
-import { AddToTrunkDialogComponent } from '../assortments-bulk-management/add-to-trunk-dialog.component';
-import { ConfirmAddToTrunkDialogComponent } from '../assortments-bulk-management/confirm-add-to-trunk-dialog.component';
 import { EditAttributesDialogComponent } from '../assortments-bulk-management/edit-attributes-dialog.component';
+import { ChangeLevelDialogComponent, ChangeLevelDialogResult } from './change-level-dialog.component';
+import { ChangeLevelConfirmDialogComponent } from './change-level-confirm-dialog.component';
 import { ConfirmAttributesDialogComponent } from '../assortments-bulk-management/confirm-attributes-dialog.component';
+import { StartDateDialogComponent, StartDateDialogResult } from './start-date-dialog.component';
+import { StartDateConfirmDialogComponent } from './start-date-confirm-dialog.component';
+import { EndDateDialogComponent, EndDateDialogResult } from './end-date-dialog.component';
+import { EndDateConfirmDialogComponent } from './end-date-confirm-dialog.component';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-trunk-control',
@@ -31,7 +36,7 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   selectedNode: TrunkHierarchyNode | null = null;
   filteredArticles: Article[] = [];
   allArticles: Article[] = []; // Tous les articles chargés initialement
-  currentFilter: { univers?: string; famille?: string; sousFamille?: string } | null = null;
+  currentFilter: { univers?: string; famille?: string; sousFamille?: string; level?: number } | null = null;
   searchQuery: string = '';
   isLoading: boolean = true;
   selectedArticles: Set<string> = new Set(); // Pour stocker les codes des articles sélectionnés
@@ -39,10 +44,20 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   viewMode: 'list' | 'grid' = 'grid'; // Mode d'affichage par défaut
   trunkName: string = 'TRONC ACTUEL'; // Nom du tronc, par défaut "TRONC ACTUEL"
   trunkId?: string; // Identifiant du tronc sélectionné
+  trunkOptions: TrunkOption[] = [];
   // Interface bulk: flags et mapping
   showAssignedOnly: boolean = false;
   showOnlyAssigned: boolean = false;
   trunkNameById: Record<string, string> = {};
+  trunkLevelLabels: Record<number, string> = {};
+  // Filtres assortiments
+  filterVendable: boolean = false;
+  filterCommandable: boolean = false;
+
+  // Mapping des sous-familles par famille (chargé depuis /data/sous-familles.json)
+  private subFamiliesByFamily: Record<string, string[]> = {};
+  // Mapping des familles par univers (chargé depuis /data/familles.json)
+  private familiesByUnivers: Record<string, string[]> = {};
 
   treeConfig: TreeViewConfig = {
     showIcons: true,
@@ -53,11 +68,39 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
     multiSelect: false
   };
 
+  /**
+   * Développe tous les nœuds de l'arborescence
+   */
+  expandAllTree(): void {
+    this.setExpandedForAll(this.hierarchyNodes, true);
+  }
+
+  /**
+   * Réduit tous les nœuds de l'arborescence
+   */
+  collapseAllTree(): void {
+    this.setExpandedForAll(this.hierarchyNodes, false);
+  }
+
+  /**
+   * Applique expanded = value récursivement sur tous les nœuds
+   */
+  private setExpandedForAll(nodes: TrunkHierarchyNode[], value: boolean): void {
+    for (const node of nodes) {
+      (node as any).expanded = value;
+      if (node.children && node.children.length) {
+        this.setExpandedForAll(node.children, value);
+      }
+    }
+  }
+
   constructor(
     private articlesService: ArticlesService,
     private trunksService: TrunksService,
     private route: ActivatedRoute,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -69,17 +112,20 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
         this.articlesService.setTrunkName(this.trunkName);
       }
     });
-    
-    this.initTrunkData();
+    // Charger les taxonomies (familles et sous-familles) puis initialiser
+    this.loadTaxonomies();
 
     // Charger le mapping des noms de troncs pour affichage des pills
     this.trunksService.getTrunkOptions()
       .pipe(takeUntil(this.destroy$))
       .subscribe((options: TrunkOption[]) => {
+        this.trunkOptions = options;
         const map: Record<string, string> = {};
         options.forEach(opt => { map[opt.id] = opt.name; });
         this.trunkNameById = map;
       });
+
+    this.loadTrunkLevelLabels();
   }
 
   ngOnDestroy(): void {
@@ -112,9 +158,136 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
 
         // Construire la hiérarchie dérivée basée sur les articles du tronc
         this.hierarchyNodes = this.buildHierarchyFor(this.allArticles, this.trunkName);
+        // Développer par défaut l’arborescence pour rendre visibles les sous-familles
+        this.setExpandedForAll(this.hierarchyNodes, true);
         this.isLoading = false;
         this.updateSelectAllState();
       });
+  }
+
+  private loadTrunkLevelLabels(): void {
+    this.http.get<{ trunkLevels: { level: number; label: string }[] }>("/data/trunk-levels.json")
+      .subscribe({
+        next: ({ trunkLevels }) => {
+          const map: Record<number, string> = {};
+          (trunkLevels || []).forEach(({ level, label }) => { map[level] = label.toLowerCase(); });
+          this.trunkLevelLabels = map;
+        },
+        error: () => {
+          this.trunkLevelLabels = {};
+        }
+      });
+  }
+
+  getLevelLabel(level?: number): string {
+    if (typeof level !== 'number') return '';
+    return this.trunkLevelLabels[level] || `niveau ${level}`;
+  }
+
+  /**
+   * Change le tronc sélectionné via la navigation pour recharger les données
+   */
+  onTrunkSelect(trunkId: string): void {
+    const selected = this.trunkOptions.find(t => t.id === trunkId);
+    if (!selected) return;
+    const encoded = encodeURIComponent(selected.name);
+    this.router.navigate(['/trunk-control', encoded]);
+  }
+
+  /**
+   * Options de niveau disponibles (dérivées des articles du tronc)
+   */
+  getLevelOptions(): number[] {
+    const set = new Set<number>();
+    for (const a of this.allArticles) {
+      const lvl = typeof a.level === 'number' && !isNaN(a.level as number) ? (a.level as number) : undefined;
+      if (typeof lvl === 'number') set.add(lvl);
+    }
+    return Array.from(set).sort((a, b) => a - b);
+  }
+
+  /**
+   * Compte d'articles par niveau
+   */
+  getLevelCount(level: number): number {
+    return this.allArticles.filter(a => {
+      const lvl = typeof a.level === 'number' ? (a.level as number) : undefined;
+      return typeof lvl === 'number' && lvl === level;
+    }).length;
+  }
+
+  /**
+   * Options d'univers disponibles
+   */
+  getUniversOptions(): string[] {
+    const set = new Set<string>();
+    for (const a of this.allArticles) {
+      if (a.univers) set.add(a.univers);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }
+
+  /**
+   * Compte d'articles par univers
+   */
+  getUniversCount(univers: string): number {
+    return this.allArticles.filter(a => a.univers === univers).length;
+  }
+
+  /**
+   * Options de familles disponibles
+   */
+  getFamilleOptions(): string[] {
+    const set = new Set<string>();
+    for (const a of this.allArticles) {
+      if (a.famille) set.add(a.famille);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }
+
+  /**
+   * Compte d'articles par famille
+   */
+  getFamilleCount(famille: string): number {
+    return this.allArticles.filter(a => a.famille === famille).length;
+  }
+
+  /**
+   * Options de sous-familles disponibles
+   */
+  getSousFamilleOptions(): string[] {
+    const set = new Set<string>();
+    for (const a of this.allArticles) {
+      if (a.sousFamille) set.add(a.sousFamille);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }
+
+  /**
+   * Compte d'articles par sous-famille
+   */
+  getSousFamilleCount(sousFamille: string): number {
+    return this.allArticles.filter(a => a.sousFamille === sousFamille).length;
+  }
+
+  onLevelFilterChange(level: number | null): void {
+    this.currentFilter = { ...(this.currentFilter || {}), level: level ?? undefined };
+    this.updateFilteredArticles();
+  }
+
+  onUniversFilterChange(univers: string | null): void {
+    this.currentFilter = { ...(this.currentFilter || {}), univers: univers || undefined };
+    this.updateFilteredArticles();
+  }
+
+  onFamilleFilterChange(famille: string | null): void {
+    this.currentFilter = { ...(this.currentFilter || {}), famille: famille || undefined };
+    this.updateFilteredArticles();
+  }
+
+  onSousFamilleFilterChange(sousFamille: string | null): void {
+    this.currentFilter = { ...(this.currentFilter || {}), sousFamille: sousFamille || undefined };
+    this.updateFilteredArticles();
   }
 
   /**
@@ -123,6 +296,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   private buildHierarchyFor(articles: Article[], trunkDisplayName: string): TrunkHierarchyNode[] {
     const hierarchy: TrunkHierarchyNode[] = [];
 
+    // Recréer l'arborescence complète limitée aux articles du tronc courant:
+    // Tronc > Niveau > Univers > Famille > Sous-famille
     const trunkRoot: TrunkHierarchyNode = {
       id: 'trunk-root',
       name: trunkDisplayName,
@@ -131,70 +306,193 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
       children: []
     };
 
-    const universByName = new Map<string, Article[]>();
+    // 1) Groupes par niveau (en utilisant trunk_level si présent), pas d'injection de valeurs vides
+    const levelsMap = new Map<number, Article[]>();
     for (const a of articles) {
-      const key = a.univers || '';
-      universByName.set(key, [...(universByName.get(key) || []), a]);
+      const rawLevel = (a as any).trunk_level ?? a.level;
+      const lvl = typeof rawLevel !== 'undefined' ? Number(rawLevel) : 1;
+      levelsMap.set(lvl, [...(levelsMap.get(lvl) || []), { ...a, level: lvl }]);
     }
 
-    universByName.forEach((universArticles, universName) => {
-      const universNode: TrunkHierarchyNode = {
-        id: `univers-${universName.toLowerCase().replace(/\s+/g, '-')}`,
-        name: universName,
-        type: 'department',
-        level: 1,
-        articlesCount: universArticles.length,
-        children: []
-      };
-
-      const famillesByName = new Map<string, Article[]>();
-      for (const a of universArticles) {
-        const key = a.famille || '';
-        famillesByName.set(key, [...(famillesByName.get(key) || []), a]);
-      }
-
-      famillesByName.forEach((familleArticles, familleName) => {
-        const familleNode: TrunkHierarchyNode = {
-          id: `famille-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}`,
-          name: familleName,
-          type: 'family',
-          level: 2,
-          articlesCount: familleArticles.length,
+    Array.from(levelsMap.entries())
+      .sort((a, b) => a[0] - b[0])
+      .forEach(([lvl, levelArticles]) => {
+        const niveauNode: TrunkHierarchyNode = {
+          id: `niveau-${lvl}`,
+          name: `Niveau ${lvl}`,
+          type: 'niveau',
+          level: 1,
+          articlesCount: levelArticles.length,
           children: []
         };
 
-        const sousFamillesByName = new Map<string, Article[]>();
-        for (const a of familleArticles) {
-          const key = a.sousFamille || '';
-          sousFamillesByName.set(key, [...(sousFamillesByName.get(key) || []), a]);
+        // 2) Groupes par univers dans ce niveau
+        const universByName = new Map<string, Article[]>();
+        for (const a of levelArticles) {
+          const key = a.univers || '';
+          if (!key) continue; // ignorer univers vide
+          universByName.set(key, [...(universByName.get(key) || []), a]);
         }
 
-        sousFamillesByName.forEach((sousFamilleArticles, sousFamilleName) => {
-          const sousFamilleNode: TrunkHierarchyNode = {
-            id: `sous-famille-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}-${sousFamilleName.toLowerCase().replace(/\s+/g, '-')}`,
-            name: sousFamilleName,
-            type: 'sub-family',
-            level: 3,
-            articlesCount: sousFamilleArticles.length
-          };
-          familleNode.children!.push(sousFamilleNode);
-        });
+        Array.from(universByName.entries())
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .forEach(([universName, universArticles]) => {
+            const universNode: TrunkHierarchyNode = {
+              id: `rayon-lvl-${lvl}-${universName.toLowerCase().replace(/\s+/g, '-')}`,
+              name: universName,
+              type: 'rayon',
+              level: 2,
+              articlesCount: universArticles.length,
+              children: []
+            };
 
-        // Trier les sous-familles
-        familleNode.children!.sort((a, b) => a.name.localeCompare(b.name));
-        universNode.children!.push(familleNode);
+            // 3) Groupes par famille dans cet univers
+            const famillesByName = new Map<string, Article[]>();
+            for (const a of universArticles) {
+              const key = a.famille || '';
+              if (!key) continue; // ignorer familles vides
+              famillesByName.set(key, [...(famillesByName.get(key) || []), a]);
+            }
+
+            Array.from(famillesByName.entries())
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .forEach(([familleName, familleArticles]) => {
+                const familleNode: TrunkHierarchyNode = {
+                  id: `famille-lvl-${lvl}-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}`,
+                  name: familleName,
+                  type: 'famille',
+                  level: 3,
+                  articlesCount: familleArticles.length,
+                  children: []
+                };
+
+                // 4) Groupes par sous-famille
+                const sousFamillesByName = new Map<string, Article[]>();
+                for (const a of familleArticles) {
+                  const key = a.sousFamille || '';
+                  if (!key) continue; // ignorer sous-familles vides
+                  sousFamillesByName.set(key, [...(sousFamillesByName.get(key) || []), a]);
+                }
+
+                Array.from(sousFamillesByName.entries())
+                  .sort((a, b) => a[0].localeCompare(b[0]))
+                  .forEach(([sousFamilleName, sousFamilleArticles]) => {
+                    const sousFamilleNode: TrunkHierarchyNode = {
+                      id: `sous-famille-lvl-${lvl}-${universName.toLowerCase().replace(/\s+/g, '-')}-${familleName.toLowerCase().replace(/\s+/g, '-')}-${sousFamilleName.toLowerCase().replace(/\s+/g, '-')}`,
+                      name: sousFamilleName,
+                      type: 'sous-famille',
+                      level: 4,
+                      articlesCount: sousFamilleArticles.length
+                    };
+                    (familleNode.children = familleNode.children || []).push(sousFamilleNode);
+                  });
+
+                if (familleNode.children && familleNode.children.length) {
+                  universNode.children!.push(familleNode);
+                }
+              });
+
+            if (universNode.children && universNode.children.length) {
+              niveauNode.children!.push(universNode);
+            }
+          });
+
+        if (niveauNode.children && niveauNode.children.length) {
+          trunkRoot.children!.push(niveauNode);
+        }
       });
-
-      // Trier les familles
-      universNode.children!.sort((a, b) => a.name.localeCompare(b.name));
-      trunkRoot.children!.push(universNode);
-    });
-
-    // Trier les univers
-    trunkRoot.children!.sort((a, b) => a.name.localeCompare(b.name));
 
     hierarchy.push(trunkRoot);
     return hierarchy;
+  }
+
+  // Charge les taxonomies (familles et sous-familles) avec fallback de chemins
+  private loadTaxonomies(): void {
+    const loadSubFamilies = (onDone: () => void) => {
+      const tryPaths = [
+        '/assets/data/sous-famille.json',
+        '/assets/data/sous-familles.json',
+        '/data/sous-familles.json'
+      ];
+      // Ajout de chemins fallback supplémentaires
+      tryPaths.push('/data/sousfamille.json');
+      tryPaths.push('/assets/data/sousfamille.json');
+      const tryNext = (idx: number) => {
+        if (idx >= tryPaths.length) {
+          onDone();
+          return;
+        }
+        this.http
+          .get<{ sousFamilles: { famille: string; sousFamilles: { code: string; libelle: string }[] }[] }>(tryPaths[idx])
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (sf) => {
+              const subMap: Record<string, string[]> = {};
+              if (sf && Array.isArray(sf.sousFamilles)) {
+                for (const entry of sf.sousFamilles) {
+                  subMap[entry.famille] = entry.sousFamilles.map(x => x.libelle);
+                }
+              }
+              this.subFamiliesByFamily = subMap;
+              onDone();
+            },
+            error: () => tryNext(idx + 1)
+          });
+      };
+      tryNext(0);
+    };
+
+    const loadFamilies = (onDone: () => void) => {
+      const tryPaths = [
+        '/assets/data/familles.json',
+        '/data/familles.json'
+      ];
+      const tryNext = (idx: number) => {
+        if (idx >= tryPaths.length) {
+          onDone();
+          return;
+        }
+        this.http
+          .get<{ familles: { univers: string; familles: { code: string; libelle: string; sousFamilles?: string[] }[] }[] }>(tryPaths[idx])
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (f) => {
+              const famMap: Record<string, string[]> = {};
+              if (f && Array.isArray(f.familles)) {
+                for (const entry of f.familles) {
+                  famMap[entry.univers] = entry.familles.map(x => x.libelle);
+                  // Merge sous-familles from familles.json if provided
+                  for (const x of entry.familles) {
+                    if (Array.isArray(x.sousFamilles) && x.sousFamilles.length) {
+                      const existing = this.subFamiliesByFamily[x.libelle] || [];
+                      const merged = Array.from(new Set([...
+                        existing,
+                        ...x.sousFamilles
+                      ]));
+                      this.subFamiliesByFamily[x.libelle] = merged;
+                    }
+                  }
+                }
+              }
+              this.familiesByUnivers = famMap;
+              onDone();
+            },
+            error: () => tryNext(idx + 1)
+          });
+      };
+      tryNext(0);
+    };
+
+    // Charger les deux jeux de taxonomies puis initialiser
+    let subDone = false;
+    let famDone = false;
+    const maybeInit = () => {
+      if (subDone && famDone) {
+        this.initTrunkData();
+      }
+    };
+    loadSubFamilies(() => { subDone = true; maybeInit(); });
+    loadFamilies(() => { famDone = true; maybeInit(); });
   }
 
   /**
@@ -229,24 +527,22 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
    * Applique le filtre pour un nœud sélectionné
    */
   private applyFilterForNode(node: TrunkHierarchyNode): void {
-    // Utiliser directement les noms du nœud et de ses parents au lieu de parser l'ID
-    if (node.type === 'department') {
-      this.currentFilter = { univers: node.name };
-    } else if (node.type === 'family') {
-      // Pour une famille, on doit trouver l'univers parent
-      const universParent = this.findParentUnivers(node);
-      this.currentFilter = { 
-        univers: universParent?.name || '', 
-        famille: node.name 
-      };
-    } else if (node.type === 'sub-family') {
-      // Pour une sous-famille, on doit trouver l'univers et la famille parents
-      const parents = this.findParentHierarchy(node);
-      this.currentFilter = { 
-        univers: parents.univers?.name || '', 
-        famille: parents.famille?.name || '', 
-        sousFamille: node.name 
-      };
+    // Nouvelle hiérarchie: tronc > niveau > univers > famille > sous-famille
+    if (node.type === 'niveau') {
+      const lvl = this.parseLevelFromNodeName(node.name);
+      this.currentFilter = { level: lvl || undefined, univers: undefined, famille: undefined, sousFamille: undefined };
+    } else if (node.type === 'rayon') { // univers
+      const parentLevelNode = this.findParentLevelForUnivers(node);
+      const lvl = parentLevelNode ? this.parseLevelFromNodeName(parentLevelNode.name) : null;
+      this.currentFilter = { level: lvl || undefined, univers: node.name, famille: undefined, sousFamille: undefined };
+    } else if (node.type === 'famille') {
+      const parents = this.findParentPathForFamily(node);
+      const lvl = parents.levelNode ? this.parseLevelFromNodeName(parents.levelNode.name) : null;
+      this.currentFilter = { level: lvl || undefined, univers: parents.universNode?.name || undefined, famille: node.name, sousFamille: undefined };
+    } else if (node.type === 'sous-famille') {
+      const parents = this.findParentPathForSubFamily(node);
+      const lvl = parents.levelNode ? this.parseLevelFromNodeName(parents.levelNode.name) : null;
+      this.currentFilter = { level: lvl || undefined, univers: parents.universNode?.name || undefined, famille: parents.familleNode?.name || '', sousFamille: node.name };
     } else {
       this.currentFilter = null;
     }
@@ -257,14 +553,15 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   /**
    * Trouve le nœud univers parent d'un nœud famille
    */
-  private findParentUnivers(familleNode: TrunkHierarchyNode): TrunkHierarchyNode | null {
+  // Nouveau: trouve le parent niveau d'un nœud famille
+  private findParentLevelForUnivers(universNode: TrunkHierarchyNode): TrunkHierarchyNode | null {
     for (const rootNode of this.hierarchyNodes) {
       if (rootNode.children) {
-        for (const universNode of rootNode.children) {
-          if (universNode.children) {
-            for (const famille of universNode.children) {
-              if (famille.id === familleNode.id) {
-                return universNode;
+        for (const levelNode of rootNode.children) {
+          if (levelNode.children) {
+            for (const univers of levelNode.children) {
+              if (univers.id === universNode.id) {
+                return levelNode;
               }
             }
           }
@@ -274,19 +571,16 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  /**
-   * Trouve la hiérarchie complète des parents d'un nœud sous-famille
-   */
-  private findParentHierarchy(sousFamilleNode: TrunkHierarchyNode): { univers: TrunkHierarchyNode | null, famille: TrunkHierarchyNode | null } {
+  private findParentPathForFamily(familleNode: TrunkHierarchyNode): { levelNode: TrunkHierarchyNode | null, universNode: TrunkHierarchyNode | null } {
     for (const rootNode of this.hierarchyNodes) {
       if (rootNode.children) {
-        for (const universNode of rootNode.children) {
-          if (universNode.children) {
-            for (const familleNode of universNode.children) {
-              if (familleNode.children) {
-                for (const sousFamille of familleNode.children) {
-                  if (sousFamille.id === sousFamilleNode.id) {
-                    return { univers: universNode, famille: familleNode };
+        for (const levelNode of rootNode.children) {
+          if (levelNode.children) {
+            for (const universNode of levelNode.children) {
+              if (universNode.children) {
+                for (const famille of universNode.children) {
+                  if (famille.id === familleNode.id) {
+                    return { levelNode, universNode };
                   }
                 }
               }
@@ -295,8 +589,39 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
         }
       }
     }
-    return { univers: null, famille: null };
+    return { levelNode: null, universNode: null };
   }
+
+  // Nouveau: trouve la chaîne de parents (niveau, famille) pour un nœud sous-famille
+  private findParentPathForSubFamily(sousFamilleNode: TrunkHierarchyNode): { levelNode: TrunkHierarchyNode | null, universNode: TrunkHierarchyNode | null, familleNode: TrunkHierarchyNode | null } {
+    for (const rootNode of this.hierarchyNodes) {
+      if (rootNode.children) {
+        for (const levelNode of rootNode.children) {
+          if (levelNode.children) {
+            for (const universNode of levelNode.children) {
+              if (universNode.children) {
+                for (const familleNode of universNode.children) {
+                  if (familleNode.children) {
+                    for (const child of familleNode.children) {
+                      if (child.id === sousFamilleNode.id) {
+                        return { levelNode, universNode, familleNode };
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return { levelNode: null, universNode: null, familleNode: null };
+  }
+
+  /**
+   * Trouve la hiérarchie complète des parents d'un nœud sous-famille
+   */
+  // Ancienne recherche de hiérarchie univers/famille remplacée par findParentPathForSubFamily
 
   /**
    * Applique le filtre actuel sur tous les articles
@@ -306,25 +631,30 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
       this.filteredArticles = [...this.allArticles];
     } else {
       this.filteredArticles = this.allArticles.filter(article => {
-        // Filtrer par univers
+        // Filtrer par niveau
+        if (this.currentFilter!.level !== undefined && article.level !== this.currentFilter!.level) {
+          return false;
+        }
+
+        // Filtrer par univers si spécifié
         if (this.currentFilter!.univers && article.univers !== this.currentFilter!.univers) {
           return false;
         }
-        
+
         // Filtrer par famille si spécifiée
         if (this.currentFilter!.famille && article.famille !== this.currentFilter!.famille) {
           return false;
         }
-        
+
         // Filtrer par sous-famille si spécifiée
         if (this.currentFilter!.sousFamille && article.sousFamille !== this.currentFilter!.sousFamille) {
           return false;
         }
-        
+
         return true;
       });
     }
-    
+
     this.updateSelectAllState();
   }
 
@@ -363,9 +693,20 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
    * Met à jour la liste filtrée (arborescence + recherche) pour l'interface bulk
    * Dans le contexte tronc, allArticles est déjà limité au tronc courant.
    */
-  private updateFilteredArticles(): void {
+  updateFilteredArticles(): void {
     // Base: filtre hiérarchique
-    const base = this.getFilteredArticlesByHierarchy();
+    let base = this.getFilteredArticlesByHierarchy();
+    // Appliquer filtres Vendable / Commandable (OR lorsque les deux sont cochés)
+    base = base.filter(a => {
+      if (this.filterVendable && this.filterCommandable) {
+        return !!(a.vendable?.actif) || !!(a.commandable?.actif);
+      } else if (this.filterVendable) {
+        return !!(a.vendable?.actif);
+      } else if (this.filterCommandable) {
+        return !!(a.commandable?.actif);
+      }
+      return true;
+    });
     const term = this.searchQuery.trim().toLowerCase();
     if (!term) {
       this.filteredArticles = base;
@@ -402,23 +743,28 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
     if (!this.currentFilter) {
       return [...this.allArticles];
     }
-    
+
     return this.allArticles.filter(article => {
-      // Filtrer par univers
+      // Filtrer par niveau si spécifié
+      if (this.currentFilter!.level !== undefined && article.level !== this.currentFilter!.level) {
+        return false;
+      }
+
+      // Filtrer par univers si spécifié
       if (this.currentFilter!.univers && article.univers !== this.currentFilter!.univers) {
         return false;
       }
-      
+
       // Filtrer par famille si spécifiée
       if (this.currentFilter!.famille && article.famille !== this.currentFilter!.famille) {
         return false;
       }
-      
+
       // Filtrer par sous-famille si spécifiée
       if (this.currentFilter!.sousFamille && article.sousFamille !== this.currentFilter!.sousFamille) {
         return false;
       }
-      
+
       return true;
     });
   }
@@ -515,18 +861,20 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
       return 'Tous les articles';
     }
 
-    let filterText = '';
+    let parts: string[] = [];
+    if (this.currentFilter.level !== undefined) {
+      parts.push(`Niveau ${this.currentFilter.level}`);
+    }
     if (this.currentFilter.univers) {
-      filterText = this.currentFilter.univers;
+      parts.push(this.currentFilter.univers);
     }
     if (this.currentFilter.famille) {
-      filterText += ` > ${this.currentFilter.famille}`;
+      parts.push(this.currentFilter.famille);
     }
     if (this.currentFilter.sousFamille) {
-      filterText += ` > ${this.currentFilter.sousFamille}`;
+      parts.push(this.currentFilter.sousFamille);
     }
-
-    return filterText;
+    return parts.join(' > ');
   }
 
   /**
@@ -619,54 +967,32 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   getSelectedCountForNode(node: TrunkHierarchyNode): number {
     switch (node.type) {
       case 'trunk':
-        // Pour le nœud racine, retourner le total des visibles sélectionnés
         return this.getSelectedCount();
-      case 'sub-family':
+      case 'sous-famille':
         return this.getSelectedCountForSousFamille(node.name);
-      case 'family':
+      case 'famille':
         return this.getSelectedCountForFamille(node.name);
-      case 'department':
+      case 'rayon':
         return this.getSelectedCountForUnivers(node.name);
+      case 'niveau': {
+        const lvl = this.parseLevelFromNodeName(node.name);
+        if (!lvl) return 0;
+        const articlesAtLevel = this.allArticles.filter(a => a.level === lvl);
+        return articlesAtLevel.filter(a => this.selectedArticles.has(a.code)).length;
+      }
       default:
         return 0;
     }
   }
 
+  private parseLevelFromNodeName(name: string): number | null {
+    const match = /Niveau\s+(\d+)/i.exec(name);
+    return match ? parseInt(match[1], 10) : null;
+  }
+
   /**
    * Actions de la sidebar droite (parité avec l'interface bulk)
    */
-  onAddToTrunk(): void {
-    const dialogRef = this.dialog.open(AddToTrunkDialogComponent, {
-      width: '460px',
-      data: { selectedCount: this.selectedArticles.size }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        const { trunkId, trunkName, trunkType, level, levelLabel } = result;
-        const selectedCount = this.getSelectedCount();
-        this.dialog.open(ConfirmAddToTrunkDialogComponent, {
-          width: '520px',
-          data: { selectedCount, trunkName, trunkType, level, levelLabel }
-        }).afterClosed().subscribe(confirmed => {
-          if (confirmed) {
-            const articleCodes = Array.from(this.selectedArticles);
-            this.articlesService.assignArticlesToTrunk(articleCodes, trunkId)
-              .pipe(takeUntil(this.destroy$))
-              .subscribe({
-                next: (result) => {
-                  this.allArticles = result.articles.filter(a => !this.trunkId || a.trunkId === this.trunkId);
-                  this.updateFilteredArticles();
-                },
-                error: (err) => {
-                  console.error('Erreur lors de l\'assignation au tronc:', err);
-                }
-              });
-          }
-        });
-      }
-    });
-  }
 
   onAddAttributes(): void {
     const selectedArticleObjs = this.allArticles.filter(a => this.selectedArticles.has(a.code));
@@ -789,11 +1115,146 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
     });
   }
 
-  onPauseAssortments(): void {
-    console.log('Mettre en pause', Array.from(this.selectedArticles));
+
+  onEditStartDate(): void {
+    const selectedCount = this.getSelectedCount();
+    if (selectedCount === 0) {
+      return;
+    }
+    const dialogRef = this.dialog.open(StartDateDialogComponent, {
+      width: '520px',
+      data: { selectedCount }
+    });
+    dialogRef.afterClosed().subscribe((result: StartDateDialogResult | undefined) => {
+      if (!result || !result.date || !result.metatype) return;
+      const metatype = result.metatype; // 'commandable' | 'vendable'
+      const dateStr = this.formatDateFR(result.date);
+
+      this.dialog.open(StartDateConfirmDialogComponent, {
+        width: '520px',
+        data: {
+          selectedCount,
+          metatypeLabel: metatype === 'commandable' ? 'Commandable' : 'Vendable',
+          dateLabel: dateStr
+        }
+      }).afterClosed().subscribe(confirmed => {
+        if (!confirmed) return;
+        const articleCodes = Array.from(this.selectedArticles);
+        const trunkId = this.trunkId || this.currentTrunkIdGuess(articleCodes);
+
+        // Mise à jour optimiste côté client
+        const codesSet = new Set(articleCodes);
+        this.allArticles = this.allArticles.map(a => {
+          if (!codesSet.has(a.code)) return a;
+          const block = a[metatype] || { dateDebut: null, dateFin: null, actif: metatype === 'vendable' };
+          return { ...a, [metatype]: { ...block, dateDebut: dateStr } } as Article;
+        });
+        this.updateFilteredArticles();
+
+        // Persistance côté serveur puis refresh des données pour refléter article_assorti.json
+        this.articlesService.updateStartDateForArticles(articleCodes, trunkId!, metatype, dateStr)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(() => {});
+      });
+    });
   }
 
-  onEditDates(): void {
-    console.log('Modifier les dates', Array.from(this.selectedArticles));
+  onEditEndDate(): void {
+    const selectedCount = this.getSelectedCount();
+    if (selectedCount === 0) {
+      return;
+    }
+    const dialogRef = this.dialog.open(EndDateDialogComponent, {
+      width: '520px',
+      data: { selectedCount }
+    });
+    dialogRef.afterClosed().subscribe((result: EndDateDialogResult | undefined) => {
+      if (!result) return;
+      const metatype = result.metatype; // 'commandable' | 'vendable'
+      const dateStr = this.formatDateFR(new Date(result.dateFin));
+
+      this.dialog.open(EndDateConfirmDialogComponent, {
+        width: '520px',
+        data: {
+          selectedCount,
+          metatype,
+          dateFin: dateStr
+        }
+      }).afterClosed().subscribe(confirmed => {
+        if (!confirmed) return;
+        const articleCodes = Array.from(this.selectedArticles);
+        const trunkId = this.trunkId || this.currentTrunkIdGuess(articleCodes);
+
+        // Mise à jour optimiste côté client
+        const codesSet = new Set(articleCodes);
+        this.allArticles = this.allArticles.map(a => {
+          if (!codesSet.has(a.code)) return a;
+          const block = a[metatype] || { dateDebut: null, dateFin: null, actif: metatype === 'vendable' };
+          return { ...a, [metatype]: { ...block, dateFin: dateStr } } as Article;
+        });
+        this.updateFilteredArticles();
+
+        // Persistance côté serveur puis refresh des données pour refléter article_assorti.json
+        this.articlesService.updateEndDateForArticles(articleCodes, trunkId!, metatype, dateStr)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(() => {});
+      });
+    });
+  }
+
+  onChangeLevel(): void {
+    const selectedCount = this.getSelectedCount();
+    if (selectedCount === 0) {
+      return;
+    }
+    const articleCodes = Array.from(this.selectedArticles);
+    const selectedArticles = this.allArticles.filter(a => this.selectedArticles.has(a.code));
+    const currentLevelCandidate = selectedArticles.length === 1 ? selectedArticles[0].level : undefined;
+    const dialogRef = this.dialog.open(ChangeLevelDialogComponent, {
+      width: '480px',
+      data: { currentLevel: currentLevelCandidate }
+    });
+    dialogRef.afterClosed().subscribe((result: ChangeLevelDialogResult | undefined) => {
+      const selectedLevel = result?.selectedLevel;
+      if (typeof selectedLevel === 'number' && selectedLevel >= 1) {
+        // Demander confirmation avant d’appliquer et persister
+        this.dialog.open(ChangeLevelConfirmDialogComponent, {
+          width: '520px',
+          data: { selectedCount, level: selectedLevel }
+        }).afterClosed().subscribe(confirmed => {
+          if (!confirmed) return;
+          // Mise à jour optimiste côté client
+          const codesSet = new Set(articleCodes);
+          this.allArticles = this.allArticles.map(a => codesSet.has(a.code) ? { ...a, level: selectedLevel } : a);
+          this.updateFilteredArticles();
+          // Persist via service (écrit trunk_level dans le fichier)
+          this.articlesService.updateLevelForArticles(articleCodes, selectedLevel)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {});
+        });
+      }
+    });
+  }
+
+  private formatDateFR(d: Date): string {
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  private currentTrunkIdGuess(articleCodes: string[]): string | undefined {
+    // Essaie de deviner un trunkId commun pour les articles sélectionnés
+    const set = new Set<string>();
+    for (const a of this.allArticles) {
+      if (articleCodes.includes(a.code) && a.trunkId) set.add(a.trunkId);
+    }
+    return set.size === 1 ? Array.from(set)[0] : this.trunkId;
+  }
+
+  // plus de méthode locale; on passe par ArticlesService
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

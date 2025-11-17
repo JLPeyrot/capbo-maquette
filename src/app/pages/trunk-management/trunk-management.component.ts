@@ -36,20 +36,19 @@ export class TrunkManagementComponent implements OnInit {
   trunks: Trunk[] = [];
 
   filteredTrunks: Trunk[] = [];
+
+  // Métadonnées hiérarchiques par tronc
+  trunkMetaById: Record<string, { levels: number[]; univers: string[]; familles: string[]; sousFamilles: string[] }> = {};
   
   // Options de filtres
   trunkTypes = [
     { value: '', label: 'Tous les types' },
-    { value: 'TAC', label: 'TAC' },
-    { value: 'TAN', label: 'TAN' },
+    { value: 'TAN', label: 'National' },
     { value: 'complementaire', label: 'Complémentaire' }
   ];
-
-  statusOptions = [
-    { value: '', label: 'Tous les statuts' },
-    { value: 'actif', label: 'Actif' },
-    { value: 'brouillon', label: 'Brouillon' },
-    { value: 'archive', label: 'Archivé' }
+  enseignes = [
+    { value: 'boulanger', label: 'Boulanger' },
+    { value: 'electrodepot', label: 'Electrodépot' }
   ];
 
   // Statistiques
@@ -69,8 +68,8 @@ export class TrunkManagementComponent implements OnInit {
   ) {
     this.searchForm = this.fb.group({
       searchTerm: [''],
-      trunkType: [''],
-      status: ['']
+      enseigne: [''],
+      trunkType: ['']
     });
   }
 
@@ -87,6 +86,8 @@ export class TrunkManagementComponent implements OnInit {
       }));
       this.trunks = updatedTrunks as any;
       this.filteredTrunks = [...this.trunks];
+      // Calculer les métadonnées hiérarchiques (niveaux, univers, familles, sous-familles)
+      this.trunkMetaById = this.computeHierarchyMetaByTrunk(articles);
       this.calculateStats();
     });
 
@@ -121,14 +122,14 @@ export class TrunkManagementComponent implements OnInit {
         trunk.groups.some(group => group.toLowerCase().includes(formValue.searchTerm.toLowerCase()));
       
       const matchesType = !formValue.trunkType || trunk.type === formValue.trunkType;
-      const matchesStatus = !formValue.status || trunk.status === formValue.status;
-      
-      return matchesSearch && matchesType && matchesStatus;
+      const matchesEnseigne = !formValue.enseigne || (trunk as any).enseigne === formValue.enseigne;
+
+      return matchesSearch && matchesType && matchesEnseigne;
     });
   }
 
   clearFilters(): void {
-    this.searchForm.reset();
+    this.searchForm.reset({ searchTerm: '', enseigne: '', trunkType: '' });
     this.filteredTrunks = [...this.trunks];
   }
 
@@ -141,6 +142,8 @@ export class TrunkManagementComponent implements OnInit {
     // Rediriger vers la page de création de tronc avec pré-remplissage
     this.router.navigate(['/create-trunk'], {
       queryParams: {
+        id: trunk.id,
+        mode: 'edit',
         name: trunk.name,
         // Angular encode les tableaux en params répétés; lecture via getAll()
         groups: trunk.groups,
@@ -211,5 +214,61 @@ export class TrunkManagementComponent implements OnInit {
       month: '2-digit',
       year: 'numeric'
     }).format(date);
+  }
+
+  private computeHierarchyMetaByTrunk(articles: Article[]): Record<string, { levels: number[]; univers: string[]; familles: string[]; sousFamilles: string[] }> {
+    const meta: Record<string, { levels: number[]; univers: string[]; familles: string[]; sousFamilles: string[] }> = {};
+    // Grouper les articles par tronc
+    const byTrunk = new Map<string, Article[]>();
+    for (const a of articles) {
+      const trunkId = a.trunkId;
+      if (!trunkId) continue;
+      if (!byTrunk.has(trunkId)) byTrunk.set(trunkId, []);
+      byTrunk.get(trunkId)!.push(a);
+    }
+
+    // Construire les sets par tronc
+    for (const [trunkId, trunkArticles] of byTrunk.entries()) {
+      const levelSet = new Set<number>();
+      const universSet = new Set<string>();
+      const famillesSet = new Set<string>();
+      const sousFamillesSet = new Set<string>();
+
+      for (const a of trunkArticles) {
+        const rawLevel = (a as any).trunk_level ?? a.level;
+        const lvl = typeof rawLevel !== 'undefined' ? Number(rawLevel) : undefined;
+        if (typeof lvl === 'number') levelSet.add(lvl);
+
+        if (a.univers) universSet.add(a.univers);
+        if (a.famille) famillesSet.add(a.famille);
+        if (a.sousFamille) sousFamillesSet.add(a.sousFamille);
+      }
+
+      meta[trunkId] = {
+        levels: Array.from(levelSet).sort((a, b) => a - b),
+        univers: Array.from(universSet).sort((a, b) => a.localeCompare(b)),
+        familles: Array.from(famillesSet).sort((a, b) => a.localeCompare(b)),
+        sousFamilles: Array.from(sousFamillesSet).sort((a, b) => a.localeCompare(b))
+      };
+    }
+
+    return meta;
+  }
+
+  // Accesseurs pour le template
+  getTrunkLevels(trunk: Trunk): number[] {
+    return this.trunkMetaById[trunk.id]?.levels ?? [];
+  }
+
+  getTrunkUnivers(trunk: Trunk): string[] {
+    return this.trunkMetaById[trunk.id]?.univers ?? [];
+  }
+
+  getTrunkFamilles(trunk: Trunk): string[] {
+    return this.trunkMetaById[trunk.id]?.familles ?? [];
+  }
+
+  getTrunkSousFamilles(trunk: Trunk): string[] {
+    return this.trunkMetaById[trunk.id]?.sousFamilles ?? [];
   }
 }
