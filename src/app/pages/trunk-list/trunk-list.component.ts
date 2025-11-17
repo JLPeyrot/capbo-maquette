@@ -20,7 +20,6 @@ export interface Trunk {
   type: 'TAC' | 'TAN' | 'complementaire';
   enseigne?: string; // non présent dans troncs.json
   status: 'actif' | 'brouillon' | 'archive' | 'inactif';
-  articlesCount: number;
   createdDate: Date;
   lastModified: Date;
   description?: string;
@@ -70,7 +69,7 @@ export class TrunkListComponent implements OnInit {
   ];
 
   // Colonnes du tableau
-  displayedColumns: string[] = ['name', 'type', 'enseigne', 'status', 'articlesCount', 'createdDate', 'actions'];
+  displayedColumns: string[] = ['name', 'type', 'enseigne', 'status', 'createdDate', 'actions'];
 
   constructor(
     private router: Router,
@@ -86,7 +85,6 @@ export class TrunkListComponent implements OnInit {
         name: i.name,
         type: i.type,
         status: i.status as any,
-        articlesCount: i.articlesCount,
         createdDate: i.createdDate,
         lastModified: i.lastModified,
         enseigne: '',
@@ -106,7 +104,10 @@ export class TrunkListComponent implements OnInit {
         (trunk.enseigne || '').toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         (trunk.description && trunk.description.toLowerCase().includes(this.searchTerm.toLowerCase()));
 
-      const matchesType = !this.selectedType || trunk.type === this.selectedType;
+      const matchesType = !this.selectedType 
+        || trunk.type === this.selectedType 
+        || (this.selectedType === 'complementaire' && trunk.type === 'TAC')
+        || (this.selectedType === 'TAC' && trunk.type === 'complementaire');
       const matchesEnseigne = !this.selectedEnseigne || !trunk.enseigne || (trunk.enseigne.toLowerCase() === this.selectedEnseigne);
       const matchesStatus = !this.selectedStatus || trunk.status === this.selectedStatus;
 
@@ -135,7 +136,7 @@ export class TrunkListComponent implements OnInit {
   editTrunk(trunk: Trunk): void {
     console.log('Modifier le tronc:', trunk);
     this.router.navigate(['/create-trunk'], {
-      queryParams: { id: trunk.id, mode: 'edit' }
+      queryParams: { id: trunk.id, mode: 'edit', enseigne: trunk.enseigne || '' }
     });
   }
 

@@ -1,13 +1,37 @@
 <div class="create-trunk-container">
+  <ng-template #enseigneDialog>
+    <h2 mat-dialog-title>Sélectionner l'enseigne</h2>
+    <div mat-dialog-content>
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Enseigne</mat-label>
+        <mat-select [(ngModel)]="selectedEnseigneDialog">
+          <mat-option *ngFor="let e of enseigneOptions" [value]="e.value">{{ e.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div mat-dialog-actions align="end">
+      <button mat-button (click)="onCancelEnseigne()">Annuler</button>
+      <button mat-flat-button color="primary" [disabled]="!selectedEnseigneDialog" (click)="onValidateEnseigne()">Valider</button>
+    </div>
+  </ng-template>
+  <ng-template #confirmCreateDialog>
+    <h2 mat-dialog-title>Confirmer la création</h2>
+    <div mat-dialog-content>
+      Vous vous apprêtez à créer un tronc de type {{ confirmTrunkTypeLabel }} qui cible {{ confirmStoresCount }} magasin(s) pour l'enseigne {{ confirmEnseigneLabel }}.
+    </div>
+    <div mat-dialog-actions align="end">
+      <button mat-button (click)="onCancelConfirm()">Annuler</button>
+      <button mat-flat-button color="primary" (click)="onValidateConfirm()">Valider</button>
+    </div>
+  </ng-template>
   <!-- HEADER DE LA PAGE -->
   <div class="page-header">
     <div class="header-content">
       <div class="title-section">
         <h1 class="page-title">
           <mat-icon class="title-icon">account_tree</mat-icon>
-          Création de tronc
+          Création de tronc <span *ngIf="trunkForm.value.enseigne">[{{ getSelectedEnseigneLabel() }}]</span>
         </h1>
-        <p class="page-subtitle">Configurez un nouveau tronc d'assortiment</p>
       </div>
       <div class="header-actions">
         <button mat-stroked-button class="back-btn-outline" (click)="goBack()">
@@ -52,16 +76,7 @@
               </div>
             </div>
 
-            <div class="form-field">
-              <label class="field-label">Enseigne :</label>
-              <div class="field-input">
-                <mat-form-field appearance="outline">
-                  <mat-select formControlName="enseigne" placeholder="Sélectionner l’enseigne">
-                    <mat-option *ngFor="let e of enseigneOptions" [value]="e.value">{{ e.label }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-            </div>
+            
 
             <ng-container *ngIf="trunkForm.value.trunkKind !== 'TAN'">
               <div class="form-field">
@@ -105,6 +120,9 @@
                 </button>
               </div>
 
+            </ng-container>
+            
+            <ng-container *ngIf="isEditMode || trunkForm.value.trunkKind !== 'TAN'">
               <div class="form-field">
                 <label class="field-label">Attributs :</label>
                 <div class="attributes-container">
@@ -148,6 +166,12 @@
               </div>
             </ng-container>
           </form>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" (click)="openConfirmCreateDialog()" [disabled]="!isFormValid()">
+              <mat-icon>save</mat-icon>
+              {{ isEditMode ? 'Mettre à jour le tronc' : 'Créer le tronc' }}
+            </button>
+          </div>
         </mat-card-content>
       </mat-card>
     </div>

@@ -31,7 +31,7 @@ export class ReferencementReviewComponent implements OnInit {
   expandedUnivers = new Set<string>();
   expandedFamilies = new Set<string>();
   // Sélection de l’enseigne affectée
-  selectedEnseigne: string = '';
+  selectedEnseignes: string[] = [];
   enseigneOptions = [
     { value: 'boulanger', label: 'Boulanger' },
     { value: 'electrodepot', label: 'Electrodépot' }
@@ -135,10 +135,15 @@ export class ReferencementReviewComponent implements OnInit {
   }
 
   onReferenceArticleClick(): void {
+    if (!this.selectedMerchNode?.sousFamille) {
+      this.dialog.open(this.errorAssignDialog, { width: '420px' });
+      return;
+    }
     this.dialog.open(this.confirmAssignDialog, { width: '420px' });
   }
 
   @ViewChild('confirmAssignDialog') confirmAssignDialog!: TemplateRef<any>;
+  @ViewChild('errorAssignDialog') errorAssignDialog!: TemplateRef<any>;
 
   confirmAssign(): void {
     this.dialog.closeAll();

@@ -1,5 +1,11 @@
 .supplier-import-container { padding: 16px; }
 
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
 .page-header {
   background: white;
   border-radius: 8px;
@@ -15,20 +21,30 @@
 .back-btn-outline { border-color: #1976d2; color: #1976d2; }
 .back-btn-outline:hover { background: rgba(25, 118, 210, 0.06); }
 
-.selection-card .file-row { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; cursor: pointer; }
-.selection-card .file-row:hover { background: #f8f9fa; }
-.selection-card .file-row.selected { background: #e3f2fd; }
+.section-separator { margin: 16px 0; }
+
+.selection-card { margin-bottom: 16px; }
+.selection-card .filters-row { display: flex; gap: 12px; margin-bottom: 12px; }
+.selection-card .files-list { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.selection-card .file-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: 1px solid #e5e7eb; }
+.selection-card .file-row:hover { background: #f8fafc; }
+.selection-card .file-row.selected { background: #e3f2fd; border-color: #bbdefb; }
 .selection-card .file-icon { color: #1976d2; }
 .selection-card .file-info .file-name { font-weight: 600; }
 .selection-card .actions { margin-top: 12px; }
 
-.progress-section { margin: 16px 0; }
+.progress-card { margin: 16px 0; }
+.progress-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #333; }
 .progress-info { display: flex; justify-content: space-between; margin-top: 8px; color: #333; }
 
+.logs-card { margin-top: 16px; }
 .logs-card .summary-stats { display: flex; gap: 24px; margin-bottom: 12px; }
 .logs-card .stat { display: flex; align-items: center; gap: 8px; }
 .logs-card .stat .stat-label { font-size: 12px; color: #666; }
 .logs-card .stat .stat-value { font-weight: 600; }
+
+.log-box { max-height: 220px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; background: #fafafa; }
+.log-line { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; color: #111; padding: 2px 0; }
 .log-box { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; max-height: 160px; overflow: auto; }
 .log-line { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: 12px; color: #444; padding: 2px 0; }
 

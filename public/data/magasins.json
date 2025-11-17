@@ -319,6 +319,126 @@
       "ville": "MULHOUSE",
       "groupes": ["EST", "URBAIN", "ZONE À FORTE FRÉQUENTATION", "PILOTE"],
       "attributs": ["EXPERTISE_GAMING", "RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "E001",
+      "nom_magasin": "Electrodepot Lille Faches",
+      "taille": 4,
+      "ville": "LILLE",
+      "groupes": ["NORD", "PERIURBAIN", "INTÉGRÉ"],
+      "attributs": ["RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "E002",
+      "nom_magasin": "Electrodepot Marseille La Valentine",
+      "taille": 5,
+      "ville": "MARSEILLE",
+      "groupes": ["SUD", "URBAIN", "FRANCHISÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "E003",
+      "nom_magasin": "Electrodepot Lyon Bron",
+      "taille": 4,
+      "ville": "LYON",
+      "groupes": ["CENTRE", "URBAIN", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_GAMING"]
+    },
+    {
+      "code_magasin": "E004",
+      "nom_magasin": "Electrodepot Toulouse Portet",
+      "taille": 4,
+      "ville": "TOULOUSE",
+      "groupes": ["SUD", "PERIURBAIN", "AFFILIÉ"],
+      "attributs": ["RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "E005",
+      "nom_magasin": "Electrodepot Bordeaux Sainte-Eulalie",
+      "taille": 3,
+      "ville": "BORDEAUX",
+      "groupes": ["OUEST", "PERIURBAIN", "FRANCHISÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "E006",
+      "nom_magasin": "Electrodepot Nantes Rezé",
+      "taille": 3,
+      "ville": "NANTES",
+      "groupes": ["OUEST", "URBAIN", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "E007",
+      "nom_magasin": "Electrodepot Strasbourg Hautepierre",
+      "taille": 4,
+      "ville": "STRASBOURG",
+      "groupes": ["EST", "URBAIN", "PILOTE"],
+      "attributs": ["RETRAIT_1H", "B2B"]
+    },
+    {
+      "code_magasin": "E008",
+      "nom_magasin": "Electrodepot Rennes Chantepie",
+      "taille": 3,
+      "ville": "RENNES",
+      "groupes": ["OUEST", "PERIURBAIN", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_GAMING"]
+    },
+    {
+      "code_magasin": "E009",
+      "nom_magasin": "Electrodepot Nice La Trinité",
+      "taille": 4,
+      "ville": "NICE",
+      "groupes": ["SUD", "LITTORAL", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "E010",
+      "nom_magasin": "Electrodepot Reims Thillois",
+      "taille": 3,
+      "ville": "REIMS",
+      "groupes": ["NORD", "PERIURBAIN", "AFFILIÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "E011",
+      "nom_magasin": "Electrodepot Metz Semécourt",
+      "taille": 3,
+      "ville": "METZ",
+      "groupes": ["EST", "PERIURBAIN", "INTÉGRÉ"],
+      "attributs": ["RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "E012",
+      "nom_magasin": "Electrodepot Clermont-Ferrand Aubière",
+      "taille": 3,
+      "ville": "CLERMONT-FERRAND",
+      "groupes": ["CENTRE", "MONTAGNE", "FRANCHISÉ"],
+      "attributs": ["EXPERTISE_CINEMA"]
+    },
+    {
+      "code_magasin": "E013",
+      "nom_magasin": "Electrodepot Dijon Quetigny",
+      "taille": 2,
+      "ville": "DIJON",
+      "groupes": ["CENTRE", "URBAIN", "AFFILIÉ"],
+      "attributs": ["B2B"]
+    },
+    {
+      "code_magasin": "E014",
+      "nom_magasin": "Electrodepot Toulon La Garde",
+      "taille": 4,
+      "ville": "TOULON",
+      "groupes": ["SUD", "LITTORAL", "INTÉGRÉ"],
+      "attributs": ["EXPERTISE_GAMING", "RETRAIT_1H"]
+    },
+    {
+      "code_magasin": "E015",
+      "nom_magasin": "Electrodepot Amiens Glisy",
+      "taille": 3,
+      "ville": "AMIENS",
+      "groupes": ["NORD", "PERIURBAIN", "FRANCHISÉ"],
+      "attributs": ["CUISINE_PRO"]
     }
   ]
 }

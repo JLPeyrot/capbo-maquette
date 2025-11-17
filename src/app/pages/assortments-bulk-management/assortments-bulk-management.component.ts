@@ -122,22 +122,32 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
   private loadSubFamilies(onDone: () => void): void {
     const tryPaths = [
       '/assets/data/sous-familles.json',
-      '/data/sous-familles.json'
+      '/data/sous-familles.json',
+      '/data/familles.json'
     ];
     const tryNext = (idx: number) => {
       if (idx >= tryPaths.length) { onDone(); return; }
       fetch(tryPaths[idx])
         .then(r => r.json())
-        .then((data: { sousFamilles: { famille: string; sousFamilles: { code: string; libelle: string }[] }[] }) => {
+        .then((raw: any) => {
           const map: Record<string, string[]> = {};
-          if (data && Array.isArray(data.sousFamilles)) {
-            for (const entry of data.sousFamilles) {
+          if (raw && Array.isArray(raw.sousFamilles)) {
+            for (const entry of raw.sousFamilles) {
               if (Array.isArray(entry.sousFamilles)) {
-                // Utiliser les libellés de sous-famille pour correspondre aux articles_ref.json
                 const labels = entry.sousFamilles
-                  .map(sf => sf?.libelle)
-                  .filter((lbl): lbl is string => typeof lbl === 'string' && lbl.length > 0);
+                  .map((sf: any) => sf?.libelle)
+                  .filter((lbl: any): lbl is string => typeof lbl === 'string' && lbl.length > 0);
                 map[entry.famille] = labels;
+              }
+            }
+          } else if (raw && Array.isArray(raw.familles)) {
+            for (const entry of raw.familles) {
+              const fams = Array.isArray(entry.familles) ? entry.familles : [];
+              for (const f of fams) {
+                const labels = Array.isArray(f.sousFamilles) ? f.sousFamilles.filter((lbl: any) => typeof lbl === 'string' && lbl.length > 0) : [];
+                if (labels.length) {
+                  map[f.libelle] = labels;
+                }
               }
             }
           }

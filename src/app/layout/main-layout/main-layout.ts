@@ -271,7 +271,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       this.isFocusMode = false;
     } else if (url.includes('/create-trunk')) {
       this.currentView = 'create-trunk';
-      this.isFocusMode = true;
+      this.isFocusMode = false;
     } else if (url.includes('/trunk-management')) {
       this.currentView = 'trunk-management';
       this.isFocusMode = false;
@@ -383,7 +383,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         break;
       case 'create-trunk':
         this.currentView = 'create-trunk';
-        this.isFocusMode = true;
+        this.isFocusMode = false;
         break;
       case 'trunk-management':
         this.currentView = 'trunk-management';

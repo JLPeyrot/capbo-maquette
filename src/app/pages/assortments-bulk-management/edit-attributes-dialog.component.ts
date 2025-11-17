@@ -31,10 +31,11 @@ export class EditAttributesDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.isLoading = true;
-    this.http.get<{ attributs_magasins: { code: string; description: string }[] }>(
-      '/data/attributs-magasins.json'
+    this.http.get<{ attributs_csv: string[] }>(
+      '/data/attributs-csv.json'
     ).subscribe(res => {
-      this.storeAttributes = res?.attributs_magasins || [];
+      const list = res?.attributs_csv || [];
+      this.storeAttributes = list.map(code => ({ code, description: '' }));
       this.isLoading = false;
     }, _ => {
       this.storeAttributes = [];

@@ -1,32 +1,33 @@
-import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { Component, TemplateRef, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MaterialModule } from '../../shared/material-module';
 import { MatDialog } from '@angular/material/dialog';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface SupplierFile {
   id: string;
   name: string;
   sizeKb: number;
   date: string;
+  supplier: string;
 }
 
 @Component({
   selector: 'app-supplier-import',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule, HttpClientModule],
   templateUrl: './supplier-import.component.html',
   styleUrls: ['./supplier-import.component.scss']
 })
-export class SupplierImportComponent {
-  files: SupplierFile[] = [
-    { id: 'f001', name: 'catalogue_fournisseur_A.csv', sizeKb: 842, date: '2025-11-05' },
-    { id: 'f002', name: 'catalogue_fournisseur_B.xlsx', sizeKb: 1260, date: '2025-11-10' },
-    { id: 'f003', name: 'catalogue_fournisseur_C.csv', sizeKb: 560, date: '2025-11-12' }
-  ];
+export class SupplierImportComponent implements OnInit {
+  files: SupplierFile[] = [];
 
   importForm: FormGroup;
   selectedFileIds = new Set<string>();
+  selectedSupplier = '';
+  supplierOptions: { value: string; label: string }[] = [];
 
   isImporting = false;
   progress = 0; // 0-100 global progress
@@ -42,8 +43,32 @@ export class SupplierImportComponent {
   private importTimer?: any;
   private lineTimer?: any;
 
-  constructor(private fb: FormBuilder, private dialog: MatDialog) {
+  constructor(private fb: FormBuilder, private dialog: MatDialog, private http: HttpClient, private router: Router) {
     this.importForm = this.fb.group({});
+    this.supplierOptions = [];
+  }
+
+  ngOnInit(): void {
+    // Charger la liste des fichiers fournisseurs fictifs
+    this.http.get<{ files: SupplierFile[] }>(`/data/supplier-files/index.json`).subscribe({
+      next: (data) => {
+        const list = Array.isArray((data as any).files) ? (data as any).files : [];
+        this.files = list;
+        // Limiter explicitement aux 4 fournisseurs demandés et présents dans les fichiers
+        const allowed = new Set<string>([
+          'Samsung France',
+          'BSH Électroménager',
+          'Philips Domestic',
+          'TCL Europe'
+        ]);
+        const uniq = Array.from(new Set(this.files.map(f => f.supplier).filter(x => !!x))).sort();
+        const filtered = uniq.filter(s => allowed.has(s));
+        this.supplierOptions = filtered.map(s => ({ value: s, label: s }));
+        if (!this.supplierOptions.find(o => o.value === this.selectedSupplier)) this.selectedSupplier = '';
+      },
+      error: () => {},
+      complete: () => {}
+    });
   }
 
   toggleSelection(id: string): void {
@@ -105,12 +130,26 @@ export class SupplierImportComponent {
     processNext();
   }
 
+  get visibleFiles(): SupplierFile[] {
+    if (!this.selectedSupplier) return [];
+    return this.files.filter(f => f.supplier === this.selectedSupplier);
+  }
+
+  onSupplierChange(val: string): void {
+    this.selectedSupplier = val || '';
+    this.selectedFileIds.clear();
+  }
+
   private finishImport(): void {
     this.progress = 100;
     this.isImporting = false;
     this.logLines.push(`Import terminé — Validations totales: ${this.totalValidated}, Rejets totaux: ${this.totalRejected}`);
     this.currentFileName = '';
-    this.dialog.open(this.importResultDialog, { width: '480px' });
+    const ref = this.dialog.open(this.importResultDialog, { width: '480px' });
+    ref.afterClosed().subscribe(() => {
+      const supplier = this.selectedSupplier;
+      this.router.navigate(['/referencement'], { queryParams: { fournisseur: supplier } });
+    });
   }
 
   cancelImport(): void {

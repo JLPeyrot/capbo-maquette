@@ -1,10 +1,4 @@
 {
   "attributs_csv": [
-    { "code_attribut": "SPECIALISATION", "libelle_attribut": "Spécialisation", "valeur": "CUISINE_PRO" },
-    { "code_attribut": "SPECIALISATION", "libelle_attribut": "Spécialisation", "valeur": "EXPERTISE_GAMING" },
-    { "code_attribut": "SPECIALISATION", "libelle_attribut": "Spécialisation", "valeur": "EXPERTISE_CINEMA" },
-    { "code_attribut": "SPECIALISATION", "libelle_attribut": "Spécialisation", "valeur": "ATELIER_REPARATION" },
-    { "code_attribut": "SPECIALISATION", "libelle_attribut": "Spécialisation", "valeur": "B2B" },
-    { "code_attribut": "SPECIALISATION", "libelle_attribut": "Spécialisation", "valeur": "RETRAIT_1H" }
-  ]
+     "CUISINE_PRO","EXPERTISE_GAMING", "EXPERTISE_CINEMA","ATELIER_REPARATION" , "B2B" , "RETRAIT_1H"]
 }

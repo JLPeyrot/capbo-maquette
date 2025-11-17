@@ -1,4 +1,5 @@
 <div class="supplier-import-container">
+  <div class="content-wrapper">
   <div class="page-header">
     <div class="header-content">
       <div class="title-section">
@@ -16,6 +17,8 @@
       </div>
     </div>
   </div>
+  
+  <mat-divider class="section-separator"></mat-divider>
 
   <mat-card class="selection-card">
     <mat-card-header>
@@ -25,19 +28,27 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div class="files-list">
-        <div class="file-row" *ngFor="let f of files" (click)="toggleSelection(f.id)" [class.selected]="selectedFileIds.has(f.id)">
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Fournisseur</mat-label>
+          <mat-select [(value)]="selectedSupplier" (selectionChange)="onSupplierChange($event.value)">
+            <mat-option *ngFor="let s of supplierOptions" [value]="s.value">{{ s.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="files-list" *ngIf="selectedSupplier">
+        <div class="file-row" *ngFor="let f of visibleFiles" (click)="toggleSelection(f.id)" [class.selected]="selectedFileIds.has(f.id)">
           <mat-checkbox [checked]="selectedFileIds.has(f.id)" (change)="toggleSelection(f.id)" (click)="$event.stopPropagation()"></mat-checkbox>
           <mat-icon class="file-icon">description</mat-icon>
           <div class="file-info">
             <div class="file-name">{{ f.name }}</div>
-            <div class="file-meta">{{ f.sizeKb }} Ko • {{ f.date }}</div>
+            <div class="file-meta">{{ f.sizeKb }} Ko • {{ f.date }} • {{ f.supplier }}</div>
           </div>
         </div>
       </div>
 
       <div class="actions">
-        <button mat-raised-button color="primary" (click)="startImport()" [disabled]="selectedFileIds.size === 0 || isImporting">
+        <button mat-raised-button color="primary" (click)="startImport()" [disabled]="!selectedSupplier || selectedFileIds.size === 0 || isImporting">
           <mat-icon>cloud_upload</mat-icon>
           Importer ({{ selectedFileIds.size }})
         </button>
@@ -45,13 +56,19 @@
     </mat-card-content>
   </mat-card>
 
-  <div class="progress-section" *ngIf="isImporting || progress > 0">
-    <mat-progress-bar [value]="progress" mode="determinate"></mat-progress-bar>
-    <div class="progress-info" *ngIf="isImporting">
-      <span class="current-file">Fichier en cours: {{ currentFileName || '—' }}</span>
-      <span class="current-stats">Lignes traitées: {{ currentProcessed }} • Rejets: {{ currentRejected }}</span>
-    </div>
-  </div>
+  <mat-card class="progress-card" *ngIf="isImporting || progress > 0">
+    <mat-card-content>
+      <div class="progress-header">
+        <mat-icon>sync</mat-icon>
+        <span>Progression de l’import</span>
+      </div>
+      <mat-progress-bar [value]="progress" mode="determinate"></mat-progress-bar>
+      <div class="progress-info" *ngIf="isImporting">
+        <span class="current-file">Fichier en cours: {{ currentFileName || '—' }}</span>
+        <span class="current-stats">Lignes traitées: {{ currentProcessed }} • Rejets: {{ currentRejected }}</span>
+      </div>
+    </mat-card-content>
+  </mat-card>
 
   <mat-card class="logs-card">
     <mat-card-header>
@@ -102,4 +119,5 @@
       <button mat-stroked-button mat-dialog-close>Fermer</button>
     </mat-dialog-actions>
   </ng-template>
+  </div>
 </div>

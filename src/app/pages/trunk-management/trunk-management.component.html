@@ -1,5 +1,20 @@
 <div class="page-container">
   <div class="content-wrapper">
+    <ng-template #enseigneDialog>
+      <h2 mat-dialog-title>Sélectionner l'enseigne</h2>
+      <div mat-dialog-content>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Enseigne</mat-label>
+          <mat-select [(ngModel)]="selectedEnseigne">
+            <mat-option *ngFor="let e of enseignes" [value]="e.value">{{ e.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div mat-dialog-actions align="end">
+        <button mat-button (click)="onCancelEnseigne()">Annuler</button>
+        <button mat-flat-button color="primary" [disabled]="!selectedEnseigne" (click)="onValidateEnseigne()">Valider</button>
+      </div>
+    </ng-template>
     
     <!-- En-tête de page -->
     <div class="page-header">
@@ -133,7 +148,7 @@
                 <h3>{{ trunk.name }}</h3>
                 <div class="trunk-badges">
                   <span class="type-badge" [ngClass]="getTypeBadgeClass(trunk.type)">
-                    {{ trunk.type === 'TAC' ? 'TAC' : trunk.type === 'TAN' ? 'TAN' : 'Complémentaire' }}
+                    {{ trunk.type === 'TAN' ? 'National' : 'Complémentaire' }}
                   </span>
                   <span class="status-badge" [ngClass]="getStatusBadgeClass(trunk.status)">
                     {{ trunk.status | titlecase }}
@@ -189,6 +204,17 @@
 
               <!-- Groupes et attributs -->
               <div class="trunk-details">
+                <div class="detail-section" *ngIf="trunk.enseigne">
+                  <h4>
+                    <mat-icon>store</mat-icon>
+                    Enseigne
+                  </h4>
+                  <div class="tags-container">
+                    <mat-chip-set>
+                      <mat-chip>{{ getEnseigneLabel(trunk.enseigne) }}</mat-chip>
+                    </mat-chip-set>
+                  </div>
+                </div>
                 <div class="detail-section" *ngIf="trunk.groups.length > 0">
                   <h4>
                     <mat-icon>category</mat-icon>

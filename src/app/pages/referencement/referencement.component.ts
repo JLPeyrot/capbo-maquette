@@ -5,7 +5,7 @@ import { MaterialModule } from '../../shared/material-module';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ReferencementSelectionService, SelectedArticleSummary } from './referencement-selection.service';
 
 interface SupplierArticle {
@@ -58,8 +58,6 @@ export class ReferencementComponent implements OnInit {
 
   // Filtres basiques
   search = '';
-  familleOptions: string[] = [];
-  selectedFamille = '';
   fournisseurOptions: string[] = [];
   selectedFournisseur = '';
 
@@ -68,7 +66,7 @@ export class ReferencementComponent implements OnInit {
   currentPage = 0;
 
   // Colonnes
-  displayed: string[] = ['select','reference','designation','fournisseur','marque','famille','prixAchat'];
+  displayed: string[] = ['select','reference','designation','fournisseur','marque','prixAchat'];
 
   // CRUD state
   showAddForm = false;
@@ -103,21 +101,31 @@ export class ReferencementComponent implements OnInit {
     private http: HttpClient,
     private dialog: MatDialog,
     private router: Router,
+    private route: ActivatedRoute,
     private selectionService: ReferencementSelectionService
   ) {}
 
   ngOnInit(): void {
-    this.loadSupplierCatalog();
+    let pendingFournisseur = '';
+    this.route.queryParamMap.subscribe(params => {
+      const f = params.get('fournisseur');
+      if (f) pendingFournisseur = f;
+    });
+    this.loadSupplierCatalog(() => {
+      if (pendingFournisseur) {
+        this.selectedFournisseur = pendingFournisseur;
+        this.applyFilters();
+      }
+    });
   }
 
-  private loadSupplierCatalog(): void {
+  private loadSupplierCatalog(after?: () => void): void {
     this.isLoading = true;
     this.http.get<{articles: PrerefArticle[]}>(`/api/preref-articles`).subscribe({
       next: (data) => {
         const raw = Array.isArray(data.articles) ? data.articles : [];
         this.articles = raw.map((a: PrerefArticle) => this.mapPrerefToSupplier(a));
         this.filtered = [...this.articles];
-        this.familleOptions = [...new Set(this.articles.map(a => a.famille))].sort();
         this.fournisseurOptions = [...new Set(this.articles.map(a => a.fournisseurPrincipal).filter(x => !!x))].sort();
       },
       error: (err) => {
@@ -126,7 +134,7 @@ export class ReferencementComponent implements OnInit {
         this.filtered = [];
         this.isLoading = false;
       },
-      complete: () => this.isLoading = false
+      complete: () => { this.isLoading = false; if (after) after(); }
     });
   }
 
@@ -155,16 +163,14 @@ export class ReferencementComponent implements OnInit {
         a.reference.toLowerCase().includes(term) ||
         a.designation.toLowerCase().includes(term) ||
         a.codeEan.toLowerCase().includes(term);
-      const matchesFamille = !this.selectedFamille || a.famille === this.selectedFamille;
       const matchesFournisseur = !this.selectedFournisseur || a.fournisseurPrincipal === this.selectedFournisseur;
-      return matchesSearch && matchesFamille && matchesFournisseur;
+      return matchesSearch && matchesFournisseur;
     });
     this.currentPage = 0;
   }
 
   resetFilters(): void {
     this.search = '';
-    this.selectedFamille = '';
     this.selectedFournisseur = '';
     this.applyFilters();
   }

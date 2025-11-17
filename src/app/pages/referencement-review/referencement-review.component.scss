@@ -46,6 +46,13 @@
   }
 }
 
+/* Conteneur centré avec largeur limitée (aligné aux autres pages) */
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
 .back-button {
   position: absolute;
   left: 12px;
@@ -235,7 +242,8 @@
   font-weight: 600;
 }
 .level-field { width: 100%; }
-.assign-summary { margin-top: 16px; padding-top: 14px; border-top: 2px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.assign-summary { margin-top: 14px; padding-top: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 10px; }
+.merch-separator { margin: 10px 0; }
 
 /* Badges */
 .child-count {
@@ -262,7 +270,7 @@
 
 /* Mise en page deux colonnes pour le body */
 .review-body {
-  margin: 0 32px 24px 32px;
+  margin: 0 0 24px 0;
   display: flex;
   gap: 24px;
   align-items: flex-start;

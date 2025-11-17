@@ -135,16 +135,18 @@
               <mat-icon class="expand-icon" [class.expanded]="expandedGroups.assortments">expand_more</mat-icon>
             </button>
             <div class="submenu" [class.expanded]="expandedGroups.assortments">
-              <mat-list-item class="submenu-item" (click)="navigateTo('create-assortments')">
-                <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
-                <div matListItemTitle>Création d'assortiments</div>
+              <mat-list-item class="submenu-item" (click)="navigateTo('create-trunk')">
+                <mat-icon matListItemIcon>account_tree</mat-icon>
+                <div matListItemTitle>Création d'un tronc</div>
               </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('trunk-management')">
                 <mat-icon matListItemIcon>manage_accounts</mat-icon>
                 <div matListItemTitle>Gestion des Troncs</div>
               </mat-list-item>
-              
-              
+              <mat-list-item class="submenu-item" (click)="navigateTo('create-assortments')">
+                <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
+                <div matListItemTitle>Création d'assortiment</div>
+              </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('assortments-bulk')">
                 <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
                 <div matListItemTitle>Gestion en masse des assortiments</div>

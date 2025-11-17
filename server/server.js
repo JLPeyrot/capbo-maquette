@@ -289,7 +289,8 @@ app.post('/api/trunks', (req, res) => {
   const groups = Array.isArray(payload.groups) ? payload.groups.map(String) : [];
   const attributes = Array.isArray(payload.attributes) ? payload.attributes.map(String) : [];
   const type = typeof payload.type === 'string' ? payload.type : 'TAC';
-  const status = typeof payload.status === 'string' ? payload.status : 'brouillon';
+  const status = 'brouillon';
+  const enseigne = typeof payload.enseigne === 'string' ? payload.enseigne.trim() : '';
 
   if (!name) {
     return res.status(400).json({ error: 'Paramètre invalide: name requis.' });
@@ -308,12 +309,19 @@ app.post('/api/trunks', (req, res) => {
   const magasinsData = readMagasins();
   const stores = magasinsData.magasins || [];
   const groupsSet = new Set(groups);
-  const storesCount = groups.length === 0
-    ? stores.length
-    : stores.filter(m => {
-        const g = Array.isArray(m.groupes) ? m.groupes : [];
-        return Array.from(groupsSet).every(grp => g.includes(grp));
-      }).length;
+  const brandOf = (m) => {
+    const nm = (m.nom_magasin || '').toLowerCase();
+    if (nm.startsWith('electrodepot')) return 'electrodepot';
+    if (nm.startsWith('boulanger')) return 'boulanger';
+    return '';
+  };
+  const storesCount = stores.filter(m => {
+    const g = Array.isArray(m.groupes) ? m.groupes : [];
+    const groupsOk = groups.length === 0 ? true : Array.from(groupsSet).every(grp => g.includes(grp));
+    const brand = brandOf(m);
+    const enseigneOk = !enseigne ? true : brand === enseigne.toLowerCase();
+    return groupsOk && enseigneOk;
+  }).length;
 
   const nowIso = new Date().toISOString();
   const newTrunk = {
@@ -321,12 +329,12 @@ app.post('/api/trunks', (req, res) => {
     type,
     name,
     status,
-    articlesCount: 0,
     storesCount,
     createdDate: nowIso,
     lastModified: nowIso,
     groups,
-    attributes
+    attributes,
+    enseigne
   };
 
   const updated = { assortiments: [ ...assortiments, newTrunk ] };
@@ -350,6 +358,7 @@ app.put('/api/trunks/:id', (req, res) => {
   const attributes = Array.isArray(payload.attributes) ? payload.attributes.map(String) : undefined;
   const type = typeof payload.type === 'string' ? payload.type : undefined;
   const status = typeof payload.status === 'string' ? payload.status : undefined;
+  const enseigne = typeof payload.enseigne === 'string' ? payload.enseigne.trim() : undefined;
 
   const troncsData = readTroncs();
   const assortiments = troncsData.assortiments || [];
@@ -361,14 +370,21 @@ app.put('/api/trunks/:id', (req, res) => {
   // Conserver createdDate, recalculer storesCount, mettre à jour lastModified
   const magasinsData = readMagasins();
   const stores = magasinsData.magasins || [];
-
   const nextGroups = groups ?? (assortiments[index].groups || []);
-  const storesCount = nextGroups.length === 0
-    ? stores.length
-    : stores.filter(m => {
-        const g = Array.isArray(m.groupes) ? m.groupes : [];
-        return nextGroups.every(grp => g.includes(grp));
-      }).length;
+  const nextEnseigne = enseigne ?? (assortiments[index].enseigne || '');
+  const brandOf = (m) => {
+    const nm = (m.nom_magasin || '').toLowerCase();
+    if (nm.startsWith('electrodepot')) return 'electrodepot';
+    if (nm.startsWith('boulanger')) return 'boulanger';
+    return '';
+  };
+  const storesCount = stores.filter(m => {
+    const g = Array.isArray(m.groupes) ? m.groupes : [];
+    const groupsOk = nextGroups.length === 0 ? true : nextGroups.every(grp => g.includes(grp));
+    const brand = brandOf(m);
+    const enseigneOk = !nextEnseigne ? true : brand === String(nextEnseigne).toLowerCase();
+    return groupsOk && enseigneOk;
+  }).length;
 
   const nowIso = new Date().toISOString();
   const updatedTrunk = {
@@ -379,6 +395,7 @@ app.put('/api/trunks/:id', (req, res) => {
     type: type ?? assortiments[index].type,
     status: status ?? assortiments[index].status,
     storesCount,
+    enseigne: nextEnseigne,
     lastModified: nowIso
   };
 

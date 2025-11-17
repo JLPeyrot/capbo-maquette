@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MaterialModule } from '../../shared/material-module';
 import { Router } from '@angular/router';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TrunksService } from '../../services/trunks.service';
 import { ArticlesService, Article } from '../../services/articles.service';
@@ -19,6 +20,7 @@ interface Trunk {
   lastModified: Date;
   groups: string[];
   attributes: string[];
+  enseigne?: string;
 }
 
 @Component({
@@ -51,6 +53,10 @@ export class TrunkManagementComponent implements OnInit {
     { value: 'electrodepot', label: 'Electrodépot' }
   ];
 
+  selectedEnseigne: string = '';
+  private dialogRef?: MatDialogRef<any>;
+  @ViewChild('enseigneDialog') enseigneDialog!: TemplateRef<any>;
+
   // Statistiques
   stats = {
     totalTrunks: 0,
@@ -64,7 +70,8 @@ export class TrunkManagementComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     private trunksService: TrunksService,
-    private articlesService: ArticlesService
+    private articlesService: ArticlesService,
+    private dialog: MatDialog
   ) {
     this.searchForm = this.fb.group({
       searchTerm: [''],
@@ -121,8 +128,10 @@ export class TrunkManagementComponent implements OnInit {
         trunk.name.toLowerCase().includes(formValue.searchTerm.toLowerCase()) ||
         trunk.groups.some(group => group.toLowerCase().includes(formValue.searchTerm.toLowerCase()));
       
-      const matchesType = !formValue.trunkType || trunk.type === formValue.trunkType;
-      const matchesEnseigne = !formValue.enseigne || (trunk as any).enseigne === formValue.enseigne;
+      const matchesType = !formValue.trunkType 
+        || trunk.type === formValue.trunkType 
+        || (formValue.trunkType === 'complementaire' && trunk.type === 'TAC');
+      const matchesEnseigne = !formValue.enseigne || trunk.enseigne === formValue.enseigne;
 
       return matchesSearch && matchesType && matchesEnseigne;
     });
@@ -134,7 +143,21 @@ export class TrunkManagementComponent implements OnInit {
   }
 
   createTrunk(): void {
-    this.router.navigate(['/create-trunk']);
+    this.selectedEnseigne = this.searchForm.value.enseigne || '';
+    this.dialogRef = this.dialog.open(this.enseigneDialog, { width: '420px' });
+    this.dialogRef.afterClosed().subscribe(result => {
+      if (result && this.selectedEnseigne) {
+        this.router.navigate(['/create-trunk'], { queryParams: { enseigne: this.selectedEnseigne } });
+      }
+    });
+  }
+
+  onCancelEnseigne(): void {
+    this.dialogRef?.close(false);
+  }
+
+  onValidateEnseigne(): void {
+    this.dialogRef?.close(true);
   }
 
   editTrunk(trunk: Trunk): void {
@@ -145,6 +168,7 @@ export class TrunkManagementComponent implements OnInit {
         id: trunk.id,
         mode: 'edit',
         name: trunk.name,
+        enseigne: trunk.enseigne || '',
         // Angular encode les tableaux en params répétés; lecture via getAll()
         groups: trunk.groups,
         attributes: trunk.attributes
@@ -206,6 +230,11 @@ export class TrunkManagementComponent implements OnInit {
       case 'complementaire': return 'type-complementaire';
       default: return '';
     }
+  }
+
+  getEnseigneLabel(val?: string): string {
+    const e = this.enseignes.find(x => x.value === val);
+    return e ? e.label : (val || '');
   }
 
   formatDate(date: Date): string {

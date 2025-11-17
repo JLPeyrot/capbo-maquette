@@ -7,12 +7,12 @@ export interface TrunkItem {
   type: 'TAC' | 'TAN' | 'complementaire';
   name: string;
   status: 'actif' | 'brouillon' | 'archive';
-  articlesCount: number;
   storesCount: number;
   createdDate: string; // ISO string in JSON
   lastModified: string; // ISO string in JSON
   groups: string[];
   attributes: string[];
+  enseigne?: string;
 }
 
 export interface TrunksData {
@@ -108,4 +108,3 @@ export class TrunksService {
     );
   }
 }
-
