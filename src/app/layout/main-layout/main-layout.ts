@@ -26,6 +26,7 @@ import { AssortmentsBulkManagementComponent } from '../../pages/assortments-bulk
 import { ReferencementComponent } from '../../pages/referencement/referencement.component';
 import { ReferencementReviewComponent } from '../../pages/referencement-review/referencement-review.component';
 import { SupplierImportComponent } from '../../pages/supplier-import/supplier-import.component';
+import { ReferencementArticleComponent } from '../../pages/referencement-article/referencement-article.component';
 
 interface Notification {
   id: number;
@@ -72,6 +73,7 @@ interface ExpandedGroups {
       ReferencementComponent,
       ReferencementReviewComponent,
       SupplierImportComponent,
+      ReferencementArticleComponent,
       AlertPopupComponent  // NOUVEAU
     ],
   templateUrl: './main-layout.html',
@@ -84,6 +86,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   
   // Menu state
   isMenuOpen: boolean = false;
+  isMenuPinned: boolean = false;
   menuSearchQuery: string = '';
   expandedGroups: ExpandedGroups = {
     sales: false,
@@ -98,7 +101,9 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   };
   
   // AJOUT : État de navigation
-  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'reception-trunk' | 'trunk-selection' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'assortments-bulk-management' | 'data-page' | 'referencement' | 'referencement-review' | 'supplier-import' = 'dashboard';
+  suppliersCreateMode: boolean = false;
+  referencementSupplierOnly: boolean = false;
+  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'reception-trunk' | 'trunk-selection' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'assortments-bulk-management' | 'data-page' | 'referencement' | 'referencement-review' | 'supplier-import' | 'referencement-article' | 'local-articles' = 'dashboard';
   
   // NOUVEAU : Mode focus
   isFocusMode: boolean = false;
@@ -242,9 +247,14 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     if (url.includes('/referencement/review')) {
       this.currentView = 'referencement-review';
       this.isFocusMode = false;
+    } else if (url.includes('/referencement-article')) {
+      this.currentView = 'referencement-article';
+      this.isFocusMode = false;
     } else if (url.includes('/referencement')) {
       this.currentView = 'referencement';
       this.isFocusMode = false;
+      const supplierOnlyParam = this.route.snapshot.queryParamMap.get('supplierOnly');
+      this.referencementSupplierOnly = supplierOnlyParam === '1' || supplierOnlyParam === 'true';
     } else 
     if (url.includes('/trunk-selection')) {
       this.currentView = 'trunk-selection';
@@ -293,6 +303,9 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     } else if (url.includes('/create-article')) {
       this.currentView = 'create-article';
       this.isFocusMode = true;
+    } else if (url.includes('/referencement-article')) {
+      this.currentView = 'referencement-article';
+      this.isFocusMode = false;
     } else {
       this.currentView = 'dashboard';
       this.isFocusMode = false;
@@ -341,6 +354,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         this.currentView = 'articles';
         this.isFocusMode = false;
         break;
+      case 'local-articles':
+        this.currentView = 'local-articles';
+        this.isFocusMode = false;
+        break;
       case 'create-article':
         this.currentView = 'create-article';
         this.isFocusMode = true; // Création = mode focus
@@ -348,6 +365,12 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       case 'suppliers':
         this.currentView = 'suppliers';
         this.isFocusMode = false;
+        this.suppliersCreateMode = false;
+        break;
+      case 'suppliers-create':
+        this.currentView = 'suppliers';
+        this.isFocusMode = true;
+        this.suppliersCreateMode = true;
         break;
       case 'assortment-trunk':
         // route supprimée, rediriger vers gestion des troncs
@@ -405,6 +428,16 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       case 'referencement':
         this.currentView = 'referencement';
         this.isFocusMode = false;
+        this.referencementSupplierOnly = false;
+        break;
+      case 'referencement-article':
+        this.currentView = 'referencement-article';
+        this.isFocusMode = false;
+        break;
+      case 'referencement-supplier':
+        this.currentView = 'referencement';
+        this.isFocusMode = false;
+        this.referencementSupplierOnly = true;
         break;
       case 'dashboard':
       default:

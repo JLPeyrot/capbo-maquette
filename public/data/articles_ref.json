@@ -166,14 +166,16 @@
       "libelle": "Chaîne Hi-Fi Denon CEOL",
       "univers": "Image & Son",
       "famille": "Audio",
-      "sousFamille": "Chaînes Hi-Fi"
+      "sousFamille": "Chaînes Hi-Fi",
+      "trunk_id": "6"
     },
     {
       "code": "ART0020",
       "libelle": "Appareil photo Canon EOS 2000D",
       "univers": "Image & Son",
       "famille": "Photo & Vidéo",
-      "sousFamille": "Appareils photo"
+      "sousFamille": "Appareils photo",
+      "trunk_id": "6"
     },
     {
       "code": "ART0021",
@@ -187,7 +189,8 @@
       "libelle": "Trépied photo Manfrotto Compact",
       "univers": "Image & Son",
       "famille": "Photo & Vidéo",
-      "sousFamille": "Accessoires photo"
+      "sousFamille": "Accessoires photo",
+      "trunk_id": "6"
     },
     {
       "code": "ART0023",
@@ -568,7 +571,8 @@
       "libelle": "Sac photo Lowepro",
       "univers": "Image & Son",
       "famille": "Photo & Vidéo",
-      "sousFamille": "Accessoires photo"
+      "sousFamille": "Accessoires photo",
+      "trunk_id": "6"
     },
     {
       "code": "ART0073",
@@ -924,7 +928,8 @@
       "libelle": "Chaîne Hi-Fi Denon D-M41",
       "univers": "Image & Son",
       "famille": "Audio",
-      "sousFamille": "Chaînes Hi-Fi"
+      "sousFamille": "Chaînes Hi-Fi",
+      "trunk_id": "6"
     },
     {
       "code": "ART0120",
@@ -1322,7 +1327,8 @@
       "libelle": "Trépied photo Vanguard Alta",
       "univers": "Image & Son",
       "famille": "Photo & Vidéo",
-      "sousFamille": "Accessoires photo"
+      "sousFamille": "Accessoires photo",
+      "trunk_id": "6"
     },
     {
       "code": "ART0173",

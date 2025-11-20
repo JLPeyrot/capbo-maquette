@@ -19,6 +19,10 @@ export const routes: Routes = [
     component: MainLayoutComponent
   },
   {
+    path: 'referencement-article',
+    component: MainLayoutComponent
+  },
+  {
     path: 'create-article',
     component: MainLayoutComponent
   },

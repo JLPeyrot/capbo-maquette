@@ -20,6 +20,15 @@
       </mat-option>
     </mat-select>
   </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Typologie de déploiement</mat-label>
+    <mat-select [(ngModel)]="selectedDeploymentTypology">
+      <mat-option value="ferme">Fermé</mat-option>
+      <mat-option value="mixte">Mixte</mat-option>
+      <mat-option value="ouvert">Ouvert</mat-option>
+    </mat-select>
+  </mat-form-field>
 </div>
 
 <div mat-dialog-actions align="end" class="dialog-actions">

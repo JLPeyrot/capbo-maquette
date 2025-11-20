@@ -5,10 +5,19 @@
   padding: 16px;
 }
 
-.page-header .header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.page-header {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #ff8c00;
+  margin-bottom: 24px;
+  padding: 24px;
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .title-section {
@@ -19,6 +28,20 @@
 
 .page-icon {
   font-size: 32px;
+  color: #ff8c00;
+}
+
+.title-content h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+}
+
+.page-subtitle {
+  margin: 4px 0 0 0;
+  color: #666;
+  font-size: 14px;
 }
 
 .filters-card .filters-content {
@@ -109,6 +132,9 @@
 .articles-list {
   display: block;
 }
+
+/* Carte d'association au tronc */
+/* styles retirés: panneau assign-card désormais affiché en popup */
 
 .articles-grid {
   display: grid;

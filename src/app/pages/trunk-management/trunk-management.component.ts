@@ -87,10 +87,10 @@ export class TrunkManagementComponent implements OnInit {
       this.articlesService.getArticles()
     ]).subscribe(([trunks, articles]) => {
       const countsByTrunk = this.computeArticlesCountByTrunk(articles);
-      const updatedTrunks = trunks.map(t => ({
-        ...t,
-        articlesCount: countsByTrunk.get(t.id) || 0
-      }));
+      const updatedTrunks = trunks.map(t => {
+        const withCount = { ...t, articlesCount: countsByTrunk.get(t.id) || 0 };
+        return { ...withCount, status: this.getDerivedStatus(withCount) } as Trunk;
+      });
       this.trunks = updatedTrunks as any;
       this.filteredTrunks = [...this.trunks];
       // Calculer les métadonnées hiérarchiques (niveaux, univers, familles, sous-familles)
@@ -282,6 +282,14 @@ export class TrunkManagementComponent implements OnInit {
     }
 
     return meta;
+  }
+
+  private getDerivedStatus(trunk: Trunk): 'actif' | 'brouillon' | 'archive' {
+    if (trunk.status === 'archive') return 'archive';
+    const hasArticles = (trunk.articlesCount || 0) > 0;
+    const hasStores = (trunk.storesCount || 0) > 0;
+    const hasEnseigne = !!trunk.enseigne && trunk.enseigne.trim().length > 0;
+    return (hasArticles && hasStores && hasEnseigne) ? 'actif' : 'brouillon';
   }
 
   // Accesseurs pour le template

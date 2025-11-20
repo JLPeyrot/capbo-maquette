@@ -14,6 +14,7 @@ export interface Article {
   level?: number; // Niveau de l’article dans le tronc
   commandable?: { dateDebut: string | null; dateFin: string | null; actif?: boolean };
   vendable?: { dateDebut: string | null; dateFin: string | null; actif?: boolean };
+  deployment_typology?: 'ferme' | 'mixte' | 'ouvert';
 }
 
 export interface ArticlesData {
@@ -40,38 +41,20 @@ export class ArticlesService {
    * Charge les articles depuis le fichier JSON
    */
   private loadArticles(): void {
-    console.log('Tentative de chargement des articles...');
-    // Essayer d'abord /assets/data, puis basculer vers /data si indisponible
-    const loadRef = (path: string) => this.http.get<ArticlesData>(path).pipe(
-      catchError(err => {
-        console.warn(`Impossible de charger ${path}, tentative de repli...`, err);
-        return of(undefined as unknown as ArticlesData);
-      })
+    const loadText = (path: string) => this.http.get(path, { responseType: 'text' }).pipe(
+      catchError(() => of(null))
     );
 
-    loadRef('/assets/data/articles_ref.json')
-      .pipe(
-        // Si undefined, tenter le repli vers /data
-        map(data => data ?? { articles: [] }),
-        catchError(() => of({ articles: [] }))
-      )
-      .subscribe({
-        next: (data) => {
-          if (!data.articles || data.articles.length === 0) {
-            // Repli explicite vers /data si /assets n'a rien retourné
-            loadRef('/data/articles_ref.json')
-              .pipe(map(d => d ?? { articles: [] }))
-              .subscribe(finalData => {
-                this.processArticles(finalData);
-              });
-            return;
-          }
-          this.processArticles(data);
-        },
-        error: (error) => {
-          console.error('Erreur dans subscribe:', error);
-        }
-      });
+    loadText('/data/articles_ref.json').subscribe(text => {
+      let data: ArticlesData = { articles: [] };
+      if (text) {
+        try {
+          const parsed = JSON.parse(text);
+          data = { articles: Array.isArray(parsed.articles) ? parsed.articles : [] };
+        } catch {}
+      }
+      this.processArticles(data);
+    });
   }
 
   private processArticles(data: ArticlesData): void {
@@ -86,19 +69,17 @@ export class ArticlesService {
             return { ...a, level };
           });
           // Charger et fusionner les métadonnées d'assortiments (commandable/vendable) avec fallback
-          const loadAssorti = (path: string) => this.http.get<{ assortiments: { articleId: string; commandable?: { dateDebut: string; dateFin: string; actif?: boolean }; vendable?: { dateDebut: string; dateFin: string; actif?: boolean } }[] }>(path)
-            .pipe(catchError(() => of(undefined)));
+          const loadAssortiText = (path: string) => this.http.get(path, { responseType: 'text' }).pipe(catchError(() => of(null)));
 
-          loadAssorti('/assets/data/article_assorti.json').subscribe(first => {
-            if (!first) {
-              loadAssorti('/data/article_assorti.json').subscribe(second => {
-                const assortiments = second?.assortiments ?? [];
-                this.mergeAssortimentsAndBuild(normalized, assortiments);
-              });
-            } else {
-              const assortiments = first.assortiments ?? [];
-              this.mergeAssortimentsAndBuild(normalized, assortiments);
+          loadAssortiText('/data/article_assorti.json').subscribe(txt => {
+            let assortiments: { articleId: string; commandable?: { dateDebut: string; dateFin: string; actif?: boolean }; vendable?: { dateDebut: string; dateFin: string; actif?: boolean } }[] = [];
+            if (txt) {
+              try {
+                const parsed = JSON.parse(txt);
+                assortiments = Array.isArray(parsed.assortiments) ? parsed.assortiments : [];
+              } catch {}
             }
+            this.mergeAssortimentsAndBuild(normalized, assortiments);
           });
   }
 
@@ -427,6 +408,25 @@ export class ArticlesService {
       tap(() => {
         // Recharge articles pour re-fusionner avec article_assorti.json
         this.refreshData();
+      })
+    );
+  }
+
+  /**
+   * Met à jour la typologie de déploiment pour une liste d’articles côté serveur
+   */
+  updateDeploymentTypologyForArticles(articleCodes: string[], typology: 'ferme' | 'mixte' | 'ouvert'): Observable<{ updated: number, articles: Article[] }> {
+    return this.http.post<{ updated: number, articles: Article[] }>(
+      '/api/articles/update-deployment-typology',
+      { articleCodes, typology }
+    ).pipe(
+      catchError(error => {
+        console.error('Erreur MAJ typologie de déploiment:', error);
+        return of({ updated: 0, articles: this.articlesSubject.value });
+      }),
+      tap(result => {
+        this.articlesSubject.next(result.articles);
+        this.buildHierarchy(result.articles);
       })
     );
   }

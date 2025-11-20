@@ -1,10 +1,10 @@
-<div class="app-container" [class.focus-mode]="isFocusMode">
+<div class="app-container" [class.focus-mode]="isFocusMode" [class.menu-pinned]="isMenuPinned && !isFocusMode">
   
   <!-- MENU OVERLAY (masqué en mode focus) -->
   <div class="menu-overlay" 
-       [class.open]="isMenuOpen && !isFocusMode" 
+       [class.open]="isMenuOpen && !isFocusMode && !isMenuPinned" 
        (click)="closeMenu()"
-       *ngIf="!isFocusMode">
+       *ngIf="!isFocusMode && !isMenuPinned">
     <nav class="sidebar-menu" (click)="$event.stopPropagation()">
       
       <!-- Header du menu -->
@@ -69,6 +69,10 @@
               <mat-list-item class="submenu-item" (click)="navigateTo('suppliers')">
                 <mat-icon matListItemIcon>business</mat-icon>
                 <div matListItemTitle>Fournisseurs</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('suppliers-create')">
+                <mat-icon matListItemIcon>person_add</mat-icon>
+                <div matListItemTitle>Créer un fournisseur</div>
               </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('receipts')">
                 <mat-icon matListItemIcon>local_shipping</mat-icon>
@@ -161,12 +165,24 @@
               <span>MAGASIN</span>
               <mat-icon class="expand-icon" [class.expanded]="expandedGroups.store">expand_more</mat-icon>
             </button>
-            <div class="submenu" [class.expanded]="expandedGroups.store">
-              <mat-list-item class="submenu-item" (click)="navigateTo('reception-trunk')">
-                <mat-icon matListItemIcon>inbox</mat-icon>
-                <div matListItemTitle>Réception Tronc</div>
-              </mat-list-item>
-            </div>
+          <div class="submenu" [class.expanded]="expandedGroups.store">
+            <mat-list-item class="submenu-item" (click)="navigateTo('reception-trunk')">
+              <mat-icon matListItemIcon>inbox</mat-icon>
+              <div matListItemTitle>Réception Tronc</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('referencement-supplier')">
+              <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
+              <div matListItemTitle>Référencer un fournisseur</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('referencement-article')">
+              <mat-icon matListItemIcon>inventory_2</mat-icon>
+              <div matListItemTitle>Référencer un article</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('local-articles')">
+              <mat-icon matListItemIcon>inventory_2</mat-icon>
+              <div matListItemTitle>Articles locaux</div>
+            </mat-list-item>
+          </div>
           </div>
 
           <!-- RETOURS & SAV -->
@@ -240,15 +256,189 @@
     </nav>
   </div>
 
+  <div class="sidebar-fixed" *ngIf="isMenuPinned && !isFocusMode">
+    <nav class="sidebar-menu">
+      <div class="menu-header">
+        <div class="logo">
+          <mat-icon class="logo-icon">store</mat-icon>
+          <span class="logo-text">CapBO</span>
+          <span class="version">v1.0</span>
+        </div>
+      </div>
+      <div class="menu-search">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput placeholder="Rechercher un module..." [(ngModel)]="menuSearchQuery">
+        </mat-form-field>
+      </div>
+      <div class="menu-content">
+        <mat-nav-list class="nav-menu">
+          <div class="menu-group">
+            <button mat-button class="group-header" (click)="toggleGroup('sales')">
+              <mat-icon>shopping_cart</mat-icon>
+              <span>VENTES & CLIENTS</span>
+              <mat-icon class="expand-icon" [class.expanded]="expandedGroups.sales">expand_more</mat-icon>
+            </button>
+            <div class="submenu" [class.expanded]="expandedGroups.sales">
+              <mat-list-item class="submenu-item" (click)="navigateTo('orders')">
+                <mat-icon matListItemIcon>receipt_long</mat-icon>
+                <div matListItemTitle>Commandes Clients</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('customers')">
+                <mat-icon matListItemIcon>people</mat-icon>
+                <div matListItemTitle>Clients</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('billing')">
+                <mat-icon matListItemIcon>request_quote</mat-icon>
+                <div matListItemTitle>Facturation</div>
+              </mat-list-item>
+            </div>
+          </div>
+
+          <div class="menu-group">
+            <button mat-button class="group-header" (click)="toggleGroup('purchases')">
+              <mat-icon>shopping_basket</mat-icon>
+              <span>ACHATS & FOURNISSEURS</span>
+              <mat-icon class="expand-icon" [class.expanded]="expandedGroups.purchases">expand_more</mat-icon>
+            </button>
+            <div class="submenu" [class.expanded]="expandedGroups.purchases">
+              <mat-list-item class="submenu-item" (click)="navigateTo('purchase-orders')">
+                <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
+                <div matListItemTitle>Commandes Fournisseurs</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('suppliers')">
+                <mat-icon matListItemIcon>business</mat-icon>
+                <div matListItemTitle>Fournisseurs</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('suppliers-create')">
+                <mat-icon matListItemIcon>person_add</mat-icon>
+                <div matListItemTitle>Créer un fournisseur</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('receipts')">
+                <mat-icon matListItemIcon>local_shipping</mat-icon>
+                <div matListItemTitle>Réceptions</div>
+              </mat-list-item>
+            </div>
+          </div>
+
+          <div class="menu-group">
+            <button mat-button class="group-header" (click)="toggleGroup('inventory')">
+              <mat-icon>inventory_2</mat-icon>
+              <span>STOCKS & INVENTAIRE</span>
+              <mat-icon class="expand-icon" [class.expanded]="expandedGroups.inventory">expand_more</mat-icon>
+            </button>
+            <div class="submenu" [class.expanded]="expandedGroups.inventory">
+              <mat-list-item class="submenu-item" (click)="navigateTo('stock-management')">
+                <mat-icon matListItemIcon>warehouse</mat-icon>
+                <div matListItemTitle>Gestion des Stocks</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('inventory')">
+                <mat-icon matListItemIcon>fact_check</mat-icon>
+                <div matListItemTitle>Inventaire</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('restock')">
+                <mat-icon matListItemIcon>autorenew</mat-icon>
+                <div matListItemTitle>Réassort</div>
+              </mat-list-item>
+            </div>
+          </div>
+
+          <div class="menu-group">
+            <button mat-button class="group-header" (click)="toggleGroup('products')">
+              <mat-icon>category</mat-icon>
+              <span>PRODUITS & CATALOGUE</span>
+              <mat-icon class="expand-icon" [class.expanded]="expandedGroups.products">expand_more</mat-icon>
+            </button>
+          <div class="submenu" [class.expanded]="expandedGroups.products">
+            <mat-list-item class="submenu-item" (click)="navigateTo('supplier-import')">
+              <mat-icon matListItemIcon>file_upload</mat-icon>
+              <div matListItemTitle>Imports catalogues</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('referencement')">
+              <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
+              <div matListItemTitle>Référencement</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('articles')">
+              <mat-icon matListItemIcon>inventory_2</mat-icon>
+              <div matListItemTitle>Articles</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('pricing')">
+              <mat-icon matListItemIcon>local_offer</mat-icon>
+              <div matListItemTitle>Tarification</div>
+            </mat-list-item>
+          </div>
+          </div>
+
+          <div class="menu-group">
+            <button mat-button class="group-header" (click)="toggleGroup('assortments')">
+              <mat-icon>view_module</mat-icon>
+              <span>ASSORTIMENTS</span>
+              <mat-icon class="expand-icon" [class.expanded]="expandedGroups.assortments">expand_more</mat-icon>
+            </button>
+            <div class="submenu" [class.expanded]="expandedGroups.assortments">
+              <mat-list-item class="submenu-item" (click)="navigateTo('create-trunk')">
+                <mat-icon matListItemIcon>add_box</mat-icon>
+                <div matListItemTitle>Création de tronc</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('trunk-management')">
+                <mat-icon matListItemIcon>dashboard</mat-icon>
+                <div matListItemTitle>Gestion des troncs</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('create-assortments')">
+                <mat-icon matListItemIcon>playlist_add</mat-icon>
+                <div matListItemTitle>Création d'assortiments</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('assortments-bulk')">
+                <mat-icon matListItemIcon>tune</mat-icon>
+                <div matListItemTitle>Gestion en masse des assortiments</div>
+              </mat-list-item>
+            </div>
+          </div>
+
+          <div class="menu-group">
+            <button mat-button class="group-header" (click)="toggleGroup('store')">
+              <mat-icon>store</mat-icon>
+              <span>MAGASIN</span>
+              <mat-icon class="expand-icon" [class.expanded]="expandedGroups.store">expand_more</mat-icon>
+            </button>
+          <div class="submenu" [class.expanded]="expandedGroups.store">
+            <mat-list-item class="submenu-item" (click)="navigateTo('reception-trunk')">
+              <mat-icon matListItemIcon>inbox</mat-icon>
+              <div matListItemTitle>Réception Tronc</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('referencement-supplier')">
+              <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
+              <div matListItemTitle>Référencer un fournisseur</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('referencement-article')">
+              <mat-icon matListItemIcon>inventory_2</mat-icon>
+              <div matListItemTitle>Référencer un article</div>
+            </mat-list-item>
+            <mat-list-item class="submenu-item" (click)="navigateTo('local-articles')">
+              <mat-icon matListItemIcon>inventory_2</mat-icon>
+              <div matListItemTitle>Articles locaux</div>
+            </mat-list-item>
+          </div>
+          </div>
+        </mat-nav-list>
+      </div>
+    </nav>
+  </div>
+
   <!-- MAIN APP -->
   <div class="main-app">
     
-    <!-- TOP NAVBAR (masquée en mode focus) -->
-    <mat-toolbar class="top-navbar" *ngIf="!isFocusMode">
+      <!-- TOP NAVBAR (masquée en mode focus) -->
+      <mat-toolbar class="top-navbar" *ngIf="!isFocusMode">
       
       <!-- Menu burger -->
-      <button mat-icon-button (click)="toggleMenu()" class="menu-burger">
-        <mat-icon>menu</mat-icon>
+        <button mat-icon-button (click)="toggleMenu()" class="menu-burger">
+          <mat-icon>menu</mat-icon>
+        </button>
+
+      <!-- Pin menu -->
+      <button mat-icon-button class="pin-menu" (click)="isMenuPinned = !isMenuPinned" [matTooltip]="isMenuPinned ? 'Désépingler le menu' : 'Épingler le menu'">
+        <mat-icon>push_pin</mat-icon>
       </button>
 
       <!-- Recherche -->
@@ -385,6 +575,11 @@
         <app-articles-list></app-articles-list>
       </div>
 
+      <!-- PAGE ARTICLES (THÈME VERT) -->
+      <div *ngSwitchCase="'articles-green'" class="page-container">
+        <app-articles-list [theme]="'green'"></app-articles-list>
+      </div>
+
       <!-- PAGE CREATE ARTICLE (en mode focus) -->
       <div *ngSwitchCase="'create-article'" class="page-container">
         <app-create-article (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode"></app-create-article>
@@ -454,9 +649,14 @@
         <app-data-page></app-data-page>
       </div>
 
+      <!-- PAGE ARTICLES LOCAUX -->
+      <div *ngSwitchCase="'local-articles'" class="page-container">
+        <app-articles-list [isStoreContext]="true" [theme]="'green'"></app-articles-list>
+      </div>
+
       <!-- PAGE RÉFÉRENCEMENT -->
       <div *ngSwitchCase="'referencement'" class="page-container">
-        <app-referencement></app-referencement>
+        <app-referencement [supplierOnly]="referencementSupplierOnly"></app-referencement>
       </div>
 
       <!-- PAGE RÉFÉRENCEMENT REVIEW -->
@@ -467,6 +667,16 @@
       <!-- PAGE IMPORT FOURNISSEURS -->
       <div *ngSwitchCase="'supplier-import'" class="page-container">
         <app-supplier-import></app-supplier-import>
+      </div>
+
+      <!-- PAGE RÉFÉRENCER UN ARTICLE -->
+      <div *ngSwitchCase="'referencement-article'" class="page-container">
+        <app-referencement-article></app-referencement-article>
+      </div>
+
+      <!-- PAGE FOURNISSEURS -->
+      <div *ngSwitchCase="'suppliers'" class="page-container">
+        <app-suppliers [createMode]="suppliersCreateMode"></app-suppliers>
       </div>
 
     </div>

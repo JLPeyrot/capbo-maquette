@@ -7,6 +7,10 @@ import { MatIconModule } from '@angular/material/icon';
 export interface CreateOppositeDialogData {
   currentType: string;
   oppositeType: string;
+  assortmentSubType?: string;
+  startDate?: any;
+  endDate?: any;
+  articleName?: string;
 }
 
 @Component({
@@ -17,13 +21,16 @@ export interface CreateOppositeDialogData {
     <div class="create-opposite-dialog">
       <h2 mat-dialog-title>
         <mat-icon class="success-icon">check_circle</mat-icon>
-        Créer l'assortiment associé ?
+        Création d'un assortiment - {{ data.articleName || 'Article' }}
       </h2>
       
       <mat-dialog-content>
-        <p>
-          Souhaitez-vous créer la version {{ data.oppositeType }} correspondante ? 
-          Les informations communes seront reprises automatiquement.
+        <p>Type d'assortiment créé : {{ labelType(data.currentType) }}</p>
+        <p>Sous-type : {{ subTypeLabel(data.assortmentSubType) }}</p>
+        <p *ngIf="hasAnyDate(data.startDate, data.endDate)">Date(s) : 
+          <span *ngIf="data.startDate">début {{ formatDate(data.startDate) }}</span>
+          <span *ngIf="data.startDate && data.endDate"> • </span>
+          <span *ngIf="data.endDate">fin {{ formatDate(data.endDate) }}</span>
         </p>
       </mat-dialog-content>
       
@@ -80,5 +87,37 @@ export class CreateOppositeDialogComponent {
 
   onCreateNow(): void {
     this.dialogRef.close('create');
+  }
+
+  subTypeLabel(value?: string): string {
+    if (!value) return '—';
+    if (value === 'permanent') return 'Permanent';
+    if (value === 'promotional') return 'Promotionnel';
+    if (value === 'catalog') return 'Catalogue';
+    return String(value);
+  }
+
+  formatDate(value: any): string {
+    if (!value) return '—';
+    try {
+      const d = value instanceof Date ? value : new Date(value);
+      if (isNaN(d.getTime())) return '—';
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${day}/${m}/${y}`;
+    } catch {
+      return '—';
+    }
+  }
+
+  hasAnyDate(start: any, end: any): boolean {
+    return !!start || !!end;
+  }
+
+  labelType(value: string): string {
+    if (value === 'commandable') return 'Commandable';
+    if (value === 'vendable') return 'Vendable';
+    return String(value);
   }
 }

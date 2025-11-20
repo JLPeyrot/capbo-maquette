@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Typologie de déploiment</h2>
+
+<div mat-dialog-content class="dialog-content">
+  <mat-radio-group [(ngModel)]="selected" class="radio-group">
+    <mat-radio-button *ngFor="let opt of options" [value]="opt.value" class="radio-item">
+      {{ opt.label }}
+    </mat-radio-button>
+  </mat-radio-group>
+</div>
+
+<div mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-stroked-button (click)="onCancel()">Annuler</button>
+  <button mat-raised-button color="primary" [disabled]="!selected" (click)="onConfirm()">Valider</button>
+</div>
+

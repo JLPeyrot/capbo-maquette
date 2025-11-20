@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -41,6 +42,8 @@ export interface ArticleFilters {
 })
 export class ArticlesListComponent implements OnInit, OnDestroy {
   @Input() isFocusMode: boolean = false; // NOUVEAU : Input pour le mode focus
+  @Input() isStoreContext: boolean = false;
+  @Input() theme: 'default' | 'green' = 'default';
   @Output() goBack = new EventEmitter<void>(); // NOUVEAU : Output pour le retour
   
   private destroy$ = new Subject<void>();
@@ -80,21 +83,30 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
 
   // Colonnes affichées
   displayedColumns: string[] = [
-    'select',
-    'reference',
-    'designation', 
-    'famille',
+    'id',
+    'designation',
     'marque',
-    'stock',
-    'prixVente',
-    'statut',
-    'actions'
+    'prixAchat',
+    'prixVente'
   ];
 
-  constructor() {}
+  viewMode: 'table' | 'list' = 'table';
+
+  constructor(private router: Router) {}
 
   ngOnInit(): void {
+    // Définir les colonnes selon le contexte
+    if (this.isStoreContext) {
+      this.displayedColumns = ['reference', 'designation', 'marque', 'prixVente'];
+      this.viewMode = 'list';
+    } else {
+      this.displayedColumns = ['select', 'reference', 'designation', 'famille', 'marque', 'stock', 'prixVente', 'statut', 'actions'];
+    }
     this.loadArticles();
+  }
+
+  setViewMode(mode: 'table' | 'list'): void {
+    this.viewMode = mode;
   }
 
   ngOnDestroy(): void {
@@ -109,42 +121,78 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
     this.goBack.emit();
   }
 
+  navigateToCreateArticle(): void {
+    if (this.isStoreContext) {
+      this.router.navigate(['/referencement-article']);
+    } else {
+      this.router.navigate(['/create-article']);
+    }
+  }
+
+  openArticleForEdit(article: Article): void {
+    if (this.isStoreContext) { return; }
+    const params = { queryParams: { ref: article.reference, designation: article.designation } };
+    this.router.navigate(['/referencement-article'], params);
+  }
+
+  modifySelected(): void {
+    const first = this.selectedArticles[0];
+    if (!first) { return; }
+    const params = { queryParams: { ref: first.reference, designation: first.designation } };
+    this.router.navigate(['/referencement-article'], params);
+  }
+
   /**
    * Chargement des articles depuis le fichier JSON
    */
   private loadArticles(): void {
     this.isLoading = true;
-    
-    // Chargement du fichier JSON
-    fetch('/assets/data/articles_ref.json')
-      .then(response => response.json())
-      .then(data => {
-        this.articles = data.articles.map((article: any) => ({
-          ...article,
-          id: article.code, // Utiliser le code comme ID
-          reference: article.code,
-          designation: article.libelle,
-          famille: article.univers,
-          sousFamille: article.sousFamille || article.famille,
-          marque: 'Marque générique', // Valeur par défaut
-          prixVente: Math.round((Math.random() * 100 + 5) * 100) / 100,
-          prixAchat: Math.round((Math.random() * 50 + 2) * 100) / 100,
-          stock: Math.floor(Math.random() * 50),
-          stockMinimum: Math.floor(Math.random() * 10 + 5),
-          statut: (['actif', 'inactif', 'suspendu'] as const)[Math.floor(Math.random() * 3)],
-          dateCreation: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-          derniereMaj: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-          codeEan: `${Math.floor(Math.random() * 1000000000000)}`,
-          fournisseurPrincipal: 'Fournisseur principal'
-        }));
+    if (this.isStoreContext) {
+      this.articles = this.generateMockArticles();
+      this.articles = this.articles.map(a => ({ ...a, famille: 'Électroménager' }));
+      this.filteredArticles = [...this.articles];
+      this.totalArticles = this.articles.length;
+      this.extractFilterOptions();
+      this.isLoading = false;
+      return;
+    }
+
+    const path = '/data/articles_ref.json';
+    fetch(path, { cache: 'no-cache' })
+      .then(response => response.ok ? response.text() : Promise.reject(new Error('HTTP ' + response.status)))
+      .then(text => {
+        let data: any = null;
+        try { data = JSON.parse(text); } catch { data = null; }
+        if (!data || !Array.isArray(data.articles)) {
+          this.articles = this.generateMockArticles();
+        } else {
+          this.articles = data.articles.map((article: any) => ({
+            ...article,
+            id: article.code,
+            reference: article.code,
+            designation: article.libelle,
+            famille: article.univers,
+            sousFamille: article.sousFamille || article.famille,
+            marque: 'Marque générique',
+            prixAchat: this.round2(Math.random() * 50 + 5),
+            prixVente: 0,
+            stock: Math.floor(Math.random() * 50),
+            stockMinimum: Math.floor(Math.random() * 10 + 5),
+            statut: (['actif', 'inactif', 'suspendu'] as const)[Math.floor(Math.random() * 3)],
+            dateCreation: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
+            derniereMaj: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+            codeEan: `${Math.floor(Math.random() * 1000000000000)}`,
+            fournisseurPrincipal: 'Fournisseur principal'
+          }));
+          this.articles = this.articles.map(a => ({ ...a, prixVente: this.ensureCoherentSale(a.prixAchat, a.prixVente) }));
+        }
+        this.articles = this.articles.filter(a => this.isElectromenager(a));
         this.filteredArticles = [...this.articles];
         this.totalArticles = this.articles.length;
         this.extractFilterOptions();
         this.isLoading = false;
       })
       .catch(error => {
-        console.error('Erreur lors du chargement des articles:', error);
-        // Fallback sur les données générées si le fichier JSON n'est pas trouvé
         this.articles = this.generateMockArticles();
         this.filteredArticles = [...this.articles];
         this.totalArticles = this.articles.length;
@@ -157,24 +205,26 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
    * Génération d'articles de démonstration (fallback)
    */
   private generateMockArticles(): Article[] {
-    const familles = ['Plantes fleuries', 'Outils de jardin', 'Graines', 'Terreaux', 'Plantes aromatiques'];
+    const familles = ['Électroménager'];
     const marques = ['Botanic Premium', 'Vilmorin', 'Opinel Jardin', 'Or Brun', 'Felco'];
     const statuts: ('actif' | 'inactif' | 'suspendu')[] = ['actif', 'inactif', 'suspendu'];
 
     return Array.from({ length: 20 }, (_, i) => {
-      const famille = familles[Math.floor(Math.random() * familles.length)];
+      const famille = familles[0];
       const marque = marques[Math.floor(Math.random() * marques.length)];
       const stock = Math.floor(Math.random() * 50);
       
+      const prixAchat = this.round2(Math.random() * 50 + 5);
+      const prixVente = this.ensureCoherentSale(prixAchat, 0);
       return {
         id: `ART-${String(i + 1).padStart(6, '0')}`,
         reference: `REF-${String(i + 1).padStart(3, '0')}`,
-        designation: `Article jardinage ${i + 1}`,
+        designation: `Électroménager ${i + 1}`,
         famille,
         sousFamille: 'Sous-famille',
         marque,
-        prixVente: Math.round((Math.random() * 100 + 5) * 100) / 100,
-        prixAchat: Math.round((Math.random() * 50 + 2) * 100) / 100,
+        prixAchat,
+        prixVente,
         stock,
         stockMinimum: Math.floor(Math.random() * 15 + 5),
         statut: statuts[Math.floor(Math.random() * statuts.length)],
@@ -184,6 +234,38 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
         fournisseurPrincipal: `Fournisseur ${Math.floor(Math.random() * 5) + 1}`
       };
     });
+  }
+
+  private readonly MIN_MARGIN = 0.1;
+  private readonly DEFAULT_MARGIN = 0.2;
+  private round2(v: number): number { return Math.round(v * 100) / 100; }
+  private ensureCoherentSale(prixAchat: number, prixVente: number): number {
+    const minSale = prixAchat * (1 + this.MIN_MARGIN);
+    if (!prixVente || prixVente < minSale) {
+      return this.round2(prixAchat * (1 + this.DEFAULT_MARGIN));
+    }
+    return this.round2(prixVente);
+  }
+
+  onPrixAchatChange(article: Article, value: number): void {
+    const v = this.round2(Math.max(0, Number(value) || 0));
+    article.prixAchat = v;
+    article.prixVente = this.ensureCoherentSale(article.prixAchat, article.prixVente);
+    this.derniereMajUpdate(article);
+  }
+
+  onPrixVenteChange(article: Article, value: number): void {
+    let v = this.round2(Math.max(0, Number(value) || 0));
+    const minSale = article.prixAchat * (1 + this.MIN_MARGIN);
+    if (v < minSale) {
+      v = this.round2(minSale);
+    }
+    article.prixVente = v;
+    this.derniereMajUpdate(article);
+  }
+
+  private derniereMajUpdate(article: Article): void {
+    article.derniereMaj = new Date();
   }
 
   /**
@@ -208,11 +290,17 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
       const matchStatut = !this.filters.statut || article.statut === this.filters.statut;
       const matchStockFaible = !this.filters.stockFaible || article.stock <= article.stockMinimum;
 
-      return matchSearch && matchFamille && matchMarque && matchStatut && matchStockFaible;
+      const contextOk = this.isStoreContext ? true : this.isElectromenager(article);
+      return matchSearch && matchFamille && matchMarque && matchStatut && matchStockFaible && contextOk;
     });
 
     this.totalArticles = this.filteredArticles.length;
     this.currentPage = 0; // Reset à la première page
+  }
+
+  private isElectromenager(article: Article): boolean {
+    const fam = (article.famille || '').toLowerCase();
+    return fam === 'electromenager' || fam === 'électroménager';
   }
 
   /**

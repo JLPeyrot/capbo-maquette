@@ -11,6 +11,7 @@ import { combineLatest } from 'rxjs';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
+import { DeploymentTypologyDialogComponent } from '../assortments-bulk-management/deployment-typology-dialog.component';
 import { EditAttributesDialogComponent } from '../assortments-bulk-management/edit-attributes-dialog.component';
 import { ChangeLevelDialogComponent, ChangeLevelDialogResult } from './change-level-dialog.component';
 import { ChangeLevelConfirmDialogComponent } from './change-level-confirm-dialog.component';
@@ -63,8 +64,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
     showIcons: true,
     showArticleCount: true,
     allowMultipleSelection: false,
-    expandOnClick: true,
-    expandOnSelect: true,
+    expandOnClick: false,
+    expandOnSelect: false,
     multiSelect: false
   };
 
@@ -780,6 +781,31 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   importExport(): void {
     console.log('Importer/Exporter');
     // TODO: Implémenter l'import/export
+  }
+
+  onModifyDeploymentTypology(): void {
+    const selectedCount = this.getSelectedCount();
+    if (selectedCount === 0) { return; }
+
+    const dialogRef = this.dialog.open(DeploymentTypologyDialogComponent, {
+      width: '420px'
+    });
+    dialogRef.afterClosed().subscribe((result: { typology: 'ferme' | 'mixte' | 'ouvert' } | undefined) => {
+      const typology = result?.typology;
+      if (!typology) return;
+      const articleCodes = Array.from(this.selectedArticles);
+
+      const codesSet = new Set(articleCodes);
+      this.allArticles = this.allArticles.map(a => {
+        if (!codesSet.has(a.code)) return a;
+        return { ...a, deployment_typology: typology };
+      });
+      this.updateFilteredArticles();
+
+      this.articlesService.updateDeploymentTypologyForArticles(articleCodes, typology)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
+    });
   }
 
   /**

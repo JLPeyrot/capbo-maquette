@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,8 +15,10 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 import { CreateOppositeDialogComponent, CreateOppositeDialogData } from '../../shared/create-opposite-dialog/create-opposite-dialog.component';
 import { Router } from '@angular/router';
@@ -27,11 +29,6 @@ interface Supplier {
   code: string;
 }
 
-interface Warehouse {
-  id: number;
-  name: string;
-  code: string;
-}
 
 interface ValidationStatus {
   logistics: boolean;
@@ -60,14 +57,19 @@ interface ValidationStatus {
     MatStepperModule,
     MatSlideToggleModule,
     MatTooltipModule,
-    MatProgressBarModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule,
+    DragDropModule
   ],
   templateUrl: './enrichment-assortment.component.html',
   styleUrls: ['./enrichment-assortment.component.scss']
 })
 export class EnrichmentAssortmentComponent {
   enrichmentForm: FormGroup;
+  logisticsAutofilled: boolean = false;
+  private isAutoFillingLogistics: boolean = false;
+  selectedArticleName: string = '';
+  selectedArticlePurchasePrice: number | null = null;
   
   // Propriétés pour suivre les valeurs précédentes
   previousAssortmentType: string = '';
@@ -76,7 +78,8 @@ export class EnrichmentAssortmentComponent {
   // Options pour les sélecteurs
   assortmentTypes = [
     { value: 'commandable', label: 'Commandable' },
-    { value: 'vendable', label: 'Vendable' }
+    { value: 'vendable', label: 'Vendable' },
+    { value: 'dynamic', label: 'Dynamique (Mercurial)' }
   ];
 
   assortmentSubTypes = [
@@ -85,16 +88,28 @@ export class EnrichmentAssortmentComponent {
     { value: 'catalog', label: 'Catalogue' }
   ];
 
-  priceTypes = [
-    { value: 'closed', label: 'Fermé (imposé)' },
-    { value: 'bordered', label: 'Bordé (bornes min/max)' },
-    { value: 'open', label: 'Ouvert (libre dans le cadre enseigne)' }
+  salePricingPolicies = [
+    { value: 'fixed_margin', label: 'Marge fixe' },
+    { value: 'fixed_margin_bounded', label: 'Marge fixe avec bornes de prix' },
+    { value: 'imposed_price', label: 'Prix de vente imposé' }
   ];
 
   reassortModes = [
     { value: 'manual', label: 'Manuel' },
     { value: 'automatic', label: 'Automatique' }
   ];
+
+  priorityCriteria = [
+    { value: 'lowestPrice', label: "Prix d'achat le plus bas" },
+    { value: 'fastestDelivery', label: 'Délai le plus court' },
+    { value: 'bestAvailability', label: 'Disponibilité' },
+    { value: 'bestConditions', label: 'Conditions commerciales' }
+  ];
+
+  getPriorityLabel(code: string): string {
+    const found = this.priorityCriteria.find(c => c.value === code);
+    return found ? found.label : code;
+  }
 
   salesChannels = [
     { value: 'store', label: 'Magasin' },
@@ -109,11 +124,6 @@ export class EnrichmentAssortmentComponent {
     { id: 3, name: 'Fournisseur C', code: 'FOURC' }
   ];
 
-  warehouses: Warehouse[] = [
-    { id: 1, name: 'Entrepôt Central', code: 'EC001' },
-    { id: 2, name: 'Entrepôt Nord', code: 'EN002' },
-    { id: 3, name: 'Entrepôt Sud', code: 'ES003' }
-  ];
 
   families = [
     { value: 'textile', label: 'Textile' },
@@ -141,13 +151,40 @@ export class EnrichmentAssortmentComponent {
     marketing: false
   };
 
-  constructor(private fb: FormBuilder, private dialog: MatDialog, private router: Router) {
+  constructor(private fb: FormBuilder, private dialog: MatDialog, private router: Router, private snackBar: MatSnackBar) {
     this.enrichmentForm = this.createForm();
     this.setupFormValidation();
     
+    const navState: any = window.history.state || {};
+    if (navState && navState.articleName) {
+      this.selectedArticleName = String(navState.articleName);
+    }
+    if (navState && typeof navState.purchasePrice !== 'undefined') {
+      const num = Number(navState.purchasePrice);
+      this.selectedArticlePurchasePrice = Number.isFinite(num) ? num : null;
+    }
+
+    const purchaseCtrl = this.enrichmentForm.get('purchasePrice');
+    const currentPurchaseVal = purchaseCtrl?.value;
+    if ((currentPurchaseVal == null || currentPurchaseVal === '') && this.selectedArticlePurchasePrice != null) {
+      purchaseCtrl?.setValue(this.selectedArticlePurchasePrice);
+    }
+
     // Initialiser les valeurs précédentes
     this.previousAssortmentType = this.enrichmentForm.get('assortmentType')?.value || '';
     this.previousAssortmentSubType = this.enrichmentForm.get('assortmentSubType')?.value || '';
+
+    this.enrichmentForm.get('mainSupplier')?.valueChanges.subscribe(() => {
+      if (this.shouldShowLogistics()) {
+        this.prefillLogisticsFromSupplier();
+      }
+    });
+
+    ['moq','pcb','deliveryDelay'].forEach(key => {
+      this.enrichmentForm.get(key)?.valueChanges.subscribe(() => {
+        if (!this.isAutoFillingLogistics) this.logisticsAutofilled = false;
+      });
+    });
   }
 
   private createForm(): FormGroup {
@@ -157,27 +194,27 @@ export class EnrichmentAssortmentComponent {
       assortmentSubType: ['', Validators.required],
       startDate: ['', Validators.required],
       endDate: [''],
-      status: ['draft'],
-      responsible: ['Approvisionneur connecté'],
+      
 
       // Logistique
       mainSupplier: ['', Validators.required],
-      alternativeSuppliers: [[]],
-      warehouse: ['', Validators.required],
+      mainSuppliers: [[]],
+      alternativeSupplierConfigs: this.fb.array([]),
       moq: ['', [Validators.required, Validators.min(1)]],
       pcb: ['', [Validators.required, Validators.min(1)]],
       deliveryDelay: ['', [Validators.required, Validators.min(1)]],
       minStock: ['', [Validators.required, Validators.min(0)]],
-      maxStock: ['', [Validators.required, Validators.min(0)]],
+      maxStock: ['', [Validators.min(0)]],
       reassortMode: ['manual', Validators.required],
+      priorityOrder: [['lowestPrice','fastestDelivery','bestAvailability','bestConditions']],
 
       // Tarification
-      purchasePrice: ['', [Validators.required, Validators.min(0)]],
+      purchasePrice: [''],
       salePrice: [''],
-      priceType: ['closed', Validators.required],
-      minPrice: [''],
-      maxPrice: [''],
-      margin: [{ value: 0, disabled: true }],
+      salePricingPolicy: ['', Validators.required],
+      saleMarginPercent: [''],
+      saleMinPriceBound: [''],
+      saleMaxPriceBound: [''],
 
       // Marketing
       commercialLabel: ['', Validators.required],
@@ -196,7 +233,6 @@ export class EnrichmentAssortmentComponent {
     // Surveillance des changements pour la validation automatique
     this.enrichmentForm.valueChanges.subscribe(() => {
       this.updateValidationStatus();
-      this.calculateMargin();
     });
   }
 
@@ -205,35 +241,66 @@ export class EnrichmentAssortmentComponent {
     
     // Validation logistique (seulement si le bloc est visible)
     if (this.shouldShowLogistics()) {
-      this.validationStatus.logistics = !!(
-        form.get('mainSupplier')?.value &&
-        form.get('warehouse')?.value &&
-        form.get('moq')?.value &&
-        form.get('pcb')?.value &&
-        form.get('deliveryDelay')?.value &&
-        form.get('minStock')?.value !== '' &&
-        form.get('maxStock')?.value !== ''
-      );
+      const type = this.enrichmentForm.get('assortmentType')?.value;
+      if (type === 'dynamic') {
+        const s = form.get('mainSuppliers')?.value || [];
+        const order = form.get('priorityOrder')?.value || [];
+        this.validationStatus.logistics = !!(s.length && order.length);
+      } else {
+        this.validationStatus.logistics = !!(
+          form.get('mainSupplier')?.value &&
+          form.get('moq')?.value &&
+          form.get('pcb')?.value &&
+          form.get('deliveryDelay')?.value &&
+          form.get('minStock')?.value &&
+          form.get('reassortMode')?.value
+        );
+      }
     } else {
-      this.validationStatus.logistics = false; // Non applicable, ne compte pas dans le pourcentage
+      this.validationStatus.logistics = false;
     }
 
     // Validation tarification/vente (seulement si le bloc est visible)
     if (this.shouldShowSales()) {
-      const priceType = form.get('priceType')?.value;
-      let pricingValid = !!(form.get('purchasePrice')?.value && form.get('salePrice')?.value);
-      
-      // Si le type de prix est "bordé", vérifier aussi les prix min/max
-      if (priceType === 'bordered') {
-        pricingValid = pricingValid && !!(
-          form.get('minPrice')?.value &&
-          form.get('maxPrice')?.value
-        );
+      const policy = form.get('salePricingPolicy')?.value;
+      const type = form.get('assortmentType')?.value;
+      if (type === 'dynamic') {
+        if (policy === 'imposed_price') {
+          const sale = Number(form.get('salePrice')?.value);
+          this.validationStatus.pricing = Number.isFinite(sale) && sale >= 0;
+        } else {
+          this.validationStatus.pricing = !!policy;
+        }
+      } else if (policy === 'fixed_margin') {
+        const margin = Number(form.get('saleMarginPercent')?.value);
+        this.validationStatus.pricing = Number.isFinite(margin) && margin >= 0 && margin <= 100;
+      } else if (policy === 'fixed_margin_bounded') {
+        const margin = Number(form.get('saleMarginPercent')?.value);
+        const min = Number(form.get('saleMinPriceBound')?.value);
+        const max = Number(form.get('saleMaxPriceBound')?.value);
+        const minCtrl = form.get('saleMinPriceBound');
+        const maxCtrl = form.get('saleMaxPriceBound');
+        let ok = Number.isFinite(margin) && margin >= 0 && margin <= 100;
+        ok = ok && Number.isFinite(min) && min >= 0 && Number.isFinite(max) && max >= 0;
+        const maxErrors = { ...(maxCtrl?.errors || {}) } as any;
+        if (Number.isFinite(min) && Number.isFinite(max)) {
+          if (max < min) {
+            maxErrors.maxBelowMin = true;
+            ok = false;
+          } else {
+            if (maxErrors.maxBelowMin) delete maxErrors.maxBelowMin;
+          }
+          if (maxCtrl) maxCtrl.setErrors(Object.keys(maxErrors).length ? maxErrors : null);
+        }
+        this.validationStatus.pricing = ok;
+      } else if (policy === 'imposed_price') {
+        const sale = Number(form.get('salePrice')?.value);
+        this.validationStatus.pricing = Number.isFinite(sale) && sale >= 0;
+      } else {
+        this.validationStatus.pricing = false;
       }
-      
-      this.validationStatus.pricing = pricingValid;
     } else {
-      this.validationStatus.pricing = false; // Non applicable, ne compte pas dans le pourcentage
+      this.validationStatus.pricing = false;
     }
 
     // Validation marketing (toujours visible)
@@ -246,17 +313,7 @@ export class EnrichmentAssortmentComponent {
     );
   }
 
-  private calculateMargin(): void {
-    const purchasePrice = this.enrichmentForm.get('purchasePrice')?.value;
-    const salePrice = this.enrichmentForm.get('salePrice')?.value;
-    
-    if (purchasePrice && salePrice && purchasePrice > 0) {
-      const margin = ((salePrice - purchasePrice) / salePrice) * 100;
-      this.enrichmentForm.get('margin')?.setValue(Math.round(margin * 100) / 100);
-    } else {
-      this.enrichmentForm.get('margin')?.setValue(0);
-    }
-  }
+  // Plus de calcul direct de marge: politique tarifaire de l'enseigne uniquement
 
   onAssortmentTypeChange(): void {
     const newType = this.enrichmentForm.get('assortmentType')?.value;
@@ -283,11 +340,14 @@ export class EnrichmentAssortmentComponent {
   }
 
   private hasDataThatWillBeLost(currentType: string, newType: string): boolean {
-    if (currentType === 'vendable' && newType === 'commandable') {
-      // Vérifier si des données de vente sont remplies
+    const currentShowsSales = this.typeShowsSales(currentType);
+    const currentShowsLogistics = this.typeShowsLogistics(currentType);
+    const newShowsSales = this.typeShowsSales(newType);
+    const newShowsLogistics = this.typeShowsLogistics(newType);
+    if (currentShowsSales && !newShowsSales) {
       return this.hasSalesData();
-    } else if (currentType === 'commandable' && newType === 'vendable') {
-      // Vérifier si des données logistiques sont remplies
+    }
+    if (currentShowsLogistics && !newShowsLogistics) {
       return this.hasLogisticsData();
     }
     return false;
@@ -296,26 +356,31 @@ export class EnrichmentAssortmentComponent {
   private hasSalesData(): boolean {
     const form = this.enrichmentForm;
     return !!(
-      form.get('purchasePrice')?.value ||
-      form.get('salePrice')?.value ||
-      form.get('priceType')?.value ||
-      form.get('minPrice')?.value ||
-      form.get('maxPrice')?.value
+      form.get('salePricingPolicy')?.value ||
+      form.get('saleMarginPercent')?.value ||
+      form.get('saleMinPriceBound')?.value ||
+      form.get('saleMaxPriceBound')?.value
     );
   }
 
   private hasLogisticsData(): boolean {
     const form = this.enrichmentForm;
+    const type = this.enrichmentForm.get('assortmentType')?.value;
+    if (type === 'dynamic') {
+      return !!(
+        (form.get('mainSuppliers')?.value || []).length ||
+        (form.get('priorityOrder')?.value || []).length
+      );
+    }
     return !!(
       form.get('mainSupplier')?.value ||
-      form.get('warehouse')?.value ||
       form.get('moq')?.value ||
       form.get('pcb')?.value ||
       form.get('deliveryDelay')?.value ||
       form.get('minStock')?.value ||
       form.get('maxStock')?.value ||
       form.get('reassortMode')?.value ||
-      form.get('alternativeSuppliers')?.value?.length
+      (this.alternativeSupplierConfigs.length > 0)
     );
   }
 
@@ -379,38 +444,189 @@ export class EnrichmentAssortmentComponent {
 
   private applyAssortmentTypeChange(type: string): void {
     this.previousAssortmentType = type;
-    const salePriceControl = this.enrichmentForm.get('salePrice');
-    
+    const salePricingPolicyCtrl = this.enrichmentForm.get('salePricingPolicy');
+    const saleMarginCtrl = this.enrichmentForm.get('saleMarginPercent');
+    const minBoundCtrl = this.enrichmentForm.get('saleMinPriceBound');
+    const maxBoundCtrl = this.enrichmentForm.get('saleMaxPriceBound');
+    const subTypeCtrl = this.enrichmentForm.get('assortmentSubType');
+    const mainSupplierCtrl = this.enrichmentForm.get('mainSupplier');
+    const mainSuppliersCtrl = this.enrichmentForm.get('mainSuppliers');
     if (type === 'vendable') {
-      salePriceControl?.setValidators([Validators.required, Validators.min(0)]);
+      salePricingPolicyCtrl?.setValidators([Validators.required]);
+      saleMarginCtrl?.clearValidators();
+      minBoundCtrl?.clearValidators();
+      maxBoundCtrl?.clearValidators();
+      this.logisticsAutofilled = false;
+    } else if (type === 'commandable') {
+      salePricingPolicyCtrl?.clearValidators();
+      salePricingPolicyCtrl?.setValue('', { emitEvent: false });
+      saleMarginCtrl?.clearValidators();
+      saleMarginCtrl?.setValue('', { emitEvent: false });
+      minBoundCtrl?.clearValidators();
+      minBoundCtrl?.setValue('', { emitEvent: false });
+      maxBoundCtrl?.clearValidators();
+      maxBoundCtrl?.setValue('', { emitEvent: false });
+      this.prefillLogisticsFromSupplier();
+      subTypeCtrl?.enable({ emitEvent: false });
+      // Rétablir les validators logistiques classiques
+      mainSuppliersCtrl?.clearValidators();
+      mainSuppliersCtrl?.setValue([], { emitEvent: false });
+      mainSupplierCtrl?.setValidators([Validators.required]);
+      ['moq','pcb','deliveryDelay','minStock','maxStock','reassortMode'].forEach(key => {
+        const ctrl = this.enrichmentForm.get(key);
+        if (!ctrl) return;
+        if (key === 'moq' || key === 'pcb' || key === 'deliveryDelay') {
+          ctrl.setValidators([Validators.required, Validators.min(1)]);
+        } else if (key === 'minStock') {
+          ctrl.setValidators([Validators.required, Validators.min(0)]);
+        } else if (key === 'maxStock') {
+          ctrl.setValidators([Validators.min(0)]);
+        } else if (key === 'reassortMode') {
+          ctrl.setValidators([Validators.required]);
+        }
+        ctrl.updateValueAndValidity();
+      });
+      ['priority1','priority2','priority3'].forEach(k => this.enrichmentForm.get(k)?.setValue('', { emitEvent: false }));
+    } else if (type === 'dynamic') {
+      salePricingPolicyCtrl?.setValidators([Validators.required]);
+      saleMarginCtrl?.clearValidators();
+      minBoundCtrl?.clearValidators();
+      maxBoundCtrl?.clearValidators();
+      this.logisticsAutofilled = false;
+      subTypeCtrl?.setValue('permanent', { emitEvent: false });
+      subTypeCtrl?.disable({ emitEvent: false });
+      this.applyAssortmentSubTypeChange('permanent');
+      this.clearDatesData();
+      // Activer le multiselect fournisseurs et désactiver/vider les champs classiques
+      mainSupplierCtrl?.setValue('', { emitEvent: false });
+      mainSupplierCtrl?.clearValidators();
+      mainSuppliersCtrl?.setValidators([Validators.required]);
+      mainSuppliersCtrl?.updateValueAndValidity();
+      ['moq','pcb','deliveryDelay','minStock','maxStock','reassortMode'].forEach(key => {
+        const ctrl = this.enrichmentForm.get(key);
+        ctrl?.clearValidators();
+        ctrl?.setValue(key === 'alternativeSuppliers' ? [] : '', { emitEvent: false });
+        ctrl?.updateValueAndValidity();
+      });
+      const arr = this.alternativeSupplierConfigs;
+      while (arr.length) arr.removeAt(0);
     } else {
-      salePriceControl?.clearValidators();
-      salePriceControl?.setValue('');
+      subTypeCtrl?.enable({ emitEvent: false });
     }
-    salePriceControl?.updateValueAndValidity();
+    salePricingPolicyCtrl?.updateValueAndValidity();
+    saleMarginCtrl?.updateValueAndValidity();
+    minBoundCtrl?.updateValueAndValidity();
+    maxBoundCtrl?.updateValueAndValidity();
     this.updateValidationStatus();
+  }
+
+  onSalePricingPolicyChange(): void {
+    const policy = this.enrichmentForm.get('salePricingPolicy')?.value;
+    const saleMarginCtrl = this.enrichmentForm.get('saleMarginPercent');
+    const minBoundCtrl = this.enrichmentForm.get('saleMinPriceBound');
+    const maxBoundCtrl = this.enrichmentForm.get('saleMaxPriceBound');
+    const saleCtrl = this.enrichmentForm.get('salePrice');
+    const type = this.enrichmentForm.get('assortmentType')?.value;
+    saleMarginCtrl?.clearValidators();
+    minBoundCtrl?.clearValidators();
+    maxBoundCtrl?.clearValidators();
+    if (type === 'dynamic') {
+      if (policy === 'imposed_price') {
+        saleCtrl?.setValidators([Validators.required, Validators.min(0)]);
+      } else {
+        saleCtrl?.clearValidators();
+        const suggested = this.computeSuggestedSalePrice();
+        saleCtrl?.setValue(suggested ?? '', { emitEvent: false });
+      }
+    } else if (policy === 'fixed_margin') {
+      saleMarginCtrl?.setValidators([Validators.required, Validators.min(0), Validators.max(100)]);
+      minBoundCtrl?.setValue('', { emitEvent: false });
+      maxBoundCtrl?.setValue('', { emitEvent: false });
+      saleCtrl?.setValidators([Validators.min(0)]);
+      const suggested = this.computeSuggestedSalePrice();
+      saleCtrl?.setValue(suggested ?? '', { emitEvent: false });
+    } else if (policy === 'fixed_margin_bounded') {
+      saleMarginCtrl?.setValidators([Validators.required, Validators.min(0), Validators.max(100)]);
+      minBoundCtrl?.setValidators([Validators.required, Validators.min(0)]);
+      maxBoundCtrl?.setValidators([Validators.required, Validators.min(0)]);
+      saleCtrl?.setValidators([Validators.min(0)]);
+      const suggested = this.computeSuggestedSalePrice();
+      saleCtrl?.setValue(suggested ?? '', { emitEvent: false });
+    } else {
+      saleMarginCtrl?.setValue('', { emitEvent: false });
+      minBoundCtrl?.setValue('', { emitEvent: false });
+      maxBoundCtrl?.setValue('', { emitEvent: false });
+      saleCtrl?.setValidators([Validators.required, Validators.min(0)]);
+    }
+    saleMarginCtrl?.updateValueAndValidity();
+    minBoundCtrl?.updateValueAndValidity();
+    maxBoundCtrl?.updateValueAndValidity();
+    saleCtrl?.updateValueAndValidity();
+    this.updateValidationStatus();
+  }
+
+  computeSuggestedSalePrice(): number | null {
+    const purchase = Number(this.enrichmentForm.get('purchasePrice')?.value);
+    if (!Number.isFinite(purchase) || purchase < 0) return null;
+    const policy = this.enrichmentForm.get('salePricingPolicy')?.value;
+    if (policy === 'fixed_margin') {
+      const margin = Number(this.enrichmentForm.get('saleMarginPercent')?.value);
+      if (!Number.isFinite(margin)) return null;
+      return +(purchase * (1 + margin / 100)).toFixed(2);
+    }
+    if (policy === 'fixed_margin_bounded') {
+      const margin = Number(this.enrichmentForm.get('saleMarginPercent')?.value);
+      const min = Number(this.enrichmentForm.get('saleMinPriceBound')?.value);
+      const max = Number(this.enrichmentForm.get('saleMaxPriceBound')?.value);
+      if (!Number.isFinite(margin)) return null;
+      let price = purchase * (1 + margin / 100);
+      if (Number.isFinite(min)) price = Math.max(price, min);
+      if (Number.isFinite(max)) price = Math.min(price, max);
+      return +price.toFixed(2);
+    }
+    return null;
+  }
+
+  getPriorityOptions(level: 1 | 2 | 3) {
+    const p1 = this.enrichmentForm.get('priority1')?.value;
+    const p2 = this.enrichmentForm.get('priority2')?.value;
+    const p3 = this.enrichmentForm.get('priority3')?.value;
+    const exclude = new Set<string>([p1, p2, p3].filter(Boolean));
+    // Autoriser la valeur déjà sélectionnée pour le niveau courant
+    const current = level === 1 ? p1 : (level === 2 ? p2 : p3);
+    return this.priorityCriteria.filter(c => !exclude.has(c.value) || c.value === current);
   }
 
   private applyAssortmentSubTypeChange(subType: string): void {
     this.previousAssortmentSubType = subType;
+    const startDateCtrl = this.enrichmentForm.get('startDate');
+    const endDateCtrl = this.enrichmentForm.get('endDate');
+    if (subType === 'permanent') {
+      startDateCtrl?.clearValidators();
+      endDateCtrl?.clearValidators();
+    } else {
+      startDateCtrl?.setValidators([Validators.required]);
+      endDateCtrl?.clearValidators();
+    }
+    startDateCtrl?.updateValueAndValidity();
+    endDateCtrl?.updateValueAndValidity();
     this.updateValidationStatus();
   }
 
   private clearIncompatibleData(currentType: string, newType: string): void {
-    if (currentType === 'vendable' && newType === 'commandable') {
-      // Effacer les données de vente
+    const currentShowsSales = this.typeShowsSales(currentType);
+    const currentShowsLogistics = this.typeShowsLogistics(currentType);
+    const newShowsSales = this.typeShowsSales(newType);
+    const newShowsLogistics = this.typeShowsLogistics(newType);
+    if (currentShowsSales && !newShowsSales) {
       this.enrichmentForm.patchValue({
-        purchasePrice: '',
-        salePrice: '',
-        priceType: 'closed',
-        minPrice: '',
-        maxPrice: ''
+        salePricingPolicy: ''
       });
-    } else if (currentType === 'commandable' && newType === 'vendable') {
-      // Effacer les données logistiques
+    }
+    if (currentShowsLogistics && !newShowsLogistics) {
       this.enrichmentForm.patchValue({
         mainSupplier: '',
-        warehouse: '',
+        mainSuppliers: [],
         moq: '',
         pcb: '',
         deliveryDelay: '',
@@ -419,7 +635,15 @@ export class EnrichmentAssortmentComponent {
         reassortMode: 'manual',
         alternativeSuppliers: []
       });
+      this.enrichmentForm.get('priorityOrder')?.setValue([]);
     }
+  }
+
+  onPriorityDrop(event: CdkDragDrop<string[]>): void {
+    const order: string[] = [...(this.enrichmentForm.get('priorityOrder')?.value || [])];
+    moveItemInArray(order, event.previousIndex, event.currentIndex);
+    this.enrichmentForm.get('priorityOrder')?.setValue(order);
+    this.updateValidationStatus();
   }
 
   private clearDatesData(): void {
@@ -429,23 +653,7 @@ export class EnrichmentAssortmentComponent {
     });
   }
 
-  onPriceTypeChange(): void {
-    const priceType = this.enrichmentForm.get('priceType')?.value;
-    const minPriceControl = this.enrichmentForm.get('minPrice');
-    const maxPriceControl = this.enrichmentForm.get('maxPrice');
-    
-    if (priceType === 'bordered') {
-      minPriceControl?.setValidators([Validators.required, Validators.min(0)]);
-      maxPriceControl?.setValidators([Validators.required, Validators.min(0)]);
-    } else {
-      minPriceControl?.clearValidators();
-      maxPriceControl?.clearValidators();
-      minPriceControl?.setValue('');
-      maxPriceControl?.setValue('');
-    }
-    minPriceControl?.updateValueAndValidity();
-    maxPriceControl?.updateValueAndValidity();
-  }
+  // Plus de bascule de type de prix: gestion via salePricingPolicy uniquement
 
   onFileSelected(event: any): void {
     const file = event.target.files[0];
@@ -456,34 +664,47 @@ export class EnrichmentAssortmentComponent {
   }
 
   goBack(): void {
-    console.log('Retour à la page précédente');
-    // TODO: Implémenter la navigation de retour
+    window.history.back();
   }
 
   saveDraft(): void {
-    console.log('Sauvegarde du brouillon', this.enrichmentForm.value);
-    // TODO: Implémenter la sauvegarde du brouillon
+    try {
+      const data = this.enrichmentForm.getRawValue();
+      const payload = {
+        timestamp: Date.now(),
+        data
+      };
+      localStorage.setItem('assortment_enrichment_draft', JSON.stringify(payload));
+      this.snackBar.open('Brouillon sauvegardé', 'OK', { duration: 3000 });
+    } catch {
+      this.snackBar.open('Erreur lors de la sauvegarde', 'Fermer', { duration: 4000 });
+    }
   }
 
   validateAssortment(): void {
-    if (this.enrichmentForm.valid && this.isCompletelyValid()) {
+    if (this.isCompletelyValid()) {
       console.log('Validation de l\'assortiment', this.enrichmentForm.value);
       
       // Après validation réussie, proposer de créer le type opposé
       const currentType = this.enrichmentForm.get('assortmentType')?.value;
       this.showCreateOppositeDialog(currentType);
     } else {
-      console.log('Formulaire incomplet ou invalide');
       this.markFormGroupTouched();
+      this.snackBar.open('Formulaire incomplet ou invalide', 'Fermer', { duration: 4000 });
     }
   }
 
   private showCreateOppositeDialog(currentType: string): void {
+    if (currentType === 'dynamic') return;
     const oppositeType = currentType === 'vendable' ? 'commandable' : 'vendable';
     
     const dialogData: CreateOppositeDialogData = {
       currentType: currentType,
-      oppositeType: oppositeType
+      oppositeType: oppositeType,
+      assortmentSubType: this.enrichmentForm.get('assortmentSubType')?.value,
+      startDate: this.enrichmentForm.get('startDate')?.value,
+      endDate: this.enrichmentForm.get('endDate')?.value,
+      articleName: this.getArticleName()
     };
 
     const dialogRef = this.dialog.open(CreateOppositeDialogComponent, {
@@ -512,7 +733,6 @@ export class EnrichmentAssortmentComponent {
       assortmentSubType: currentFormData.assortmentSubType,
       startDate: currentFormData.startDate,
       endDate: currentFormData.endDate,
-      responsible: currentFormData.responsible,
       commercialLabel: currentFormData.commercialLabel,
       shortDescription: currentFormData.shortDescription,
       longDescription: currentFormData.longDescription,
@@ -526,6 +746,13 @@ export class EnrichmentAssortmentComponent {
     // Réinitialiser le formulaire avec les données communes et le type opposé
     this.enrichmentForm.reset();
     this.enrichmentForm.patchValue(commonData);
+    if (oppositeType === 'vendable') {
+      const purchaseCtrl = this.enrichmentForm.get('purchasePrice');
+      const saleCtrl = this.enrichmentForm.get('salePrice');
+      purchaseCtrl?.setValue(99.99);
+      saleCtrl?.setValidators([Validators.required, Validators.min(0)]);
+      saleCtrl?.updateValueAndValidity();
+    }
     
     // Réinitialiser les statuts de validation
     this.validationStatus = {
@@ -552,34 +779,12 @@ export class EnrichmentAssortmentComponent {
   }
 
   isCompletelyValid(): boolean {
-    return this.validationStatus.logistics && 
-           this.validationStatus.pricing && 
-           this.validationStatus.marketing;
+    const logisticsOk = !this.shouldShowLogistics() || this.validationStatus.logistics;
+    const pricingOk = !this.shouldShowSales() || this.validationStatus.pricing;
+    return logisticsOk && pricingOk;
   }
 
-  getCompletionPercentage(): number {
-    // Calculer le nombre de sections applicables selon le type d'assortiment
-    let totalApplicableSections = 1; // Marketing est toujours applicable
-    let validApplicableSections = this.validationStatus.marketing ? 1 : 0;
-    
-    // Ajouter la section logistique si applicable
-    if (this.shouldShowLogistics()) {
-      totalApplicableSections++;
-      if (this.validationStatus.logistics) {
-        validApplicableSections++;
-      }
-    }
-    
-    // Ajouter la section tarification si applicable
-    if (this.shouldShowSales()) {
-      totalApplicableSections++;
-      if (this.validationStatus.pricing) {
-        validApplicableSections++;
-      }
-    }
-    
-    return Math.round((validApplicableSections / totalApplicableSections) * 100);
-  }
+  
 
   getValidationIcon(isValid: boolean): string {
     return isValid ? 'check_circle' : 'radio_button_unchecked';
@@ -595,13 +800,91 @@ export class EnrichmentAssortmentComponent {
     return subType !== 'permanent';
   }
 
+  getArticleName(): string {
+    const fromSelection = this.selectedArticleName && this.selectedArticleName.trim() ? this.selectedArticleName : '';
+    const fromForm = this.enrichmentForm.get('commercialLabel')?.value;
+    const name = fromSelection || fromForm;
+    return name && String(name).trim() ? String(name) : 'Article';
+  }
+
   shouldShowLogistics(): boolean {
     const type = this.enrichmentForm.get('assortmentType')?.value;
-    return type === 'commandable';
+    return type === 'commandable' || type === 'dynamic';
   }
 
   shouldShowSales(): boolean {
     const type = this.enrichmentForm.get('assortmentType')?.value;
+    return type === 'vendable' || type === 'dynamic';
+  }
+
+  isPurchaseReadOnly(): boolean {
+    const type = this.enrichmentForm.get('assortmentType')?.value;
     return type === 'vendable';
+  }
+
+  private typeShowsSales(type: string): boolean {
+    return type === 'vendable' || type === 'dynamic';
+  }
+
+  private typeShowsLogistics(type: string): boolean {
+    return type === 'commandable' || type === 'dynamic';
+  }
+
+  private supplierLogisticsDefaults: Record<number, { moq: number; pcb: number; deliveryDelay: number }> = {
+    1: { moq: 100, pcb: 12, deliveryDelay: 2 },
+    2: { moq: 100, pcb: 12, deliveryDelay: 2 },
+    3: { moq: 100, pcb: 12, deliveryDelay: 2 }
+  };
+
+  private prefillLogisticsFromSupplier(): void {
+    const type = this.enrichmentForm.get('assortmentType')?.value;
+    if (type !== 'commandable') return;
+    const supplierId = this.enrichmentForm.get('mainSupplier')?.value;
+    const defaults = this.supplierLogisticsDefaults[supplierId as number] || { moq: 100, pcb: 12, deliveryDelay: 2 };
+    this.isAutoFillingLogistics = true;
+    const moqCtrl = this.enrichmentForm.get('moq');
+    const pcbCtrl = this.enrichmentForm.get('pcb');
+    const delayCtrl = this.enrichmentForm.get('deliveryDelay');
+    if (moqCtrl) { moqCtrl.setValue(defaults.moq); }
+    if (pcbCtrl) { pcbCtrl.setValue(defaults.pcb); }
+    if (delayCtrl) { delayCtrl.setValue(defaults.deliveryDelay); }
+    this.isAutoFillingLogistics = false;
+    this.logisticsAutofilled = true;
+    this.updateValidationStatus();
+  }
+
+  get alternativeSupplierConfigs(): FormArray {
+    return this.enrichmentForm.get('alternativeSupplierConfigs') as FormArray;
+  }
+
+  private createSupplierConfigGroup(): FormGroup {
+    return this.fb.group({
+      supplierId: [''],
+      moq: [''],
+      pcb: [''],
+      deliveryDelay: [''],
+      minStock: [''],
+      maxStock: [''],
+      reassortMode: ['']
+    });
+  }
+
+  addAlternativeSupplier(): void {
+    this.alternativeSupplierConfigs.push(this.createSupplierConfigGroup());
+  }
+
+  removeAlternativeSupplier(index: number): void {
+    if (index >= 0 && index < this.alternativeSupplierConfigs.length) {
+      this.alternativeSupplierConfigs.removeAt(index);
+    }
+  }
+
+  onAltSupplierSelected(index: number): void {
+    const group = this.alternativeSupplierConfigs.at(index) as FormGroup;
+    const supplierId = group.get('supplierId')?.value as number;
+    const defaults = this.supplierLogisticsDefaults[supplierId] || { moq: 100, pcb: 12, deliveryDelay: 2 };
+    group.get('moq')?.setValue(defaults.moq);
+    group.get('pcb')?.setValue(defaults.pcb);
+    group.get('deliveryDelay')?.setValue(defaults.deliveryDelay);
   }
 }

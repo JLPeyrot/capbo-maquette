@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { TrunksService, TrunkOption } from '../../services/trunks.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,9 +21,11 @@ import { SelectionModel } from '@angular/cdk/collections';
 
 export interface Article {
   id: string;
+  reference?: string;
   ean: string;
   libelle: string;
   fournisseur: string;
+  marque?: string;
   famille: string;
   prixUnitaire: number;
   stock: number;
@@ -45,6 +48,7 @@ export interface AssortmentCreation {
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    HttpClientModule,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
@@ -66,12 +70,12 @@ export class CreateAssortmentsComponent implements OnInit {
   searchForm: FormGroup;
   articles: Article[] = [];
   filteredArticles: Article[] = [];
-  displayedColumns: string[] = ['select', 'ean', 'libelle', 'fournisseur', 'famille', 'prixUnitaire'];
-  selection = new SelectionModel<Article>(true, []);
+  displayedColumns: string[] = ['select', 'reference', 'designation', 'fournisseur', 'marque', 'prixAchat'];
+  selection = new SelectionModel<Article>(false, []);
   
   // Options pour les filtres
-  fournisseurs: string[] = ['Fournisseur A', 'Fournisseur B', 'Fournisseur C'];
-  familles: string[] = ['Électronique', 'Textile', 'Alimentaire', 'Cosmétique'];
+  fournisseurs: string[] = [];
+  familles: string[] = [];
   trunks: TrunkOption[] = [];
 
   // État du panneau d'action
@@ -82,6 +86,7 @@ export class CreateAssortmentsComponent implements OnInit {
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
     private router: Router,
+    private http: HttpClient,
     private trunksService: TrunksService
   ) {
     this.searchForm = this.fb.group({
@@ -101,61 +106,30 @@ export class CreateAssortmentsComponent implements OnInit {
   }
 
   private loadArticles(): void {
-    // Simulation de données d'articles
-    this.articles = [
-      {
-        id: '1',
-        ean: '3760123456789',
-        libelle: 'Smartphone Galaxy S24',
-        fournisseur: 'Fournisseur A',
-        famille: 'Électronique',
-        prixUnitaire: 899.99,
-        stock: 25,
-        hasAssortment: false
+    this.http.get<{articles: any[]}>(`/data/articles-preref.json`).subscribe({
+      next: (data) => {
+        const raw = Array.isArray(data.articles) ? data.articles : [];
+        this.articles = raw.map(a => ({
+          id: a.Code,
+          reference: a.Code,
+          ean: a.EAN || '',
+          libelle: a.Libellé,
+          fournisseur: a.Fournisseur || '',
+          marque: a.Marque || '',
+          famille: a.Famille || '',
+          prixUnitaire: a.PrixAchatHT ?? 0,
+          stock: 0,
+          hasAssortment: false
+        }));
+        this.applyFilters();
+        this.fournisseurs = [...new Set(this.articles.map(x => x.fournisseur).filter(x => !!x))].sort();
+        this.familles = [...new Set(this.articles.map(x => x.famille).filter(x => !!x))].sort();
       },
-      {
-        id: '2',
-        ean: '3760987654321',
-        libelle: 'T-shirt Coton Bio',
-        fournisseur: 'Fournisseur B',
-        famille: 'Textile',
-        prixUnitaire: 29.99,
-        stock: 150,
-        hasAssortment: true
-      },
-      {
-        id: '3',
-        ean: '3760456789123',
-        libelle: 'Café Bio Équitable 1kg',
-        fournisseur: 'Fournisseur C',
-        famille: 'Alimentaire',
-        prixUnitaire: 12.50,
-        stock: 80,
-        hasAssortment: false
-      },
-      {
-        id: '4',
-        ean: '3760789123456',
-        libelle: 'Crème Hydratante Visage',
-        fournisseur: 'Fournisseur A',
-        famille: 'Cosmétique',
-        prixUnitaire: 24.90,
-        stock: 60,
-        hasAssortment: false
-      },
-      {
-        id: '5',
-        ean: '3760321654987',
-        libelle: 'Casque Audio Bluetooth',
-        fournisseur: 'Fournisseur B',
-        famille: 'Électronique',
-        prixUnitaire: 149.99,
-        stock: 35,
-        hasAssortment: true
+      error: () => {
+        this.articles = [];
+        this.filteredArticles = [];
       }
-    ];
-    
-    this.applyFilters();
+    });
   }
 
   private setupFormSubscriptions(): void {
@@ -168,10 +142,11 @@ export class CreateAssortmentsComponent implements OnInit {
     const formValue = this.searchForm.value;
     let filtered = [...this.articles];
 
-    // Filtre par terme de recherche (EAN ou libellé)
+    // Filtre par terme de recherche (référence, EAN ou libellé)
     if (formValue.searchTerm) {
       const searchTerm = formValue.searchTerm.toLowerCase();
       filtered = filtered.filter(article => 
+        (article.reference || '').toLowerCase().includes(searchTerm) ||
         article.ean.toLowerCase().includes(searchTerm) ||
         article.libelle.toLowerCase().includes(searchTerm)
       );
@@ -205,17 +180,13 @@ export class CreateAssortmentsComponent implements OnInit {
   }
 
   // Gestion de la sélection
-  isAllSelected(): boolean {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.filteredArticles.length;
-    return numSelected === numRows;
-  }
-
-  masterToggle(): void {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.filteredArticles.forEach(row => this.selection.select(row));
-    
+  onRowSelectionChange(checked: boolean, article: Article): void {
+    if (checked) {
+      this.selection.clear();
+      this.selection.select(article);
+    } else {
+      this.selection.deselect(article);
+    }
     this.updateActionPanel();
   }
 
@@ -257,7 +228,8 @@ export class CreateAssortmentsComponent implements OnInit {
     }
 
     // Rediriger vers la page d'enrichissement d'assortiment
-    this.router.navigate(['/enrichment-assortment']);
+    const selected = this.selection.selected[0];
+    this.router.navigate(['/enrichment-assortment'], { state: { articleName: selected.libelle, articleId: selected.id, purchasePrice: selected.prixUnitaire } });
   }
 
   getSelectedArticle(articleId: string): Article | undefined {

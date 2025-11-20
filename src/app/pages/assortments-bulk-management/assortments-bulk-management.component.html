@@ -4,15 +4,12 @@
     <div class="header-content">
       <div class="title-section">
         <mat-icon class="page-icon">playlist_add_check_circle</mat-icon>
-        <div>
-          <h1>Gestion en masse des assortiments</h1>
+        <div class="title-content">
+          <h1>Gestion en masse des assortiments [9]</h1>
+          <p class="page-subtitle">Opérations avancées sur les assortiments</p>
         </div>
       </div>
       <div class="header-actions">
-        <button mat-raised-button color="primary" class="orange-btn">
-          <mat-icon>add</mat-icon>
-          Ajouter un assortiment
-        </button>
         <button mat-stroked-button>
           <mat-icon>import_export</mat-icon>
           Importer/Exporter
@@ -61,6 +58,7 @@
 
     <!-- Zone principale de contenu -->
     <div class="content-area">
+      
       <!-- Zone de filtres et actions -->
       <mat-card class="filters-card">
         <mat-card-header>
@@ -130,6 +128,11 @@
                 <span class="pill pill-trunk">Tronc: {{ trunkNameById[article.trunkId] || article.trunkId }}</span>
               </div>
 
+              <!-- Typologie de déploiment -->
+              <div class="meta-pills inline" *ngIf="article.deployment_typology">
+                <span class="pill">Typologie: {{ formatDeploymentTypology(article.deployment_typology) }}</span>
+              </div>
+
               <!-- Suppression de l’affichage du niveau -->
 
               <!-- Attributs appliqués à l’article -->
@@ -164,6 +167,7 @@
           <mat-icon>account_tree</mat-icon>
           Ajouter à un tronc
         </button>
+        
         <!-- Actions simplifiées: ne conserver que "Ajouter à un tronc" -->
       </div>
     </div>

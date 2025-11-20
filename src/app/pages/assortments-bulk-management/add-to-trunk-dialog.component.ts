@@ -31,6 +31,7 @@ export class AddToTrunkDialogComponent implements OnInit {
 
   selectedTrunkId: string | null = null;
   selectedLevel: number | null = null;
+  selectedDeploymentTypology: 'ferme' | 'mixte' | 'ouvert' = 'ferme';
 
   constructor(
     private dialogRef: MatDialogRef<AddToTrunkDialogComponent>,
@@ -58,7 +59,8 @@ export class AddToTrunkDialogComponent implements OnInit {
       trunkName: trunk?.name || 'Tronc',
       trunkType: trunk?.type || 'TAC',
       level: this.selectedLevel,
-      levelLabel: this.getLevelLabel(this.selectedLevel)
+      levelLabel: this.getLevelLabel(this.selectedLevel),
+      deploymentTypology: this.selectedDeploymentTypology
     });
   }
 

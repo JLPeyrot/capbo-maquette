@@ -24,7 +24,7 @@
         font-size: 32px;
         width: 32px;
         height: 32px;
-        color: #2196f3;
+        color: #2e7d32;
       }
     }
     
@@ -40,6 +40,53 @@
       mat-icon {
         margin-right: 8px;
       }
+    }
+  }
+}
+
+.create-card {
+  margin-bottom: 24px;
+  border-left: 4px solid #2e7d32;
+  
+  mat-card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 24px;
+    
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+      
+      mat-icon {
+        color: #2e7d32;
+      }
+    }
+  }
+  
+  .create-form {
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      
+      .full-width { flex: 1; }
+      .half-width { flex: 1; }
+      .third-width { flex: 1; }
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 8px;
+      
+      .cancel-btn { color: #2e7d32; border-color: #2e7d32; }
+      .save-btn { background-color: #2e7d32; color: white; }
     }
   }
 }

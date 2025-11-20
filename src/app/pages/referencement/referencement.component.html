@@ -1,4 +1,4 @@
-<div class="referencement-container">
+<div class="referencement-container" [ngClass]="{ 'store-context': supplierOnly, 'catalog-context': !supplierOnly }">
   <div class="content-wrapper">
 
   <!-- En-tête -->
@@ -7,15 +7,18 @@
       <div class="title-section">
         <h1 class="page-title">
           <mat-icon class="title-icon">playlist_add_check_circle</mat-icon>
-          Référencement
+          {{ supplierOnly ? 'Référencer un fournisseur [11]' : 'Référencement [2]' }}
         </h1>
-        <p class="page-subtitle">Catalogue fournisseur et sélection de masse</p>
       </div>
 
-      <div class="header-actions">
+      <div class="header-actions" *ngIf="!supplierOnly">
         <button mat-stroked-button color="primary" class="action-btn" [disabled]="selectedIds.size === 0" (click)="onReferencerSelection()">
           <mat-icon>check_circle</mat-icon>
           Référencer ({{selectedIds.size}})
+        </button>
+        <button mat-stroked-button color="primary" class="action-btn" (click)="showSupplierForm = !showSupplierForm">
+          <mat-icon>person_add</mat-icon>
+          {{ showSupplierForm ? 'Fermer le formulaire fournisseur' : 'Créer un fournisseur' }}
         </button>
         <button mat-stroked-button color="accent" class="action-btn" (click)="showAddForm = !showAddForm">
           <mat-icon>add</mat-icon>
@@ -25,8 +28,304 @@
     </div>
   </div>
 
+  <mat-card class="supplier-card" *ngIf="showSupplierForm">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>business</mat-icon>
+        Création d'un fournisseur
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="supplier-content">
+      <div class="supplier-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Code fournisseur (alphanumérique) *</mat-label>
+          <input matInput [(ngModel)]="newSupplier.code" placeholder="Ex: SUP-001">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Libellé *</mat-label>
+          <input matInput [(ngModel)]="newSupplier.name" placeholder="Nom du fournisseur">
+        </mat-form-field>
+      </div>
+      <div class="supplier-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Email *</mat-label>
+          <input matInput type="email" [(ngModel)]="newSupplier.email" placeholder="contact@exemple.com">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Téléphone *</mat-label>
+          <input matInput [(ngModel)]="newSupplier.phone" placeholder="01 23 45 67 89">
+        </mat-form-field>
+      </div>
+      <div class="supplier-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Type de fournisseur *</mat-label>
+          <mat-select [(ngModel)]="newSupplier.type">
+            <mat-option value="externe">Externe</mat-option>
+            <mat-option value="central">Central (logistique)</mat-option>
+            <mat-option value="transit">Transit (interne)</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>État *</mat-label>
+          <mat-select [(ngModel)]="newSupplier.state">
+            <mat-option value="actif">Actif</mat-option>
+            <mat-option value="gelé">Gelé</mat-option>
+            <mat-option value="supprimé">Supprimé</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="supplier-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Nature *</mat-label>
+          <mat-select [(ngModel)]="newSupplier.nature">
+            <mat-option value="emballages">Fournisseur d'emballages</mat-option>
+            <mat-option value="marchandises">Fournisseur de marchandises</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Pays</mat-label>
+          <mat-select [(ngModel)]="newSupplier.country">
+            <mat-option value="FR">France</mat-option>
+            <mat-option value="DE">Allemagne</mat-option>
+            <mat-option value="IT">Italie</mat-option>
+            <mat-option value="ES">Espagne</mat-option>
+            <mat-option value="GB">Royaume-Uni</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="supplier-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Langue</mat-label>
+          <mat-select [(ngModel)]="newSupplier.language">
+            <mat-option value="fr">Français</mat-option>
+            <mat-option value="en">Anglais</mat-option>
+            <mat-option value="es">Espagnol</mat-option>
+            <mat-option value="de">Allemand</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Code fiscal</mat-label>
+          <input matInput [(ngModel)]="newSupplier.codeFiscal" placeholder="Code fiscal">
+        </mat-form-field>
+      </div>
+      <div class="supplier-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Numéro TVA</mat-label>
+          <input matInput [(ngModel)]="newSupplier.numeroTVA" placeholder="Numéro TVA">
+        </mat-form-field>
+        <div class="half-width vat-block">
+          <mat-checkbox [(ngModel)]="newSupplier.vatSubject">Soumis à la TVA</mat-checkbox>
+          <ng-container *ngIf="newSupplier.vatSubject">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Fait générateur de TVA *</mat-label>
+              <mat-select [(ngModel)]="newSupplier.vatEvent">
+                <mat-option value="débit">Débit</mat-option>
+                <mat-option value="encaissement">Encaissement</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+        </div>
+      </div>
+      <div class="supplier-actions">
+        <button mat-stroked-button (click)="showSupplierForm = false">Annuler</button>
+        <button mat-raised-button color="primary" (click)="createSupplier()">
+          <mat-icon>save</mat-icon>
+          Enregistrer
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="article-card" *ngIf="showArticleForm && !supplierOnly">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>inventory_2</mat-icon>
+        Référencer un article
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="article-content">
+      <div class="section-title">Données générales</div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Type d’article *</mat-label>
+          <mat-select [(ngModel)]="newItem.typeArticle">
+            <mat-option value="usuel">Usuel</mat-option>
+            <mat-option value="service">Service</mat-option>
+            <mat-option value="variantes">Variantes</mat-option>
+            <mat-option value="kit">Kit</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Unité de stock *</mat-label>
+          <mat-select [(ngModel)]="newItem.uniteStock">
+            <mat-option value="piece">Pièce</mat-option>
+            <mat-option value="kilo">Kilo</mat-option>
+            <mat-option value="litre">Litre</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Unité de facturation *</mat-label>
+          <mat-select [(ngModel)]="newItem.uniteFacturation">
+            <mat-option value="piece">Pièce</mat-option>
+            <mat-option value="kilo">Kilo</mat-option>
+            <mat-option value="litre">Litre</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Nature de l’article *</mat-label>
+          <mat-select [(ngModel)]="newItem.natureArticle">
+            <mat-option value="carillon">Carillon</mat-option>
+            <mat-option value="electromenager">Électroménager</mat-option>
+            <mat-option value="textile">Textile</mat-option>
+            <mat-option value="alimentaire">Alimentaire</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Délai de consommation (jours)</mat-label>
+          <input matInput type="number" [(ngModel)]="newItem.delaiConsommation">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Structure marchandise</mat-label>
+          <input matInput [(ngModel)]="newItem.structureMarchandise">
+        </mat-form-field>
+      </div>
+
+      <div class="section-title">Codification</div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Code statistique</mat-label>
+          <input matInput [(ngModel)]="newItem.codeStatistique">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Code modèle</mat-label>
+          <input matInput [(ngModel)]="newItem.codeModele">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Autres codes (externes)</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="newItem.autresCodes"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="section-title">Caractéristiques techniques</div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Détails techniques</mat-label>
+          <textarea matInput rows="3" [(ngModel)]="newItem.caracteristiquesTechniques"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="section-title">Attributs</div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Classe</mat-label>
+          <input matInput [(ngModel)]="newItem.classeAttributs">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Attributs</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="newItem.autresCodes"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="section-title">Données de vente</div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Variantes de vente</mat-label>
+          <input matInput [(ngModel)]="newItem.variantesVente">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>EAN13</mat-label>
+          <input matInput [(ngModel)]="newItem.ean13">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>PLU</mat-label>
+          <input matInput [(ngModel)]="newItem.plu">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>EAN7</mat-label>
+          <input matInput [(ngModel)]="newItem.ean7">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Code propre</mat-label>
+          <input matInput [(ngModel)]="newItem.codePropre">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Packs & kits</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="newItem.packsKits"></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Vente assistée</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="newItem.venteAssistee"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="section-title">Données logistiques</div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Variantes logistiques</mat-label>
+          <input matInput [(ngModel)]="newItem.variantesLogistiques">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>UVC</mat-label>
+          <input matInput [(ngModel)]="newItem.uvc">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>SPCB</mat-label>
+          <input matInput [(ngModel)]="newItem.spcb">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>PCB</mat-label>
+          <input matInput [(ngModel)]="newItem.pcb">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Couche</mat-label>
+          <input matInput [(ngModel)]="newItem.couche">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Palette</mat-label>
+          <input matInput [(ngModel)]="newItem.palette">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Plan de palettisation</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="newItem.planPalettisation"></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>UL homogènes</mat-label>
+          <input matInput [(ngModel)]="newItem.ulHomogenes">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>UL complexes</mat-label>
+          <input matInput [(ngModel)]="newItem.ulComplexes">
+        </mat-form-field>
+      </div>
+
+      <div class="section-title">Données de fabrication</div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Recette (mode de fabrication)</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="newItem.recetteFabrication"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="section-title">Données d’emballage</div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Emballages consignés/échangés, type d’emballé</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="newItem.emballages"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="article-actions">
+        <button mat-stroked-button (click)="showArticleForm = false">Annuler</button>
+        <button mat-raised-button color="primary" (click)="createArticle()">
+          <mat-icon>save</mat-icon>
+          Enregistrer l’article
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
   <!-- Formulaire d'ajout -->
-  <mat-card class="filters-card" *ngIf="showAddForm">
+  <mat-card class="filters-card" *ngIf="showAddForm && !supplierOnly">
     <mat-card-header>
       <mat-card-title class="filters-title">
         <mat-icon>playlist_add</mat-icon>
@@ -113,7 +412,7 @@
     </mat-card-content>
   </mat-card>
   <!-- Filtres -->
-  <mat-card class="filters-card">
+  <mat-card class="filters-card" *ngIf="!supplierOnly">
     <mat-card-header>
       <mat-card-title class="filters-title">
         <mat-icon>filter_list</mat-icon>
@@ -154,7 +453,7 @@
   </mat-card>
 
   <!-- Tableau -->
-  <mat-card class="table-card">
+  <mat-card class="table-card" *ngIf="!supplierOnly">
     <div *ngIf="isLoading" class="loading-container">
       <mat-spinner diameter="40"></mat-spinner>
       <p>Chargement du catalogue fournisseur...</p>

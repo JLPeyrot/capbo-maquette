@@ -435,8 +435,8 @@ export class CreateTrunkComponent implements OnInit, AfterViewInit {
   // Actions du formulaire
   onSubmit(): void {
     const kind = this.trunkForm.value.trunkKind;
-    const okGroups = kind === 'TAN' || this.selectedGroups.length > 0;
-    if (this.trunkForm.valid && okGroups) {
+    const okGroupsOrAttrs = kind === 'TAN' || this.selectedGroups.length > 0 || this.selectedAttributes.length > 0;
+    if (this.trunkForm.valid && okGroupsOrAttrs) {
       const payload = {
         name: String(this.trunkForm.value.name).trim(),
         groups: this.selectedGroups.map(g => g.name),
@@ -528,7 +528,10 @@ export class CreateTrunkComponent implements OnInit, AfterViewInit {
         });
       }
     } else {
-      this.snackBar.open('Veuillez remplir tous les champs obligatoires', 'Fermer', {
+      const msg = kind === 'complementaire'
+        ? 'Pour un tronc complémentaire, sélectionnez au moins 1 groupe ou 1 attribut.'
+        : 'Veuillez remplir tous les champs obligatoires';
+      this.snackBar.open(msg, 'Fermer', {
         duration: 3000,
         panelClass: ['error-snackbar']
       });
@@ -602,6 +605,6 @@ export class CreateTrunkComponent implements OnInit, AfterViewInit {
     if (kind === 'TAN') {
       return this.trunkForm.valid;
     }
-    return this.trunkForm.valid && this.selectedGroups.length > 0;
+    return this.trunkForm.valid && (this.selectedGroups.length > 0 || this.selectedAttributes.length > 0);
   }
 }

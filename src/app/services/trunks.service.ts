@@ -69,14 +69,23 @@ export class TrunksService {
       const stores = magasins?.magasins || [];
       const assortiments = troncs?.assortiments || [];
 
-      const computeStoresCount = (groups: string[]): number => {
-        if (!groups || groups.length === 0) return stores.length;
-        return stores.filter(m => groups.every(g => m.groupes.includes(g))).length;
+      const brandOf = (m: MagasinItem): string => {
+        const nm = String(m.nom_magasin || '').toLowerCase();
+        if (nm.startsWith('electrodepot')) return 'electrodepot';
+        if (nm.startsWith('boulanger')) return 'boulanger';
+        return '';
+      };
+
+      const computeStoresCount = (groups: string[] = [], enseigne?: string): number => {
+        const targetBrand = (enseigne || '').toLowerCase();
+        const base = targetBrand ? stores.filter(m => brandOf(m) === targetBrand) : stores;
+        if (!groups || groups.length === 0) return base.length;
+        return base.filter(m => groups.every(g => Array.isArray(m.groupes) && m.groupes.includes(g))).length;
       };
 
       const withComputedCounts = assortiments.map(t => ({
         ...t,
-        storesCount: computeStoresCount(t.groups || [])
+        storesCount: computeStoresCount(t.groups || [], t.enseigne)
       }));
 
       this.trunksSubject.next(withComputedCounts);

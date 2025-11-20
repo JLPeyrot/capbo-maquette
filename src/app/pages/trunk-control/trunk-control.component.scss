@@ -237,6 +237,11 @@
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
+  text-align: left;
+  
+  .mdc-button__label {
+    text-align: left;
+  }
 }
 
 .loading-state,

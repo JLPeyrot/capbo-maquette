@@ -12,6 +12,7 @@ import { EditAttributesDialogComponent } from './edit-attributes-dialog.componen
 import { ConfirmAddToTrunkDialogComponent } from './confirm-add-to-trunk-dialog.component';
 import { ConfirmAttributesDialogComponent } from './confirm-attributes-dialog.component';
 import { AssortmentOptionsDialogComponent, AssortmentOptionsResult } from './assortment-options-dialog.component';
+import { DeploymentTypologyDialogComponent } from './deployment-typology-dialog.component';
 import { takeUntil } from 'rxjs/operators';
 import { TrunksService, TrunkOption } from '../../services/trunks.service';
 import { HttpClient } from '@angular/common/http';
@@ -58,6 +59,7 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
   private subFamiliesByFamily: Record<string, string[]> = {};
 
   trunkLevelLabels: Record<number, string> = {};
+  trunkOptions: TrunkOption[] = [];
 
   constructor(
     private articlesService: ArticlesService,
@@ -84,6 +86,7 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((options: TrunkOption[]) => {
         this.trunkNameById = {};
+        this.trunkOptions = options;
         options.forEach(opt => { this.trunkNameById[opt.id] = opt.name; });
       });
   }
@@ -128,10 +131,13 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
     const tryNext = (idx: number) => {
       if (idx >= tryPaths.length) { onDone(); return; }
       fetch(tryPaths[idx])
-        .then(r => r.json())
-        .then((raw: any) => {
+        .then(r => r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status)))
+        .then((text) => {
+          let raw: any = null;
+          try { raw = JSON.parse(text); } catch { raw = null; }
+          if (!raw) { tryNext(idx + 1); return; }
           const map: Record<string, string[]> = {};
-          if (raw && Array.isArray(raw.sousFamilles)) {
+          if (Array.isArray(raw.sousFamilles)) {
             for (const entry of raw.sousFamilles) {
               if (Array.isArray(entry.sousFamilles)) {
                 const labels = entry.sousFamilles
@@ -140,7 +146,7 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
                 map[entry.famille] = labels;
               }
             }
-          } else if (raw && Array.isArray(raw.familles)) {
+          } else if (Array.isArray(raw.familles)) {
             for (const entry of raw.familles) {
               const fams = Array.isArray(entry.familles) ? entry.familles : [];
               for (const f of fams) {
@@ -386,12 +392,13 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
   onAddToTrunk(): void {
     const dialogRef = this.dialog.open(AddToTrunkDialogComponent, {
       width: '460px',
+      panelClass: 'assortiment-dialog-panel',
       data: { selectedCount: this.selectedArticles.size }
     });
 
-    dialogRef.afterClosed().subscribe((result: { trunkId: string; trunkName: string; trunkType: string; level: number; levelLabel: string } | undefined) => {
+    dialogRef.afterClosed().subscribe((result: { trunkId: string; trunkName: string; trunkType: string; level: number; levelLabel: string; deploymentTypology?: 'ferme' | 'mixte' | 'ouvert' } | undefined) => {
       if (result) {
-        const { trunkId, trunkName, trunkType, level, levelLabel } = result;
+        const { trunkId, trunkName, trunkType, level, levelLabel, deploymentTypology } = result;
         const selectedCount = this.getSelectedCount();
         this.dialog.open(ConfirmAddToTrunkDialogComponent, {
           width: '520px',
@@ -400,11 +407,9 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
           if (!confirmed) { return; }
 
           const articleCodes = Array.from(this.selectedArticles);
-          // Ouvrir la popup des paramètres d’assortiment
           this.dialog.open(AssortmentOptionsDialogComponent, {
             width: '520px'
           }).afterClosed().subscribe((options: AssortmentOptionsResult | undefined) => {
-            // Procéder à l’assignation au tronc d’abord
             this.articlesService.assignArticlesToTrunk(articleCodes, trunkId)
               .pipe(takeUntil(this.destroy$))
               .subscribe({
@@ -412,7 +417,6 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
                   this.allArticles = assignResult.articles;
                   this.updateFilteredArticles();
 
-                  // Appliquer les dates selon options
                   if (options && options.commandableEnabled) {
                     if (options.commandableStart) {
                       this.articlesService.updateStartDateForArticles(articleCodes, trunkId, 'commandable', options.commandableStart)
@@ -438,6 +442,18 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
                         .subscribe();
                     }
                   }
+
+                  if (deploymentTypology) {
+                    const codesSet = new Set(articleCodes);
+                    this.allArticles = this.allArticles.map(a => {
+                      if (!codesSet.has(a.code)) return a;
+                      return { ...a, deployment_typology: deploymentTypology };
+                    });
+                    this.updateFilteredArticles();
+                    this.articlesService.updateDeploymentTypologyForArticles(articleCodes, deploymentTypology)
+                      .pipe(takeUntil(this.destroy$))
+                      .subscribe();
+                  }
                 },
                 error: (err: unknown) => {
                   console.error('Erreur lors de l\'assignation au tronc:', err);
@@ -445,10 +461,47 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
               });
           });
         });
-      } else {
-        // Fermeture sans action
       }
     });
+  }
+
+  onModifyDeploymentTypology(): void {
+    const selectedCount = this.getSelectedCount();
+    if (selectedCount === 0) { return; }
+
+    const dialogRef = this.dialog.open(DeploymentTypologyDialogComponent, {
+      width: '420px'
+    });
+    dialogRef.afterClosed().subscribe((result: { typology: 'ferme' | 'mixte' | 'ouvert' } | undefined) => {
+      const typology = result?.typology;
+      if (!typology) return;
+      const articleCodes = Array.from(this.selectedArticles);
+
+      // Mise à jour optimiste côté client
+      const codesSet = new Set(articleCodes);
+      this.allArticles = this.allArticles.map(a => {
+        if (!codesSet.has(a.code)) return a;
+        return { ...a, deployment_typology: typology };
+      });
+      this.updateFilteredArticles();
+
+      // Persistance côté serveur
+      this.articlesService.updateDeploymentTypologyForArticles(articleCodes, typology)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(({ updated }) => {
+          console.log(`Typologie '${typology}' appliquée à ${updated} article(s)`);
+        });
+    });
+  }
+
+  formatDeploymentTypology(val?: 'ferme' | 'mixte' | 'ouvert'): string {
+    if (!val) return '';
+    switch (val) {
+      case 'ferme': return 'Fermé';
+      case 'mixte': return 'Mixte';
+      case 'ouvert': return 'Ouvert';
+      default: return String(val);
+    }
   }
 
   onAddAttributes(): void {

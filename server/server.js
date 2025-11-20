@@ -275,6 +275,32 @@ app.post('/api/articles/assign-trunk', (req, res) => {
   return res.json({ updated, articles: updatedArticles });
 });
 
+// Met à jour la typologie de déploiment pour une liste d'articles
+app.post('/api/articles/update-deployment-typology', (req, res) => {
+  const { articleCodes, typology } = req.body || {};
+  const allowed = new Set(['ferme', 'mixte', 'ouvert']);
+  if (!Array.isArray(articleCodes) || !allowed.has(String(typology))) {
+    return res.status(400).json({ error: "Paramètres invalides: articleCodes doit être un tableau et typology parmi 'ferme'|'mixte'|'ouvert'." });
+  }
+
+  const data = readArticles();
+  const codeSet = new Set(articleCodes.map(c => String(c)));
+  let updated = 0;
+  const updatedArticles = (data.articles || []).map(a => {
+    if (codeSet.has(String(a.code))) {
+      updated += 1;
+      return { ...a, deployment_typology: String(typology) };
+    }
+    return a;
+  });
+
+  const ok = writeArticles({ articles: updatedArticles });
+  if (!ok) {
+    return res.status(500).json({ error: 'Écriture du fichier échouée.' });
+  }
+  return res.json({ updated, articles: updatedArticles });
+});
+
 // ===== CRUD pour les troncs =====
 // READ
 app.get('/api/trunks', (req, res) => {

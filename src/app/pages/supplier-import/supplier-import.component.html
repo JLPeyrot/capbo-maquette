@@ -5,7 +5,7 @@
       <div class="title-section">
         <mat-icon class="page-icon">file_upload</mat-icon>
         <div>
-          <h1>Import de fichiers fournisseurs</h1>
+          <h1>Import de fichiers fournisseurs [1]</h1>
           <p class="subtitle">Sélectionnez un ou plusieurs fichiers puis lancez l’import</p>
         </div>
       </div>
@@ -35,6 +35,11 @@
             <mat-option *ngFor="let s of supplierOptions" [value]="s.value">{{ s.label }}</mat-option>
           </mat-select>
         </mat-form-field>
+        <button mat-stroked-button color="primary" class="browse-btn" (click)="localFileInput.click()">
+          <mat-icon>folder_open</mat-icon>
+          Parcourir fichiers locaux
+        </button>
+        <input type="file" #localFileInput (change)="onLocalFileSelected($event)" hidden accept=".csv,.xlsx,.xls" />
       </div>
       <div class="files-list" *ngIf="selectedSupplier">
         <div class="file-row" *ngFor="let f of visibleFiles" (click)="toggleSelection(f.id)" [class.selected]="selectedFileIds.has(f.id)">

@@ -55,15 +55,7 @@ export class SupplierImportComponent implements OnInit {
         const list = Array.isArray((data as any).files) ? (data as any).files : [];
         this.files = list;
         // Limiter explicitement aux 4 fournisseurs demandés et présents dans les fichiers
-        const allowed = new Set<string>([
-          'Samsung France',
-          'BSH Électroménager',
-          'Philips Domestic',
-          'TCL Europe'
-        ]);
-        const uniq = Array.from(new Set(this.files.map(f => f.supplier).filter(x => !!x))).sort();
-        const filtered = uniq.filter(s => allowed.has(s));
-        this.supplierOptions = filtered.map(s => ({ value: s, label: s }));
+        this.refreshSupplierOptions();
         if (!this.supplierOptions.find(o => o.value === this.selectedSupplier)) this.selectedSupplier = '';
       },
       error: () => {},
@@ -165,4 +157,36 @@ export class SupplierImportComponent implements OnInit {
   }
 
   @ViewChild('importResultDialog') importResultDialog!: TemplateRef<any>;
+
+  private refreshSupplierOptions(): void {
+    const allowed = new Set<string>([
+      'Samsung France',
+      'BSH Électroménager',
+      'Philips Domestic',
+      'TCL Europe'
+    ]);
+    const uniq = Array.from(new Set(this.files.map(f => f.supplier).filter(x => !!x))).sort();
+    const filtered = uniq.filter(s => allowed.has(s));
+    this.supplierOptions = filtered.map(s => ({ value: s, label: s }));
+  }
+
+  onLocalFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    const now = new Date();
+    const dateStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+    // Simulation d’un fichier Bosch (BSH)
+    const simulated: SupplierFile = {
+      id: `local-bosch-${Date.now()}`,
+      name: file ? file.name : 'bosch-products.csv',
+      sizeKb: file ? Math.max(10, Math.floor(file.size / 1024)) : 512,
+      date: dateStr,
+      supplier: 'BSH Électroménager'
+    };
+    this.files = [simulated, ...this.files];
+    this.refreshSupplierOptions();
+    this.selectedSupplier = 'BSH Électroménager';
+    this.selectedFileIds.clear();
+    this.selectedFileIds.add(simulated.id);
+  }
 }

@@ -35,6 +35,31 @@
       transform: translateX(0);
     }
   }
+
+  &.pinned {
+    opacity: 1;
+    visibility: visible;
+    background: transparent;
+    backdrop-filter: none;
+    position: fixed;
+    top: 88px; /* hauteur de la top navbar */
+    left: 0;
+    width: 360px;
+    height: calc(100vh - 88px);
+    pointer-events: none;
+    z-index: 90; /* sous la top navbar (top navbar = 100) */
+
+    .sidebar-menu {
+      transform: translateX(0);
+      position: fixed;
+      top: 88px; /* aligné sous la top navbar */
+      left: 0;
+      height: calc(100vh - 88px);
+      pointer-events: auto;
+      z-index: 90; /* sous la top navbar */
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    }
+  }
 }
 
 .sidebar-menu {
@@ -232,6 +257,10 @@
   height: 0; /* Important pour forcer le scroll */
 }
 
+.app-container.menu-pinned .main-content {
+  margin-left: 360px;
+}
+
 /* ===== TOP NAVBAR AMÉLIORÉE ===== */
 .top-navbar {
   background: white !important;
@@ -253,6 +282,11 @@
     &:hover {
       background: rgba(25, 118, 210, 0.1);
     }
+  }
+
+  .pin-menu {
+    margin-right: 8px;
+    &:hover { background: rgba(25, 118, 210, 0.1); }
   }
 
   .search-field {
@@ -749,4 +783,20 @@
       background: #4a4a4a !important;
     }
   }
+}
+.sidebar-fixed {
+  position: fixed;
+  top: 88px;
+  left: 0;
+  width: 360px;
+  height: calc(100vh - 88px);
+  z-index: 90;
+}
+
+.sidebar-fixed .sidebar-menu {
+  transform: translateX(0);
+  position: fixed;
+  top: 88px;
+  left: 0;
+  height: calc(100vh - 88px);
 }
