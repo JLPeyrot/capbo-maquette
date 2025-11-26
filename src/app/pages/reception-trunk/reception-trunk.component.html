@@ -18,150 +18,265 @@
         </div>
       </div>
     </div>
-    <!-- SECTION ONGLETS -->
-    <mat-card class="tabs-card">
-      <mat-card-header>
-        <mat-card-title class="tabs-title">
-          <mat-icon>tab</mat-icon>
-          Liste d'assortiments
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="tabs-container">
-          <mat-tab-group [(selectedIndex)]="selectedTabIndex" (selectedTabChange)="onTabChange($event)">
-            <mat-tab>
-              <ng-template mat-tab-label>
-                <span class="tab-label">
-                  <mat-icon>lock</mat-icon>
-                  <span class="tab-title">Fermé</span>
-                  <span class="tab-count badge-ferme">{{ getSelectedCountByTab('ferme') }}</span>
-                </span>
-              </ng-template>
-              <div class="tab-content">
-                <ng-container *ngTemplateOutlet="tabContentTemplate"></ng-container>
+    <div class="two-column-layout">
+      <div class="left-col">
+        <mat-card class="tree-card sticky">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>account_tree</mat-icon>
+              Tronc {{ trunkName }} (1)
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="tree-container">
+              <div class="family-row" [class.selected]="selectedTrunkNode?.famille === 'Niveau supérieur' && !selectedTrunkNode?.sousFamille" (click)="onSelectTrunkNode('Niveau supérieur')">
+                <mat-icon class="family-icon">north</mat-icon>
+                <span class="family-name">Niveau supérieur</span>
               </div>
-            </mat-tab>
-            
-            <mat-tab>
-              <ng-template mat-tab-label>
-                <span class="tab-label">
-                  <mat-icon>settings</mat-icon>
-                  <span class="tab-title">Mixte</span>
-                  <span class="tab-count badge-mixte">{{ getSelectedCountByTab('mixte') }}</span>
-                </span>
-              </ng-template>
-              <div class="tab-content">
-                <ng-container *ngTemplateOutlet="tabContentTemplate"></ng-container>
-              </div>
-            </mat-tab>
-            
-            <mat-tab>
-              <ng-template mat-tab-label>
-                <span class="tab-label">
-                  <mat-icon>check_circle</mat-icon>
-                  <span class="tab-title">Ouvert</span>
-                  <span class="tab-count badge-ouvert">{{ getSelectedCountByTab('ouvert') }}</span>
-                </span>
-              </ng-template>
-              <div class="tab-content">
-                <ng-container *ngTemplateOutlet="tabContentTemplate"></ng-container>
-              </div>
-            </mat-tab>
-          </mat-tab-group>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-  <!-- Template pour le contenu des onglets -->
-    <ng-template #tabContentTemplate>
-      <!-- SECTION FILTRES ET ACTIONS -->
-      <mat-card class="filters-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>filter_list</mat-icon>
-            Filtres et Actions
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content class="filters-content">
-          <div class="filters-row">
-            <mat-form-field class="filter-field" appearance="outline">
-            <mat-label>Rechercher un article</mat-label>
-            <input matInput [(ngModel)]="filterText" placeholder="Nom, référence, code-barres...">
-            <mat-icon matSuffix>search</mat-icon>
-          </mat-form-field>
-            <div class="action-buttons">
-              <div class="selection-counter">
-                <mat-icon>check_circle</mat-icon>
-                <span>{{ getSelectedCountByTab(selectedTab) }} / {{ filteredArticles.length }}</span>
+              <div class="family-block" *ngFor="let fam of (trunkTree | keyvalue)">
+                <div class="family-row" [class.selected]="selectedTrunkNode?.famille === fam.key && !selectedTrunkNode?.sousFamille" (click)="onSelectTrunkNode(fam.key)">
+                  <button mat-icon-button class="expand-btn" (click)="toggleTrunkFamily(fam.key, $event)" aria-label="Plier/Déplier" disableRipple>
+                    <mat-icon>{{ isTrunkFamilyExpanded(fam.key) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+                  </button>
+                  <mat-icon class="family-icon">{{ isTrunkFamilyExpanded(fam.key) ? 'folder_open' : 'folder' }}</mat-icon>
+                  <span class="family-name">{{ fam.key }}</span>
+                </div>
+                <div class="sous-list" *ngIf="isTrunkFamilyExpanded(fam.key) && fam.value?.length">
+                  <div class="sf-row" *ngFor="let sf of fam.value" [class.selected]="selectedTrunkNode?.famille === fam.key && selectedTrunkNode?.sousFamille === sf" (click)="onSelectTrunkNode(fam.key, sf)">
+                    <mat-icon class="sf-icon">subdirectory_arrow_right</mat-icon>
+                    <span class="sf-name">{{ sf }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- SECTION TABLEAU -->
-      <mat-card class="table-card">
-        <mat-card-header>
-          <mat-card-title class="table-title">
-            <mat-icon>list_alt</mat-icon>
-            Articles du Tronc
-          </mat-card-title>
-        </mat-card-header>
-        
-        <mat-card-content class="table-content">
-          <div class="table-container">
-            <table mat-table [dataSource]="filteredArticles" class="articles-table">
-            <!-- Colonne de sélection -->
-            <ng-container matColumnDef="checkbox">
-              <th mat-header-cell *matHeaderCellDef>
-                <mat-checkbox 
-                  (change)="$event ? masterToggle() : null"
-                  [checked]="areAllSelected()"
-                  [indeterminate]="isIndeterminate()"
-                  [disabled]="isCheckboxDisabled()">
-                </mat-checkbox>
-                <mat-icon class="lock-icon" *ngIf="isCheckboxDisabled()" matTooltip="Cases verrouillées">lock</mat-icon>
-              </th>
-              <td mat-cell *matCellDef="let article">
-                <div class="checkbox-container">
-                  <mat-checkbox 
-                    (click)="$event.stopPropagation()"
-                    [(ngModel)]="article.checked"
-                    [disabled]="isCheckboxDisabled()">
-                  </mat-checkbox>
-                  <mat-icon class="lock-icon" *ngIf="isCheckboxDisabled()" matTooltip="Case verrouillée">lock</mat-icon>
-                </div>
-              </td>
-            </ng-container>
-
-        <!-- Colonne Référence -->
-        <ng-container matColumnDef="reference">
-          <th mat-header-cell *matHeaderCellDef>Référence article</th>
-          <td mat-cell *matCellDef="let article">{{ article.reference }}</td>
-        </ng-container>
-
-        <!-- Colonne Libellé -->
-        <ng-container matColumnDef="libelle">
-          <th mat-header-cell *matHeaderCellDef>Libellé article</th>
-          <td mat-cell *matCellDef="let article">{{ article.libelle }}</td>
-        </ng-container>
-
-        <!-- Colonne Famille / Sous-famille -->
-        <ng-container matColumnDef="famille">
-          <th mat-header-cell *matHeaderCellDef>Famille / Sous-famille</th>
-          <td mat-cell *matCellDef="let article">{{ article.famille }} / {{ article.sousFamille }}</td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
-    </div>
-
-    <!-- Informations de sélection -->
-    <div class="selection-info" *ngIf="getSelectedCountByTab(selectedTab) > 0">
-      <p>{{ getSelectedCountByTab(selectedTab) }} / {{ filteredArticles.length }}</p>
-    </div>
           </mat-card-content>
         </mat-card>
-  </ng-template>
+      </div>
+
+      <div class="main-col">
+        <div class="lists-grid">
+          <mat-card class="list-card">
+          <mat-card-header>
+            <div class="list-header-index">(1)</div>
+              <textbox_list1 [(value)]="leftFilterText" (valueChange)="onFilterLeftChange($event)"></textbox_list1>
+              <div class="header-pager">
+                <button class="pager-btn" (click)="firstPageLeft()" [disabled]="currentPageLeft === 0">«</button>
+                <button class="pager-btn" (click)="prevPageLeft()" [disabled]="currentPageLeft === 0">‹</button>
+                <span class="pager-index">{{currentPageLeft + 1}}</span>
+                <button class="pager-btn" (click)="nextPageLeft()" [disabled]="(currentPageLeft + 1) * pageSizeLeft >= listItemsLeft.length">›</button>
+                <button class="pager-btn" (click)="lastPageLeft()" [disabled]="(currentPageLeft + 1) * pageSizeLeft >= listItemsLeft.length">»</button>
+              </div>
+            </mat-card-header>
+          <mat-card-content>
+              <mat-tab-group [(selectedIndex)]="selectedTabIndex" (selectedTabChange)="onTabChange($event)">
+                <mat-tab *ngIf="!isSuperiorSelected">
+                  <ng-template mat-tab-label>
+                    <span class="tab-label">
+                      <mat-icon>lock</mat-icon>
+                      <span class="tab-title">Fermé</span>
+                      <span class="tab-count badge-ferme">{{ getSelectedCountByTab('ferme') }}</span>
+                    </span>
+                  </ng-template>
+                  <div class="tab-content">
+                    <mat-card class="table-card">
+                      <mat-card-content class="table-content">
+                        <div class="table-container">
+                          <table mat-table [dataSource]="filteredArticles" class="articles-table">
+                            <ng-container matColumnDef="checkbox">
+                              <th mat-header-cell *matHeaderCellDef>
+                                <mat-checkbox 
+                                  (change)="$event ? masterToggle() : null"
+                                  [checked]="areAllSelected()"
+                                  [indeterminate]="isIndeterminate()"
+                                  [disabled]="isCheckboxDisabled()">
+                                </mat-checkbox>
+                                <mat-icon class="lock-icon" *ngIf="isCheckboxDisabled()" matTooltip="Cases verrouillées">lock</mat-icon>
+                              </th>
+                              <td mat-cell *matCellDef="let article">
+                                <div class="checkbox-container">
+                                  <mat-checkbox 
+                                    (click)="$event.stopPropagation()"
+                                    [checked]="getChecked(article)"
+                                    (change)="setChecked(article, $event.checked)"
+                                    [disabled]="isCheckboxDisabled()">
+                                  </mat-checkbox>
+                                  <mat-icon class="lock-icon" *ngIf="isCheckboxDisabled()" matTooltip="Case verrouillée">lock</mat-icon>
+                                </div>
+                              </td>
+                            </ng-container>
+                            <ng-container matColumnDef="reference">
+                              <th mat-header-cell *matHeaderCellDef>Référence article</th>
+                              <td mat-cell *matCellDef="let article">{{ article.reference }}</td>
+                            </ng-container>
+                            <ng-container matColumnDef="libelle">
+                              <th mat-header-cell *matHeaderCellDef>Libellé article</th>
+                              <td mat-cell *matCellDef="let article">{{ article.libelle }}</td>
+                            </ng-container>
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                          </table>
+                        </div>
+                        
+                      </mat-card-content>
+                    </mat-card>
+                  </div>
+                </mat-tab>
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <span class="tab-label">
+                      <mat-icon>check_circle</mat-icon>
+                      <span class="tab-title">Ouvert</span>
+                      <span class="tab-count badge-ouvert">{{ getSelectedCountByTab('ouvert') }}</span>
+                    </span>
+                  </ng-template>
+                  <div class="tab-content">
+                    <ng-container *ngIf="!isSuperiorSelected; else tabSuperiorContent">
+                      <ng-container *ngTemplateOutlet="tabClosedContent"></ng-container>
+                    </ng-container>
+                  </div>
+                </mat-tab>
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <span class="tab-label">
+                      <mat-icon>settings</mat-icon>
+                      <span class="tab-title">Mixte</span>
+                      <span class="tab-count badge-mixte">{{ getSelectedCountByTab('mixte') }}</span>
+                    </span>
+                  </ng-template>
+                  <div class="tab-content">
+                    <ng-container *ngIf="!isSuperiorSelected; else tabSuperiorContent">
+                      <ng-container *ngTemplateOutlet="tabClosedContent"></ng-container>
+                    </ng-container>
+                  </div>
+                </mat-tab>
+              </mat-tab-group>
+              <ng-template #tabClosedContent>
+                <mat-card class="table-card">
+                  <mat-card-content class="table-content">
+                    <div class="table-container">
+                      <table mat-table [dataSource]="filteredArticles" class="articles-table">
+                        <ng-container matColumnDef="checkbox">
+                          <th mat-header-cell *matHeaderCellDef>
+                            <mat-checkbox 
+                              (change)="$event ? masterToggle() : null"
+                              [checked]="areAllSelected()"
+                              [indeterminate]="isIndeterminate()"
+                              [disabled]="isCheckboxDisabled()">
+                            </mat-checkbox>
+                            <mat-icon class="lock-icon" *ngIf="isCheckboxDisabled()" matTooltip="Cases verrouillées">lock</mat-icon>
+                          </th>
+                          <td mat-cell *matCellDef="let article">
+                            <div class="checkbox-container">
+                              <mat-checkbox 
+                                (click)="$event.stopPropagation()"
+                                [checked]="getChecked(article)"
+                                (change)="setChecked(article, $event.checked)"
+                                [disabled]="isCheckboxDisabled()">
+                              </mat-checkbox>
+                              <mat-icon class="lock-icon" *ngIf="isCheckboxDisabled()" matTooltip="Case verrouillée">lock</mat-icon>
+                            </div>
+                          </td>
+                        </ng-container>
+                        <ng-container matColumnDef="reference">
+                          <th mat-header-cell *matHeaderCellDef>Référence article</th>
+                          <td mat-cell *matCellDef="let article">{{ article.reference }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="libelle">
+                          <th mat-header-cell *matHeaderCellDef>Libellé article</th>
+                          <td mat-cell *matCellDef="let article">{{ article.libelle }}</td>
+                        </ng-container>
+                        
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                      </table>
+                    </div>
+                    
+                  </mat-card-content>
+                </mat-card>
+              </ng-template>
+          </mat-card-content>
+        </mat-card>
+
+          <mat-card class="list-card readonly">
+            <mat-card-header>
+              <div class="list-header-index">(2)</div>
+              <textbox_list2 [(value)]="rightFilterText" (valueChange)="onFilterRightChange($event)"></textbox_list2>
+              <div class="header-pager">
+                <button class="pager-btn" (click)="firstPageRight()" [disabled]="currentPageRight === 0">«</button>
+                <button class="pager-btn" (click)="prevPageRight()" [disabled]="currentPageRight === 0">‹</button>
+                <span class="pager-index">{{currentPageRight + 1}}</span>
+                <button class="pager-btn" (click)="nextPageRight()" [disabled]="(currentPageRight + 1) * pageSizeRight >= listItemsRight.length">›</button>
+                <button class="pager-btn" (click)="lastPageRight()" [disabled]="(currentPageRight + 1) * pageSizeRight >= listItemsRight.length">»</button>
+              </div>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="list-scroll">
+                <div class="article-list">
+                  <div class="list-row has-state" [class.moved-highlight]="isMovedRight(it.id)" *ngFor="let it of pagedRightItems()">
+                    <div class="select-column">
+                      <mat-checkbox [disabled]="!isRightItemSelectable(it.id)" [checked]="selectedRightIds.has(it.id)" (change)="toggleSelectionRight(it)"></mat-checkbox>
+                    </div>
+                    <div class="code-column">{{ it.code }}</div>
+                    <div class="designation-column">{{ it.designation }}</div>
+                    <div class="state-column">
+                      <span class="state-pill" [class.state-draft]="it.state==='brouillon'" [class.state-ref]="it.state==='référencé'">{{ it.state==='brouillon' ? 'Brouillon' : 'Référencé' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <mat-card class="tree-card sticky">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>store</mat-icon>
+              Déjà en magasin (2)
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="tree-container">
+              <div class="family-block" *ngFor="let fam of (storeTree | keyvalue)">
+                <div class="family-row" [class.selected]="selectedStoreNode?.famille === fam.key && !selectedStoreNode?.sousFamille" (click)="onSelectStoreNode(fam.key)">
+                  <button mat-icon-button class="expand-btn" (click)="toggleStoreFamily(fam.key, $event)" aria-label="Plier/Déplier" disableRipple>
+                    <mat-icon>{{ isStoreFamilyExpanded(fam.key) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+                  </button>
+                  <mat-icon class="family-icon">{{ isStoreFamilyExpanded(fam.key) ? 'folder_open' : 'folder_special' }}</mat-icon>
+                  <span class="family-name">{{ fam.key }}</span>
+                </div>
+                <div class="sous-list" *ngIf="isStoreFamilyExpanded(fam.key) && fam.value?.length">
+                  <div class="sf-row" *ngFor="let sf of fam.value" [class.selected]="selectedStoreNode?.famille === fam.key && selectedStoreNode?.sousFamille === sf" (click)="onSelectStoreNode(fam.key, sf)">
+                    <mat-icon class="sf-icon">check</mat-icon>
+                    <span class="sf-name">{{ sf }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
 </div>
+              <ng-template #tabSuperiorContent>
+                <mat-card class="table-card">
+                  <mat-card-content class="table-content">
+                    <div class="table-container">
+                      <table mat-table [dataSource]="superiorLevelArticles" class="articles-table">
+                        <ng-container matColumnDef="reference">
+                          <th mat-header-cell *matHeaderCellDef>Référence article</th>
+                          <td mat-cell *matCellDef="let article">{{ article.reference }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="libelle">
+                          <th mat-header-cell *matHeaderCellDef>Libellé article</th>
+                          <td mat-cell *matCellDef="let article">{{ article.libelle }}</td>
+                        </ng-container>
+                        <tr mat-header-row *matHeaderRowDef="['reference','libelle']"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['reference','libelle'];"></tr>
+                      </table>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </ng-template>

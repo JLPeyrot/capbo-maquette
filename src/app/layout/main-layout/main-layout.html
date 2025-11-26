@@ -508,6 +508,7 @@
     <!-- CONTENU PRINCIPAL -->
     <div class="main-content" 
          [class.focus-content]="isFocusMode"
+         [class.referencement-content]="currentView==='referencement'"
          [ngSwitch]="currentView">
       
       <!-- DASHBOARD (vue par défaut) -->
@@ -658,6 +659,7 @@
       <div *ngSwitchCase="'referencement'" class="page-container">
         <app-referencement [supplierOnly]="referencementSupplierOnly"></app-referencement>
       </div>
+
 
       <!-- PAGE RÉFÉRENCEMENT REVIEW -->
       <div *ngSwitchCase="'referencement-review'" class="page-container">

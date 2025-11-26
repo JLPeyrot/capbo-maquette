@@ -2,110 +2,329 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../shared/material-module';
+import { TextboxList1Component } from '../../components/textbox-list1/textbox-list1.component';
+import { TextboxList2Component } from '../../components/textbox-list2/textbox-list2.component';
 
 interface Article {
   reference: string;
   libelle: string;
   famille: string;
   sousFamille: string;
-  checked: boolean;
+  checked?: boolean;
+  checkedCommandable?: boolean;
+  checkedVendable?: boolean;
   type: 'ferme' | 'mixte' | 'ouvert';
 }
 
 @Component({
   selector: 'app-reception-trunk',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule],
+  imports: [CommonModule, FormsModule, MaterialModule, TextboxList1Component, TextboxList2Component],
   templateUrl: './reception-trunk.component.html',
   styleUrls: ['./reception-trunk.component.scss']
 })
 export class ReceptionTrunkComponent implements OnInit {
   
-  selectedTab: 'ferme' | 'mixte' | 'ouvert' = 'ferme';
+  selectedMeta: 'commandable' | 'vendable' = 'commandable';
+  outerTabIndex: number = 0;
+  selectedTab: 'ferme' | 'mixte' | 'ouvert' | 'niveau_superieur' = 'ferme';
   selectedTabIndex: number = 0;
   filterText: string = '';
-  displayedColumns: string[] = ['checkbox', 'reference', 'libelle', 'famille'];
+  displayedColumns: string[] = ['checkbox', 'reference', 'libelle'];
+  trunkName: string = 'TAC Accessoire cuisine';
   
   articles: Article[] = [
     // Articles Fermés
-    { reference: 'ART001', libelle: 'Gants polaires noirs', famille: 'Accessoires', sousFamille: 'Gants', checked: true, type: 'ferme' },
-    { reference: 'ART002', libelle: 'Bonnet laine mérinos gris', famille: 'Accessoires', sousFamille: 'Bonnets', checked: true, type: 'ferme' },
-    { reference: 'ART003', libelle: 'Écharpe cachemire beige', famille: 'Accessoires', sousFamille: 'Écharpes', checked: true, type: 'ferme' },
-    { reference: 'ART004', libelle: 'Doudoune homme bleue', famille: 'Vêtements', sousFamille: 'Doudounes', checked: true, type: 'ferme' },
-    { reference: 'ART005', libelle: 'Doudoune femme noire', famille: 'Vêtements', sousFamille: 'Doudounes', checked: true, type: 'ferme' },
-    { reference: 'ART006', libelle: 'Bottes neige homme', famille: 'Chaussures', sousFamille: 'Bottes', checked: true, type: 'ferme' },
-    { reference: 'ART007', libelle: 'Bottes neige femme', famille: 'Chaussures', sousFamille: 'Bottes', checked: true, type: 'ferme' },
-    { reference: 'ART008', libelle: 'Pull col roulé homme', famille: 'Vêtements', sousFamille: 'Pulls', checked: true, type: 'ferme' },
-    { reference: 'ART009', libelle: 'Pull col roulé femme', famille: 'Vêtements', sousFamille: 'Pulls', checked: true, type: 'ferme' },
-    { reference: 'ART010', libelle: 'Parka imperméable mixte', famille: 'Vêtements', sousFamille: 'Parkas', checked: true, type: 'ferme' },
-    { reference: 'ART011', libelle: 'Pantalon thermique homme', famille: 'Vêtements', sousFamille: 'Pantalons', checked: true, type: 'ferme' },
-    { reference: 'ART012', libelle: 'Pantalon thermique femme', famille: 'Vêtements', sousFamille: 'Pantalons', checked: true, type: 'ferme' },
-    { reference: 'ART013', libelle: 'Chaussettes laine épaisse', famille: 'Accessoires', sousFamille: 'Chaussettes', checked: true, type: 'ferme' },
-    { reference: 'ART014', libelle: 'Veste softshell mixte', famille: 'Vêtements', sousFamille: 'Vestes', checked: true, type: 'ferme' },
-    { reference: 'ART015', libelle: 'Gants tactiles hiver', famille: 'Accessoires', sousFamille: 'Gants', checked: true, type: 'ferme' },
-    { reference: 'ART016', libelle: 'Manteau long femme', famille: 'Vêtements', sousFamille: 'Manteaux', checked: true, type: 'ferme' },
-    { reference: 'ART017', libelle: 'Veste matelassée homme', famille: 'Vêtements', sousFamille: 'Vestes', checked: true, type: 'ferme' },
-    { reference: 'ART018', libelle: 'Sous-gants soie', famille: 'Accessoires', sousFamille: 'Gants', checked: true, type: 'ferme' },
-    { reference: 'ART019', libelle: 'Tour de cou polaire', famille: 'Accessoires', sousFamille: 'Tours de cou', checked: true, type: 'ferme' },
-    { reference: 'ART020', libelle: 'Combinaison ski enfant', famille: 'Vêtements', sousFamille: 'Combinaisons', checked: true, type: 'ferme' },
+    { reference: 'ART001', libelle: 'Spatule en silicone', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART002', libelle: 'Fouet inox', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART003', libelle: 'Louche inox', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART004', libelle: 'Écumoire inox', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART005', libelle: 'Maryse pâtisserie', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART006', libelle: 'Cuillère en bois', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART007', libelle: 'Pinces de cuisine', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART008', libelle: 'Rouleau à pâtisserie', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART009', libelle: 'Balance de cuisine', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART010', libelle: 'Thermomètre de cuisine', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART011', libelle: 'Minuteur mécanique', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART012', libelle: 'Set de cuillères doseuses', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART013', libelle: 'Passoire inox', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART014', libelle: 'Tamis pâtisserie', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART015', libelle: 'Râpe multi-usages', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART016', libelle: 'Mandoline de cuisine', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART017', libelle: 'Ouvre-boîte métal', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART018', libelle: 'Tire-bouchon inox', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART019', libelle: 'Planche à découper', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
+    { reference: 'ART020', libelle: 'Entonnoir cuisine', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'ferme' },
 
     // Articles Mixtes
-    { reference: 'ART021', libelle: 'T-shirt coton bio blanc', famille: 'Vêtements', sousFamille: 'T-shirts', checked: true, type: 'mixte' },
-    { reference: 'ART022', libelle: 'Jean slim homme bleu', famille: 'Vêtements', sousFamille: 'Jeans', checked: true, type: 'mixte' },
-    { reference: 'ART023', libelle: 'Robe été femme fleurie', famille: 'Vêtements', sousFamille: 'Robes', checked: true, type: 'mixte' },
-    { reference: 'ART024', libelle: 'Chemise homme blanche', famille: 'Vêtements', sousFamille: 'Chemises', checked: true, type: 'mixte' },
-    { reference: 'ART025', libelle: 'Baskets running mixte', famille: 'Chaussures', sousFamille: 'Baskets', checked: true, type: 'mixte' },
-    { reference: 'ART026', libelle: 'Veste blazer femme', famille: 'Vêtements', sousFamille: 'Vestes', checked: true, type: 'mixte' },
-    { reference: 'ART027', libelle: 'Short sport homme', famille: 'Vêtements', sousFamille: 'Shorts', checked: true, type: 'mixte' },
-    { reference: 'ART028', libelle: 'Legging sport femme', famille: 'Vêtements', sousFamille: 'Leggings', checked: true, type: 'mixte' },
-    { reference: 'ART029', libelle: 'Polo homme marine', famille: 'Vêtements', sousFamille: 'Polos', checked: true, type: 'mixte' },
-    { reference: 'ART030', libelle: 'Cardigan femme gris', famille: 'Vêtements', sousFamille: 'Cardigans', checked: true, type: 'mixte' },
-    { reference: 'ART031', libelle: 'Pantalon chino homme', famille: 'Vêtements', sousFamille: 'Pantalons', checked: true, type: 'mixte' },
-    { reference: 'ART032', libelle: 'Jupe midi femme noire', famille: 'Vêtements', sousFamille: 'Jupes', checked: true, type: 'mixte' },
-    { reference: 'ART033', libelle: 'Pull-over homme laine', famille: 'Vêtements', sousFamille: 'Pulls', checked: true, type: 'mixte' },
-    { reference: 'ART034', libelle: 'Blouse femme soie', famille: 'Vêtements', sousFamille: 'Blouses', checked: true, type: 'mixte' },
-    { reference: 'ART035', libelle: 'Mocassins cuir homme', famille: 'Chaussures', sousFamille: 'Mocassins', checked: true, type: 'mixte' },
+    { reference: 'ART021', libelle: 'Saladier inox', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART022', libelle: 'Bol mélangeur gradué', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART023', libelle: 'Boîte hermétique 1L', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART024', libelle: 'Range épices (12 pcs)', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART025', libelle: 'Carafe filtrante', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART026', libelle: 'Bec verseur huile', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART027', libelle: 'Entonnoir inox', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART028', libelle: 'Porte-couteaux magnétique', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART029', libelle: 'Égouttoir vaisselle', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART030', libelle: 'Support casseroles', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART031', libelle: 'Gants anti-chaleur', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART032', libelle: 'Sous-verres liège (6)', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART033', libelle: 'Huilier verre', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART034', libelle: 'Essoreuse à salade', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
+    { reference: 'ART035', libelle: 'Presse-ail inox', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: true, type: 'mixte' },
 
     // Articles Ouverts
-    { reference: 'ART036', libelle: 'Maillot de bain homme', famille: 'Vêtements', sousFamille: 'Maillots', checked: false, type: 'ouvert' },
-    { reference: 'ART037', libelle: 'Bikini femme rouge', famille: 'Vêtements', sousFamille: 'Bikinis', checked: false, type: 'ouvert' },
-    { reference: 'ART038', libelle: 'Sandales été femme', famille: 'Chaussures', sousFamille: 'Sandales', checked: false, type: 'ouvert' },
-    { reference: 'ART039', libelle: 'Tongs homme noires', famille: 'Chaussures', sousFamille: 'Tongs', checked: false, type: 'ouvert' },
-    { reference: 'ART040', libelle: 'Chapeau soleil paille', famille: 'Accessoires', sousFamille: 'Chapeaux', checked: false, type: 'ouvert' },
-    { reference: 'ART041', libelle: 'Lunettes soleil mixte', famille: 'Accessoires', sousFamille: 'Lunettes', checked: false, type: 'ouvert' },
-    { reference: 'ART042', libelle: 'Short bain homme', famille: 'Vêtements', sousFamille: 'Shorts', checked: false, type: 'ouvert' },
-    { reference: 'ART043', libelle: 'Paréo femme tropical', famille: 'Accessoires', sousFamille: 'Paréos', checked: false, type: 'ouvert' },
-    { reference: 'ART044', libelle: 'Débardeur homme blanc', famille: 'Vêtements', sousFamille: 'Débardeurs', checked: false, type: 'ouvert' },
-    { reference: 'ART045', libelle: 'Top femme dentelle', famille: 'Vêtements', sousFamille: 'Tops', checked: false, type: 'ouvert' },
-    { reference: 'ART046', libelle: 'Bermuda homme kaki', famille: 'Vêtements', sousFamille: 'Bermudas', checked: false, type: 'ouvert' },
-    { reference: 'ART047', libelle: 'Robe plage femme', famille: 'Vêtements', sousFamille: 'Robes', checked: false, type: 'ouvert' },
-    { reference: 'ART048', libelle: 'Casquette sport mixte', famille: 'Accessoires', sousFamille: 'Casquettes', checked: false, type: 'ouvert' },
-    { reference: 'ART049', libelle: 'Espadrilles femme', famille: 'Chaussures', sousFamille: 'Espadrilles', checked: false, type: 'ouvert' },
-    { reference: 'ART050', libelle: 'Sac plage étanche', famille: 'Accessoires', sousFamille: 'Sacs', checked: false, type: 'ouvert' }
+    { reference: 'ART036', libelle: 'Moule à cake anti-adhésif', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART037', libelle: 'Moule à tarte perforé', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART038', libelle: 'Plaque de four', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART039', libelle: 'Tapis silicone pâtisserie', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART040', libelle: 'Papier cuisson (lot)', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART041', libelle: 'Emporte-pièces (10 pcs)', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART042', libelle: 'Poches pâtisserie (jetables)', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART043', libelle: 'Douilles pâtisserie (12)', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART044', libelle: 'Pinceau de cuisine', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART045', libelle: 'Torchons cuisine (lot)', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART046', libelle: 'Sets de table (4)', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART047', libelle: 'Bouteille isotherme', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART048', libelle: 'Gants de four', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART049', libelle: 'Set de maniques', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' },
+    { reference: 'ART050', libelle: 'Dessous-de-plat métal', famille: 'Électroménager', sousFamille: 'Accessoires de cuisine', checked: false, type: 'ouvert' }
   ];
 
+  superiorLevelArticles: Article[] = [];
+
   ngOnInit(): void {
-    // Initialisation du composant
+    for (let i = 1; i <= 30; i++) {
+      const ref = `ELM${String(i).padStart(3, '0')}`;
+      this.superiorLevelArticles.push({
+        reference: ref,
+        libelle: `Article Électroménager ${i}`,
+        famille: 'Électroménager',
+        sousFamille: 'Divers',
+        checked: false,
+        type: 'mixte'
+      });
+    }
+    // Initialiser les états de sélection par métatype
+    this.articles.forEach(a => {
+      const base = !!a.checked;
+      a.checkedCommandable = base;
+      a.checkedVendable = base;
+    });
+    this.superiorLevelArticles.forEach(a => {
+      const base = !!a.checked;
+      a.checkedCommandable = base;
+      a.checkedVendable = base;
+    });
+    this.rebuildLists();
   }
+
+  private buildTreeFrom(articles: Article[]): Record<string, string[]> {
+    const tree: Record<string, string[]> = {};
+    for (const a of articles) {
+      const fam = a.famille || '';
+      const sf = a.sousFamille || '';
+      if (!fam) continue;
+      tree[fam] = tree[fam] || [];
+      if (sf && !tree[fam].includes(sf)) tree[fam].push(sf);
+    }
+    return tree;
+  }
+
+  get trunkTree(): Record<string, string[]> {
+    return this.buildTreeFrom(this.articles);
+  }
+
+  get storeTree(): Record<string, string[]> {
+    const store = this.articles.filter(a => !!a.checked);
+    return this.buildTreeFrom(store);
+  }
+
+  // États d'interaction des arborescences
+  expandedTrunkFamilies = new Set<string>();
+  expandedStoreFamilies = new Set<string>();
+  selectedTrunkNode: { famille: string; sousFamille?: string } | null = null;
+  selectedStoreNode: { famille: string; sousFamille?: string } | null = null;
+  isSuperiorSelected: boolean = false;
+
+  isTrunkFamilyExpanded(famille: string): boolean {
+    return this.expandedTrunkFamilies.has(famille);
+  }
+
+  toggleTrunkFamily(famille: string, event?: MouseEvent): void {
+    if (event) event.stopPropagation();
+    if (this.expandedTrunkFamilies.has(famille)) {
+      this.expandedTrunkFamilies.delete(famille);
+    } else {
+      this.expandedTrunkFamilies.add(famille);
+    }
+  }
+
+  onSelectTrunkNode(famille: string, sousFamille?: string): void {
+    this.selectedTrunkNode = { famille, sousFamille };
+    if (famille === 'Niveau supérieur') {
+      this.isSuperiorSelected = true;
+      this.selectTab('niveau_superieur');
+    } else {
+      if (this.isSuperiorSelected) {
+        this.isSuperiorSelected = false;
+        if (this.selectedTab === 'niveau_superieur') {
+          this.selectTab('mixte');
+        }
+      }
+    }
+  }
+
+  isStoreFamilyExpanded(famille: string): boolean {
+    return this.expandedStoreFamilies.has(famille);
+  }
+
+  toggleStoreFamily(famille: string, event?: MouseEvent): void {
+    if (event) event.stopPropagation();
+    if (this.expandedStoreFamilies.has(famille)) {
+      this.expandedStoreFamilies.delete(famille);
+    } else {
+      this.expandedStoreFamilies.add(famille);
+    }
+  }
+
+  onSelectStoreNode(famille: string, sousFamille?: string): void {
+    this.selectedStoreNode = { famille, sousFamille };
+  }
+
+  // Listes centrales (format Référencement 2)
+  listItemsLeft: { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé' }[] = [];
+  listItemsRight: { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé' }[] = [];
+  leftFilterText: string = '';
+  rightFilterText: string = '';
+  pageSizeLeft: number = 20;
+  pageSizeRight: number = 20;
+  currentPageLeft: number = 0;
+  currentPageRight: number = 0;
+  selectedIds = new Set<string>();
+  selectedRightIds = new Set<string>();
+  movedIdsRight = new Set<string>();
+
+  private rebuildLists(): void {
+    this.listItemsLeft = this.articles.map(a => ({ id: a.reference, code: a.reference, designation: a.libelle, state: 'brouillon' }));
+    this.listItemsRight = this.articles.filter(a => !!a.checked).map(a => ({ id: a.reference, code: a.reference, designation: a.libelle, state: 'référencé' }));
+    this.movedIdsRight = new Set(this.listItemsRight.map(it => it.id));
+    this.currentPageLeft = 0;
+    this.currentPageRight = 0;
+  }
+
+
+  onFilterLeftChange(term: string): void {
+    this.leftFilterText = term || '';
+  }
+
+  onFilterRightChange(term: string): void {
+    this.rightFilterText = term || '';
+  }
+
+  pagedLeftItems(): { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé' }[] {
+    const start = this.currentPageLeft * this.pageSizeLeft;
+    const src = this.listItemsLeft.filter(it => !this.leftFilterText || it.code.toLowerCase().includes(this.leftFilterText.toLowerCase()) || it.designation.toLowerCase().includes(this.leftFilterText.toLowerCase()));
+    return src.slice(start, start + this.pageSizeLeft);
+  }
+
+  pagedRightItems(): { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé' }[] {
+    const start = this.currentPageRight * this.pageSizeRight;
+    const src = this.listItemsRight.filter(it => !this.rightFilterText || it.code.toLowerCase().includes(this.rightFilterText.toLowerCase()) || it.designation.toLowerCase().includes(this.rightFilterText.toLowerCase()));
+    return src.slice(start, start + this.pageSizeRight);
+  }
+
+  areAllPagedSelectedLeft(): boolean {
+    const ids = this.pagedLeftItems().map(it => it.id);
+    return ids.length > 0 && ids.every(id => this.selectedIds.has(id));
+  }
+
+  areSomePagedSelectedLeft(): boolean {
+    const ids = this.pagedLeftItems().map(it => it.id);
+    return ids.some(id => this.selectedIds.has(id)) && !this.areAllPagedSelectedLeft();
+  }
+
+  areAllPagedSelectedRight(): boolean {
+    const ids = this.pagedRightItems().map(it => it.id).filter(id => this.movedIdsRight.has(id));
+    return ids.length > 0 && ids.every(id => this.selectedRightIds.has(id));
+  }
+
+  areSomePagedSelectedRight(): boolean {
+    const ids = this.pagedRightItems().map(it => it.id).filter(id => this.movedIdsRight.has(id));
+    return ids.some(id => this.selectedRightIds.has(id)) && !this.areAllPagedSelectedRight();
+  }
+
+  toggleAllLeft(): void {
+    const ids = this.pagedLeftItems().map(it => it.id);
+    const allSelected = ids.length > 0 && ids.every(id => this.selectedIds.has(id));
+    if (allSelected) ids.forEach(id => this.selectedIds.delete(id));
+    else ids.forEach(id => this.selectedIds.add(id));
+  }
+
+  toggleAllRight(): void {
+    const ids = this.pagedRightItems().map(it => it.id).filter(id => this.movedIdsRight.has(id));
+    const allSelected = ids.length > 0 && ids.every(id => this.selectedRightIds.has(id));
+    if (allSelected) ids.forEach(id => this.selectedRightIds.delete(id));
+    else ids.forEach(id => this.selectedRightIds.add(id));
+  }
+
+  firstPageLeft(): void { this.currentPageLeft = 0; }
+  prevPageLeft(): void { this.currentPageLeft = Math.max(0, this.currentPageLeft - 1); }
+  nextPageLeft(): void {
+    const hasNext = (this.currentPageLeft + 1) * this.pageSizeLeft < this.listItemsLeft.length;
+    if (hasNext) this.currentPageLeft += 1;
+  }
+  lastPageLeft(): void {
+    const last = Math.max(0, Math.floor((this.listItemsLeft.length - 1) / this.pageSizeLeft));
+    this.currentPageLeft = last;
+  }
+
+  firstPageRight(): void { this.currentPageRight = 0; }
+  prevPageRight(): void { this.currentPageRight = Math.max(0, this.currentPageRight - 1); }
+  nextPageRight(): void {
+    const hasNext = (this.currentPageRight + 1) * this.pageSizeRight < this.listItemsRight.length;
+    if (hasNext) this.currentPageRight += 1;
+  }
+  lastPageRight(): void {
+    const last = Math.max(0, Math.floor((this.listItemsRight.length - 1) / this.pageSizeRight));
+    this.currentPageRight = last;
+  }
+
+  toggleSelection(it: { id: string }): void {
+    if (this.selectedIds.has(it.id)) this.selectedIds.delete(it.id);
+    else this.selectedIds.add(it.id);
+  }
+
+  toggleSelectionRight(it: { id: string }): void {
+    if (!this.movedIdsRight.has(it.id)) return;
+    if (this.selectedRightIds.has(it.id)) this.selectedRightIds.delete(it.id);
+    else this.selectedRightIds.add(it.id);
+  }
+
+  isMovedRight(id: string): boolean { return this.movedIdsRight.has(id); }
+  isRightItemSelectable(id: string): boolean { return this.movedIdsRight.has(id); }
+
+  
 
   get filteredArticles(): Article[] {
-    return this.articles
-      .filter(article => article.type === this.selectedTab)
-      .filter(article => 
-        !this.filterText || 
-        article.reference.toLowerCase().includes(this.filterText.toLowerCase()) ||
-        article.libelle.toLowerCase().includes(this.filterText.toLowerCase()) ||
-        article.famille.toLowerCase().includes(this.filterText.toLowerCase())
-      );
+    const base = this.selectedTab === 'niveau_superieur'
+      ? this.superiorLevelArticles
+      : this.articles.filter(article => article.type === this.selectedTab);
+    return base.filter(article => 
+      !this.filterText || 
+      article.reference.toLowerCase().includes(this.filterText.toLowerCase()) ||
+      article.libelle.toLowerCase().includes(this.filterText.toLowerCase()) ||
+      article.famille.toLowerCase().includes(this.filterText.toLowerCase())
+    );
   }
 
-  selectTab(tab: 'ferme' | 'mixte' | 'ouvert'): void {
+  selectTab(tab: 'ferme' | 'mixte' | 'ouvert' | 'niveau_superieur'): void {
     this.selectedTab = tab;
   }
 
   toggleAll(checked: boolean): void {
     this.filteredArticles.forEach(article => {
-      article.checked = checked;
+      this.setChecked(article, checked);
     });
   }
 
@@ -114,7 +333,7 @@ export class ReceptionTrunkComponent implements OnInit {
   }
 
   exportList(): void {
-    const selectedArticles = this.filteredArticles.filter(article => article.checked);
+    const selectedArticles = this.filteredArticles.filter(article => this.getChecked(article));
     console.log('Articles sélectionnés pour export:', selectedArticles);
     // Ici vous pouvez ajouter la logique d'export
   }
@@ -138,33 +357,42 @@ export class ReceptionTrunkComponent implements OnInit {
   }
 
   onTabChange(event: any): void {
-    const tabs: Array<'ferme' | 'mixte' | 'ouvert'> = ['ferme', 'mixte', 'ouvert'];
+    const tabs: Array<'ferme' | 'mixte' | 'ouvert' | 'niveau_superieur'> = ['ferme', 'mixte', 'ouvert', 'niveau_superieur'];
     this.selectedTab = tabs[event.index];
     this.selectedTabIndex = event.index;
   }
 
+  onOuterTabChange(event: any): void {
+    const metas: Array<'commandable' | 'vendable'> = ['commandable', 'vendable'];
+    this.selectedMeta = metas[event.index];
+    this.outerTabIndex = event.index;
+  }
+
   areAllSelected(): boolean {
     const filtered = this.filteredArticles;
-    return filtered.length > 0 && filtered.every(article => article.checked);
+    return filtered.length > 0 && filtered.every(article => this.getChecked(article));
   }
 
   isIndeterminate(): boolean {
     const filtered = this.filteredArticles;
-    const checkedCount = filtered.filter(article => article.checked).length;
+    const checkedCount = filtered.filter(article => this.getChecked(article)).length;
     return checkedCount > 0 && checkedCount < filtered.length;
   }
 
   getSelectedCount(): number {
-    return this.filteredArticles.filter(article => article.checked).length;
+    return this.filteredArticles.filter(article => this.getChecked(article)).length;
   }
 
   getTotalSelectedCount(): number {
-    return this.articles.filter(article => article.checked).length;
+    return this.articles.filter(article => this.getChecked(article)).length;
   }
 
   // Nombre d'articles sélectionnés par onglet
-  getSelectedCountByTab(tab: 'ferme' | 'mixte' | 'ouvert'): number {
-    return this.articles.filter(article => article.type === tab && article.checked).length;
+  getSelectedCountByTab(tab: 'ferme' | 'mixte' | 'ouvert' | 'niveau_superieur'): number {
+    if (tab === 'niveau_superieur') {
+      return this.superiorLevelArticles.filter(article => this.getChecked(article)).length;
+    }
+    return this.articles.filter(article => article.type === tab && this.getChecked(article)).length;
   }
 
   masterToggle(): void {
@@ -172,7 +400,26 @@ export class ReceptionTrunkComponent implements OnInit {
     const allSelected = this.areAllSelected();
     
     filtered.forEach(article => {
-      article.checked = !allSelected;
+      this.setChecked(article, !allSelected);
     });
+  }
+
+  // Helpers sélection par métatype
+  getChecked(article: Article): boolean {
+    return this.selectedMeta === 'commandable' ? !!article.checkedCommandable : !!article.checkedVendable;
+  }
+
+  setChecked(article: Article, value: boolean): void {
+    if (this.selectedMeta === 'commandable') {
+      article.checkedCommandable = value;
+    } else {
+      article.checkedVendable = value;
+    }
+  }
+  
+  getMetaSelectedCount(meta: 'commandable' | 'vendable'): number {
+    const inMain = this.articles.filter(a => meta === 'commandable' ? !!a.checkedCommandable : !!a.checkedVendable).length;
+    const inSuperior = this.superiorLevelArticles.filter(a => meta === 'commandable' ? !!a.checkedCommandable : !!a.checkedVendable).length;
+    return inMain + inSuperior;
   }
 }

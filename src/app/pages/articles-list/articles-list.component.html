@@ -406,7 +406,7 @@
         <div class="col ref-col">Référence</div>
         <div class="col designation-col">Désignation</div>
         <div class="col supplier-col">Fournisseur</div>
-        <div class="col brand-col">Marque</div>
+        <div class="col sale-col">Prix de vente</div>
         <div class="col price-col">Prix d'achat</div>
       </div>
       <div class="headers-sep"></div>
@@ -430,8 +430,8 @@
             <div class="cell supplier-col">
               {{ article.fournisseurPrincipal }}
             </div>
-            <div class="cell brand-col">
-              {{ article.marque }}
+            <div class="cell sale-col">
+              {{ article.prixVente | currency:'EUR':'symbol':'1.2-2' }}
             </div>
             <div class="cell price-col">
               {{ article.prixAchat | currency:'EUR':'symbol':'1.2-2' }}

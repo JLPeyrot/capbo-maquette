@@ -4,6 +4,7 @@
   display: flex;
   flex-direction: column;
   background-color: #fafafa;
+  overflow: hidden;
 
   /* NOUVEAU : Mode focus */
   &.focus-mode {
@@ -431,6 +432,16 @@
       margin-right: 12px;
       border-radius: 2px;
     }
+  }
+
+  &.referencement-content {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  &.referencement-content .page-container {
+    overflow: hidden;
+    height: 100%;
   }
 }
 

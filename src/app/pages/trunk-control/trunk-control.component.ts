@@ -11,6 +11,7 @@ import { combineLatest } from 'rxjs';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { DeploymentTypologyDialogComponent } from '../assortments-bulk-management/deployment-typology-dialog.component';
 import { EditAttributesDialogComponent } from '../assortments-bulk-management/edit-attributes-dialog.component';
 import { ChangeLevelDialogComponent, ChangeLevelDialogResult } from './change-level-dialog.component';
@@ -21,6 +22,7 @@ import { StartDateConfirmDialogComponent } from './start-date-confirm-dialog.com
 import { EndDateDialogComponent, EndDateDialogResult } from './end-date-dialog.component';
 import { EndDateConfirmDialogComponent } from './end-date-confirm-dialog.component';
 import { HttpClient } from '@angular/common/http';
+import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-trunk-control',
@@ -37,6 +39,9 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   selectedNode: TrunkHierarchyNode | null = null;
   filteredArticles: Article[] = [];
   allArticles: Article[] = []; // Tous les articles chargés initialement
+  pagedArticles: Article[] = [];
+  pageSize: number = 15;
+  pageIndex: number = 0;
   currentFilter: { univers?: string; famille?: string; sousFamille?: string; level?: number } | null = null;
   searchQuery: string = '';
   isLoading: boolean = true;
@@ -101,7 +106,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private dialog: MatDialog,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -156,6 +162,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
         // Mettre à jour les listes d'articles
         this.allArticles = trunkArticles;
         this.filteredArticles = [...trunkArticles];
+        this.pageIndex = 0;
+        this.updatePagedArticles();
 
         // Construire la hiérarchie dérivée basée sur les articles du tronc
         this.hierarchyNodes = this.buildHierarchyFor(this.allArticles, this.trunkName);
@@ -183,6 +191,22 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   getLevelLabel(level?: number): string {
     if (typeof level !== 'number') return '';
     return this.trunkLevelLabels[level] || `niveau ${level}`;
+  }
+
+  private getFallbackLabel(level: number): string {
+    switch (level) {
+      case 1: return 'mini';
+      case 2: return 'classic';
+      case 3: return 'grand';
+      case 4: return 'géant';
+      case 5: return 'maxi';
+      default: return `niveau ${level}`;
+    }
+  }
+
+  private getLevelDisplayName(level: number): string {
+    const label = this.trunkLevelLabels[level];
+    return label ? label : this.getFallbackLabel(level);
   }
 
   /**
@@ -320,7 +344,7 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
       .forEach(([lvl, levelArticles]) => {
         const niveauNode: TrunkHierarchyNode = {
           id: `niveau-${lvl}`,
-          name: `Niveau ${lvl}`,
+          name: this.getLevelDisplayName(lvl),
           type: 'niveau',
           level: 1,
           articlesCount: levelArticles.length,
@@ -530,19 +554,19 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   private applyFilterForNode(node: TrunkHierarchyNode): void {
     // Nouvelle hiérarchie: tronc > niveau > univers > famille > sous-famille
     if (node.type === 'niveau') {
-      const lvl = this.parseLevelFromNodeName(node.name);
+      const lvl = this.getLevelFromNode(node);
       this.currentFilter = { level: lvl || undefined, univers: undefined, famille: undefined, sousFamille: undefined };
     } else if (node.type === 'rayon') { // univers
       const parentLevelNode = this.findParentLevelForUnivers(node);
-      const lvl = parentLevelNode ? this.parseLevelFromNodeName(parentLevelNode.name) : null;
+      const lvl = parentLevelNode ? this.getLevelFromNode(parentLevelNode) : null;
       this.currentFilter = { level: lvl || undefined, univers: node.name, famille: undefined, sousFamille: undefined };
     } else if (node.type === 'famille') {
       const parents = this.findParentPathForFamily(node);
-      const lvl = parents.levelNode ? this.parseLevelFromNodeName(parents.levelNode.name) : null;
+      const lvl = parents.levelNode ? this.getLevelFromNode(parents.levelNode) : null;
       this.currentFilter = { level: lvl || undefined, univers: parents.universNode?.name || undefined, famille: node.name, sousFamille: undefined };
     } else if (node.type === 'sous-famille') {
       const parents = this.findParentPathForSubFamily(node);
-      const lvl = parents.levelNode ? this.parseLevelFromNodeName(parents.levelNode.name) : null;
+      const lvl = parents.levelNode ? this.getLevelFromNode(parents.levelNode) : null;
       this.currentFilter = { level: lvl || undefined, univers: parents.universNode?.name || undefined, famille: parents.familleNode?.name || '', sousFamille: node.name };
     } else {
       this.currentFilter = null;
@@ -656,6 +680,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
       });
     }
 
+    this.pageIndex = 0;
+    this.updatePagedArticles();
     this.updateSelectAllState();
   }
 
@@ -679,6 +705,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
       // Si pas de recherche, appliquer seulement le filtre hiérarchique
       this.applyCurrentFilter();
     }
+    this.pageIndex = 0;
+    this.updatePagedArticles();
     this.updateSelectAllState();
   }
 
@@ -720,6 +748,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
         (a.sousFamille || '').toLowerCase().includes(term)
       );
     }
+    this.pageIndex = 0;
+    this.updatePagedArticles();
     this.updateSelectAllState();
   }
 
@@ -836,13 +866,11 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
     this.selectAll = selectAll;
     
     if (selectAll) {
-      // Sélectionner tous les articles visibles
-      this.filteredArticles.forEach(article => {
+      this.getVisibleArticles().forEach(article => {
         this.selectedArticles.add(article.code);
       });
     } else {
-      // Désélectionner tous les articles visibles
-      this.filteredArticles.forEach(article => {
+      this.getVisibleArticles().forEach(article => {
         this.selectedArticles.delete(article.code);
       });
     }
@@ -858,7 +886,7 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
    * Met à jour l'état du checkbox "Tout sélectionner"
    */
   private updateSelectAllState(): void {
-    const visibleArticleCodes = this.filteredArticles.map(article => article.code);
+    const visibleArticleCodes = this.getVisibleArticles().map(article => article.code);
     const selectedVisibleArticles = visibleArticleCodes.filter(code => this.selectedArticles.has(code));
     
     this.selectAll = selectedVisibleArticles.length === visibleArticleCodes.length && visibleArticleCodes.length > 0;
@@ -868,15 +896,14 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
    * Retourne le nombre d'articles sélectionnés
    */
   getSelectedCount(): number {
-    // Parité avec bulk: compter seulement les visibles sélectionnés
-    return this.filteredArticles.filter(a => this.selectedArticles.has(a.code)).length;
+    return this.getVisibleArticles().filter(a => this.selectedArticles.has(a.code)).length;
   }
 
   /**
    * Obtient les articles sélectionnés
    */
   getSelectedArticles(): Article[] {
-    return this.filteredArticles.filter(article => this.selectedArticles.has(article.code));
+    return this.getVisibleArticles().filter(article => this.selectedArticles.has(article.code));
   }
 
   /**
@@ -944,6 +971,8 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
   resetFilter(): void {
     this.currentFilter = null;
     this.filteredArticles = [...this.allArticles];
+    this.pageIndex = 0;
+    this.updatePagedArticles();
     this.selectedNode = null;
     this.selectedNodeIds = [];
   }
@@ -1001,7 +1030,7 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
       case 'rayon':
         return this.getSelectedCountForUnivers(node.name);
       case 'niveau': {
-        const lvl = this.parseLevelFromNodeName(node.name);
+        const lvl = this.getLevelFromNode(node);
         if (!lvl) return 0;
         const articlesAtLevel = this.allArticles.filter(a => a.level === lvl);
         return articlesAtLevel.filter(a => this.selectedArticles.has(a.code)).length;
@@ -1011,9 +1040,13 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
     }
   }
 
-  private parseLevelFromNodeName(name: string): number | null {
-    const match = /Niveau\s+(\d+)/i.exec(name);
-    return match ? parseInt(match[1], 10) : null;
+  private getLevelFromNode(node: TrunkHierarchyNode | null): number | null {
+    if (!node) return null;
+    if (node.type !== 'niveau') return null;
+    const byId = /^niveau-(\d+)/i.exec(node.id);
+    if (byId) return parseInt(byId[1], 10);
+    const byName = /Niveau\s+(\d+)/i.exec(node.name);
+    return byName ? parseInt(byName[1], 10) : null;
   }
 
   /**
@@ -1059,7 +1092,14 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
             this.updateFilteredArticles();
             this.articlesService.updateAttributesForArticles(articleCodes, selectedCodes!)
               .pipe(takeUntil(this.destroy$))
-              .subscribe(() => {});
+              .subscribe({
+                next: () => {
+                  this.snackBar.open('Exceptions ajoutées et enregistrées', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+                },
+                error: () => {
+                  this.snackBar.open("Échec de l'enregistrement des exceptions", 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+                }
+              });
           }
         });
       }
@@ -1112,7 +1152,14 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
             this.updateFilteredArticles();
             this.articlesService.removeAttributesForArticles(articleCodes, deleteCodes!)
               .pipe(takeUntil(this.destroy$))
-              .subscribe(() => {});
+              .subscribe({
+                next: () => {
+                  this.snackBar.open('Exceptions supprimées et enregistrées', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+                },
+                error: () => {
+                  this.snackBar.open("Échec de la suppression des exceptions", 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+                }
+              });
           }
         });
       }
@@ -1134,7 +1181,14 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
             this.updateFilteredArticles();
             this.articlesService.removeAllAttributesForArticles(articleCodes)
               .pipe(takeUntil(this.destroy$))
-              .subscribe(() => {});
+              .subscribe({
+                next: () => {
+                  this.snackBar.open('Toutes les exceptions ont été supprimées et enregistrées', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+                },
+                error: () => {
+                  this.snackBar.open("Échec de la suppression des exceptions", 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+                }
+              });
           }
         });
       }
@@ -1282,5 +1336,44 @@ export class TrunkControlComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/dashboard']);
+  }
+  
+  private updatePagedArticles(): void {
+    const start = this.pageIndex * this.pageSize;
+    const end = start + this.pageSize;
+    this.pagedArticles = this.filteredArticles.slice(start, end);
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updatePagedArticles();
+    this.updateSelectAllState();
+  }
+
+  private getVisibleArticles(): Article[] {
+    return this.pagedArticles.length ? this.pagedArticles : this.filteredArticles;
+  }
+
+  formatDateStrFR(value: any): string {
+    if (!value) return '-';
+    if (value instanceof Date) {
+      const d = value as Date;
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+    const s = String(value);
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+    const isoMatch = /^\d{4}-\d{2}-\d{2}/.test(s) || /^\d{4}\/\d{2}\/\d{2}/.test(s);
+    const date = isoMatch ? new Date(s) : new Date(Date.parse(s));
+    if (!isNaN(date.getTime())) {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+    return s;
   }
 }

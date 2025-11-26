@@ -20,7 +20,10 @@
       "trunkId": "4",
       "trunk_id": "5",
       "trunk_level": 3,
-      "level": 3
+      "level": 3,
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0003",
@@ -57,7 +60,10 @@
       "sousFamille": "Cave à vin",
       "trunk_id": "4",
       "trunk_level": 3,
-      "level": 3
+      "level": 3,
+      "attributes": [
+        "RETRAIT_1H"
+      ]
     },
     {
       "code": "ART0007",
@@ -88,7 +94,10 @@
       "univers": "Électroménager",
       "famille": "Cuisson",
       "sousFamille": "Micro-ondes",
-      "trunk_id": "4"
+      "trunk_id": "4",
+      "attributes": [
+        "CUISINE_PRO"
+      ]
     },
     {
       "code": "ART0010",
@@ -346,9 +355,6 @@
       "trunkId": "4",
       "trunk_id": "5",
       "trunk_level": 2,
-      "attributes": [
-        "EXPERTISE_CINEMA"
-      ],
       "level": 2
     },
     {

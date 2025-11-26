@@ -6,6 +6,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MaterialModule } from '../../shared/material-module';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
+import { AssortmentDialogComponent } from './assortment-dialog.component';
 
 export interface Article {
   id: string;
@@ -92,7 +94,7 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
 
   viewMode: 'table' | 'list' = 'table';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     // Définir les colonnes selon le contexte
@@ -326,8 +328,12 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   }
 
   openAssortiment(article: Article): void {
-    console.log('Ouverture assortiment pour:', article.reference);
-    // TODO: Implémenter l'ouverture du module assortiment
+    this.dialog.open(AssortmentDialogComponent, {
+      data: { article },
+      width: 'min(1000px, 95vw)',
+      maxWidth: '95vw',
+      maxHeight: '92vh'
+    });
   }
 
   openReassort(article: Article): void {

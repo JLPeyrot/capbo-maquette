@@ -70,6 +70,7 @@ export class EnrichmentAssortmentComponent {
   private isAutoFillingLogistics: boolean = false;
   selectedArticleName: string = '';
   selectedArticlePurchasePrice: number | null = null;
+  isConsultation: boolean = true;
   
   // Propriétés pour suivre les valeurs précédentes
   previousAssortmentType: string = '';
@@ -86,6 +87,12 @@ export class EnrichmentAssortmentComponent {
     { value: 'permanent', label: 'Permanent' },
     { value: 'promotional', label: 'Promotionnel' },
     { value: 'catalog', label: 'Catalogue' }
+  ];
+
+  deploymentPerimeterOptions = [
+    { value: 'ferme', label: 'Fermé' },
+    { value: 'mixte', label: 'Mixte' },
+    { value: 'ouvert', label: 'Ouvert' }
   ];
 
   salePricingPolicies = [
@@ -153,6 +160,7 @@ export class EnrichmentAssortmentComponent {
 
   constructor(private fb: FormBuilder, private dialog: MatDialog, private router: Router, private snackBar: MatSnackBar) {
     this.enrichmentForm = this.createForm();
+    this.enrichmentForm.disable({ emitEvent: false });
     this.setupFormValidation();
     
     const navState: any = window.history.state || {};
@@ -162,6 +170,11 @@ export class EnrichmentAssortmentComponent {
     if (navState && typeof navState.purchasePrice !== 'undefined') {
       const num = Number(navState.purchasePrice);
       this.selectedArticlePurchasePrice = Number.isFinite(num) ? num : null;
+    }
+
+    if (navState && navState.articleId) {
+      this.isConsultation = false;
+      this.enrichmentForm.enable({ emitEvent: false });
     }
 
     const purchaseCtrl = this.enrichmentForm.get('purchasePrice');
@@ -194,6 +207,7 @@ export class EnrichmentAssortmentComponent {
       assortmentSubType: ['', Validators.required],
       startDate: ['', Validators.required],
       endDate: [''],
+      deploymentPerimeter: ['mixte', Validators.required],
       
 
       // Logistique
@@ -585,6 +599,36 @@ export class EnrichmentAssortmentComponent {
       return +price.toFixed(2);
     }
     return null;
+  }
+
+  getSubTypeLabel(code: string): string {
+    const found = this.assortmentSubTypes.find(s => s.value === code);
+    return found ? found.label : code;
+  }
+
+  getPerimeterLabel(code: string): string {
+    const found = this.deploymentPerimeterOptions.find(p => p.value === code);
+    return found ? found.label : code;
+  }
+
+  getSalePolicyLabel(code: string): string {
+    const found = this.salePricingPolicies.find(p => p.value === code);
+    return found ? found.label : code;
+  }
+
+  getReassortModeLabel(code: string): string {
+    const found = this.reassortModes.find(m => m.value === code);
+    return found ? found.label : code;
+  }
+
+  getSupplierNameById(id: number): string {
+    const s = this.suppliers.find(x => x.id === id);
+    return s ? `${s.name} (${s.code})` : `${id}`;
+  }
+
+  getSuppliersNamesByIds(ids: number[]): string {
+    const list = (ids || []).map(id => this.getSupplierNameById(id));
+    return list.join(', ');
   }
 
   getPriorityOptions(level: 1 | 2 | 3) {

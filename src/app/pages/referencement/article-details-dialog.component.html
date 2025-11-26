@@ -1,0 +1,155 @@
+<h2 mat-dialog-title>
+  <mat-icon color="primary">inventory_2</mat-icon>
+  Article {{ data.code }}
+</h2>
+<mat-dialog-content class="dialog-body">
+  <mat-tab-group>
+    <mat-tab label="Détails">
+      <div class="tab-panel">
+        <div class="detail-grid">
+          <div class="field two-col">
+            <div class="item">
+              <div class="label">Code fournisseur</div>
+              <div class="value">{{ data.supplierCode || '—' }}</div>
+            </div>
+            <div class="item">
+              <div class="label">Code interne</div>
+              <div class="value">{{ data.internalCode || data.code }}</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">Désignation courte</div>
+            <div class="value">{{ data.designationShort || data.designation }}</div>
+          </div>
+          <div class="field">
+            <div class="label">Désignation longue</div>
+            <div class="value">{{ data.designationLong || data.designation }}</div>
+          </div>
+          <div class="field">
+            <div class="label">Rayon / Famille / Sous-famille</div>
+            <div class="value">{{ (data.rayon || '—') + ' / ' + (data.famille || '—') + ' / ' + (data.sousFamille || '—') }}</div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab label="Achat">
+      <div class="tab-panel">
+        <div class="detail-grid">
+          <div class="field">
+            <div class="label">Fournisseur principal</div>
+            <div class="value">{{ data.supplierPrincipal || '—' }}</div>
+          </div>
+          <div class="field">
+            <div class="label">Référence fournisseur</div>
+            <div class="value">{{ data.supplierRef || '—' }}</div>
+          </div>
+          <div class="field two-col">
+            <div class="item">
+              <div class="label">Prix d’achat HT</div>
+              <div class="value">{{ (data.purchasePriceHT ?? 0) | number:'1.2-2' }} €</div>
+            </div>
+            <div class="item">
+              <div class="label">Délais de livraison</div>
+              <div class="value">{{ data.deliveryLeadDays ?? '—' }} j</div>
+            </div>
+          </div>
+          <div class="field two-col">
+            <div class="item">
+              <div class="label">MOQ</div>
+              <div class="value">{{ data.moq ?? '—' }}</div>
+            </div>
+            <div class="item">
+              <div class="label">Conditionnement fournisseur</div>
+              <div class="value">{{ data.supplierPackaging || '—' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab label="Vente">
+      <div class="tab-panel">
+        <div class="detail-grid">
+          <div class="field two-col">
+            <div class="item">
+              <div class="label">Prix de vente TTC</div>
+              <div class="value">{{ (data.salePriceTTC ?? 0) | number:'1.2-2' }} €</div>
+            </div>
+            <div class="item">
+              <div class="label">Marge</div>
+              <div class="value">{{ (data.marginPercent ?? 0) | number:'1.1-1' }} %</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">Catégorie / Famille</div>
+            <div class="value">{{ (data.category || '—') + ' / ' + (data.famille || '—') }}</div>
+          </div>
+          <div class="field two-col">
+            <div class="item">
+              <div class="label">Statut</div>
+              <div class="value">{{ data.activeStatus || '—' }}</div>
+            </div>
+            <div class="item">
+              <div class="label">Unité de vente</div>
+              <div class="value">{{ data.unitSale || 'Pièce' }}</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">Remises applicables</div>
+            <div class="value">{{ data.discounts || '—' }}</div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab label="Logistique">
+      <div class="tab-panel">
+        <div class="detail-grid">
+          <div class="field two-col">
+            <div class="item">
+              <div class="label">Stock disponible</div>
+              <div class="value">{{ data.stockAvailable ?? 0 }}</div>
+            </div>
+            <div class="item">
+              <div class="label">Stock minimum</div>
+              <div class="value">{{ data.stockMinimum ?? 0 }}</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">Localisation</div>
+            <div class="value">{{ data.location || '—' }}</div>
+          </div>
+          <div class="field two-col">
+            <div class="item">
+              <div class="label">Poids</div>
+              <div class="value">{{ (data.weightKg ?? null) !== null ? (data.weightKg | number:'1.2-2') + ' kg' : '—' }}</div>
+            </div>
+            <div class="item">
+              <div class="label">Volume</div>
+              <div class="value">{{ (data.volumeL ?? null) !== null ? (data.volumeL | number:'1.2-2') + ' L' : '—' }}</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">Dimensions</div>
+            <div class="value">{{ data.dimensions || '—' }}</div>
+          </div>
+          <div class="field two-col">
+            <div class="item">
+              <div class="label">Gestion de lot</div>
+              <div class="value">{{ data.lotManagement || '—' }}</div>
+            </div>
+            <div class="item">
+              <div class="label">Code-barres</div>
+              <div class="value">{{ data.barcode || '—' }}</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="label">Fournisseur secondaire</div>
+            <div class="value">{{ data.secondarySupplier || '—' }}</div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-stroked-button mat-dialog-close>Fermer</button>
+</mat-dialog-actions>

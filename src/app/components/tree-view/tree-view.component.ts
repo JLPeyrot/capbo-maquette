@@ -121,6 +121,14 @@ export class TreeViewComponent implements OnInit {
     return classes.join(' ');
   }
 
+  getLevelNumber(node: TrunkHierarchyNode): number | null {
+    if (node.type !== 'niveau') return null;
+    const byId = /^niveau-(\d+)/i.exec(node.id);
+    if (byId) return parseInt(byId[1], 10);
+    const byName = /Niveau\s+(\d+)/i.exec(node.name);
+    return byName ? parseInt(byName[1], 10) : null;
+  }
+
   getIndentStyle(level: number): { [key: string]: string } {
     return {
       'padding-left': `${level * 20}px`

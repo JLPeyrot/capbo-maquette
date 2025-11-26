@@ -89,6 +89,20 @@
       "groups": [],
       "attributes": [],
       "enseigne": "electrodepot"
+    },
+    {
+      "id": "7",
+      "type": "complementaire",
+      "name": "TAC cuisine",
+      "status": "brouillon",
+      "storesCount": 40,
+      "createdDate": "2025-11-21T14:35:33.164Z",
+      "lastModified": "2025-11-21T14:35:33.164Z",
+      "groups": [],
+      "attributes": [
+        "CUISINE_PRO"
+      ],
+      "enseigne": "boulanger"
     }
   ]
 }

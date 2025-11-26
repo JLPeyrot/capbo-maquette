@@ -2,9 +2,12 @@ import { Component, OnInit, ViewChild, TemplateRef, Input } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../shared/material-module';
+import { TextboxList1Component } from '../../components/textbox-list1/textbox-list1.component';
+import { TextboxList2Component } from '../../components/textbox-list2/textbox-list2.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
+import { ArticleDetailsDialogComponent } from './article-details-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ReferencementSelectionService, SelectedArticleSummary } from './referencement-selection.service';
@@ -46,7 +49,7 @@ interface PrerefArticle {
 @Component({
   selector: 'app-referencement',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, MatCheckboxModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, MaterialModule, MatCheckboxModule, HttpClientModule, TextboxList1Component, TextboxList2Component],
   templateUrl: './referencement.component.html',
   styleUrls: ['./referencement.component.scss']
 })
@@ -57,18 +60,35 @@ export class ReferencementComponent implements OnInit {
   articles: SupplierArticle[] = [];
   filtered: SupplierArticle[] = [];
   selectedIds = new Set<string>();
+  selectedRightIds = new Set<string>();
+  movedIdsRight = new Set<string>();
+  assignedIds = new Set<string>();
+
+  merchTree: Record<string, string[]> = {};
+  familiesByUnivers: Record<string, string[]> = {};
+  merchTreeUnivers: string[] = [];
+  selectedMerchNodeLeft?: { univers: string; famille?: string; sousFamille?: string };
+  selectedMerchNodeRight?: { univers: string; famille?: string; sousFamille?: string };
+  expandedUniversLeft = new Set<string>();
+  expandedFamiliesLeft = new Set<string>();
+  expandedUniversRight = new Set<string>();
+  expandedFamiliesRight = new Set<string>();
 
   // Filtres basiques
   search = '';
   fournisseurOptions: string[] = [];
   selectedFournisseur = '';
+  vendable = false;
+  commandable = false;
 
   // Pagination
-  pageSize = 20;
-  currentPage = 0;
+  pageSizeLeft = 30;
+  pageSizeRight = 30;
+  currentPageLeft = 0;
+  currentPageRight = 0;
 
   // Colonnes
-  displayed: string[] = ['select','reference','designation','fournisseur','marque','prixAchat'];
+  displayed: string[] = ['select','reference','designation','fournisseur','marque','prixAchat','prixVente','statut','actions'];
 
   // CRUD state
   showAddForm = false;
@@ -79,6 +99,71 @@ export class ReferencementComponent implements OnInit {
   editPrixVente: number = 0;
   editPrixAchat: number = 0;
   editStatut = '';
+
+  listItemsLeft: { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé'; enseignes?: string[] }[] = [];
+  listItemsRight: { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé'; enseignes?: string[] }[] = [];
+  private listItemsRightSource: { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé'; enseignes?: string[] }[] = [];
+  private rightNodeLists: Record<string, { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé'; enseignes?: string[] }[]> = {};
+
+  private getRightNodeKey(univers?: string, famille?: string, sousFamille?: string): string {
+    return [univers || '', famille || '', sousFamille || ''].join('|');
+  }
+
+  private seedRightListFor(label: string): { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé'; enseignes?: string[] }[] {
+    const slug = String(label || 'Article').replace(/[^A-Za-z0-9]/g, '').toUpperCase() || 'GEN';
+    const out: { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé'; enseignes?: string[] }[] = [];
+    for (let i = 1; i <= 5; i++) {
+      const seq = String(i).padStart(3, '0');
+      out.push({ id: `SEED-${slug}-${seq}`, code: `${slug}-${seq}`, designation: `${label} ${seq}`, state: 'référencé', enseignes: this.randomEnseignes() });
+    }
+    return out;
+  }
+
+  private randomEnseignes(): string[] {
+    const r = Math.floor(Math.random() * 3);
+    if (r === 0) return ['Boulanger'];
+    if (r === 1) return ['Electrodépot'];
+    return ['Boulanger','Electrodépot'];
+  }
+
+  private seedRightListForNode(univers?: string, famille?: string, sousFamille?: string): { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé'; enseignes?: string[] }[] {
+    if (sousFamille) {
+      return this.seedRightListFor(String(sousFamille));
+    }
+    if (famille) {
+      const sous = this.merchTree[famille] || [];
+      if (sous.length) {
+        return sous.flatMap(sf => this.seedRightListFor(String(sf)));
+      }
+      return this.seedRightListFor(String(famille));
+    }
+    if (univers) {
+      const fams = this.familiesByUnivers[univers] || [];
+      const sousAll = fams.flatMap(f => this.merchTree[f] || []);
+      if (sousAll.length) {
+        return sousAll.flatMap(sf => this.seedRightListFor(String(sf)));
+      }
+      return this.seedRightListFor(String(univers));
+    }
+    return this.seedRightListFor('Article');
+  }
+
+  getEnseigneTags(it: { enseignes?: string[] }): string[] {
+    const map: Record<string, string> = { 'Boulanger': 'BL', 'Electrodépot': 'ED' };
+    const tags = (it.enseignes || []).map(e => map[e]).filter(t => !!t);
+    return Array.from(new Set(tags));
+  }
+  leftFilterText: string = '';
+  rightFilterText: string = '';
+
+  // Sélection de l'enseigne cible
+  targetEnseigneOptions: string[] = ['Boulanger','Electrodépot'];
+  selectedTargetEnseignes: string[] = [];
+
+  // Panneau gauche: ajout fournisseurs
+  showAddSupplierLeft = false;
+  leftSuppliers: string[] = [];
+  suppliersExpandedLeft = new Set<string>();
 
   // Add form
   newArticle: PrerefArticle = {
@@ -192,6 +277,8 @@ export class ReferencementComponent implements OnInit {
   };
 
   @ViewChild('selectionInfoDialog') selectionInfoDialog!: TemplateRef<any>;
+  @ViewChild('enregistrerConfirmDialog') enregistrerConfirmDialog!: TemplateRef<any>;
+  @ViewChild('targetEnseigneDialog') targetEnseigneDialog!: TemplateRef<any>;
 
   constructor(
     private http: HttpClient,
@@ -203,11 +290,13 @@ export class ReferencementComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.buildMerchTree();
     if (this.supplierOnly) {
       this.showSupplierForm = true;
       this.showArticleForm = false;
       return;
     }
+    // liste centrale alimentée après chargement
     let pendingFournisseur = '';
     this.route.queryParamMap.subscribe(params => {
       const f = params.get('fournisseur');
@@ -216,9 +305,212 @@ export class ReferencementComponent implements OnInit {
     this.loadSupplierCatalog(() => {
       if (pendingFournisseur) {
         this.selectedFournisseur = pendingFournisseur;
-        this.applyFilters();
       }
+      this.applyFilters();
+      // Ne pas pré-remplir les listes au chargement
     });
+  }
+
+  get availableLeftSuppliers(): string[] {
+    return this.fournisseurOptions.filter(opt => !this.leftSuppliers.includes(opt));
+  }
+
+  addLeftSupplier(name: string): void {
+    if (!name) { this.showAddSupplierLeft = false; return; }
+    if (name === '__ALL__') {
+      const toAdd = this.availableLeftSuppliers;
+      for (const s of toAdd) {
+        if (!this.leftSuppliers.includes(s)) {
+          this.leftSuppliers.push(s);
+          this.suppliersExpandedLeft.add(s);
+        }
+      }
+      this.showAddSupplierLeft = false;
+      return;
+    }
+    if (!this.leftSuppliers.includes(name)) {
+      this.leftSuppliers.push(name);
+      this.suppliersExpandedLeft.add(name);
+    }
+    this.showAddSupplierLeft = false;
+  }
+
+  toggleSupplierLeft(name: string): void {
+    if (this.suppliersExpandedLeft.has(name)) this.suppliersExpandedLeft.delete(name);
+    else this.suppliersExpandedLeft.add(name);
+  }
+
+  private buildListItemsFor(side: 'left' | 'right', univers?: string, famille?: string, sousFamille?: string): void {
+    const term = (side === 'left' ? this.leftFilterText : this.rightFilterText).trim().toLowerCase();
+
+    if (side === 'right') {
+      const key = this.getRightNodeKey(univers, famille, sousFamille);
+      if (!this.rightNodeLists[key]) {
+        this.rightNodeLists[key] = this.seedRightListForNode(univers, famille, sousFamille);
+      }
+      this.listItemsRightSource = this.rightNodeLists[key].slice();
+      const filtered = term
+        ? this.listItemsRightSource.filter(it => it.designation.toLowerCase().includes(term) || it.code.toLowerCase().includes(term))
+        : this.listItemsRightSource;
+      this.listItemsRight = filtered;
+      return;
+    }
+
+    // ====== côté gauche inchangé ======
+    let srcList = this.filtered.filter(a => !this.assignedIds.has(a.id));
+    if (term) {
+      srcList = srcList.filter(a => a.designation.toLowerCase().includes(term) || a.reference.toLowerCase().includes(term));
+    }
+    if (sousFamille) {
+      srcList = srcList.filter(a => a.sousFamille === sousFamille);
+    } else if (famille) {
+      srcList = srcList.filter(a => a.famille === famille);
+    } else if (univers) {
+      srcList = srcList.filter(a => a.famille === univers || a.sousFamille === univers);
+    } else {
+      if (term) {
+        const outNoContext: { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé' }[] = [];
+        const capNoContext = 60;
+        for (let i = 0; i < Math.min(capNoContext, srcList.length); i++) {
+          const src = srcList[i];
+          outNoContext.push({ id: src.id, code: `FOURN-${String(i + 1).padStart(4, '0')}`, designation: src.designation, state: 'brouillon' });
+        }
+        this.listItemsLeft = outNoContext;
+        return;
+      }
+      this.listItemsLeft = [];
+      return;
+    }
+    const out: { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé' }[] = [];
+    const isFamilyOrSous = !!famille || !!sousFamille;
+    if (isFamilyOrSous) {
+      const targetSous: string[] = sousFamille ? [sousFamille] : (this.merchTree[famille || ''] || Array.from(new Set(srcList.map(a => a.sousFamille))));
+      for (const sous of targetSous) {
+        const group = srcList.filter(a => a.sousFamille === sous);
+        const count = 3 + Math.floor(Math.random() * 5);
+        for (let i = 0; i < count; i++) {
+          const seq = String(i + 1).padStart(3, '0');
+          if (i < group.length) {
+            const src = group[i];
+            out.push({ id: src.id, code: `FOURN-${String(out.length + 1).padStart(4, '0')}`, designation: `${sous} ${seq}`, state: 'brouillon' });
+          } else {
+            const slug = String(sous || 'GEN').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+            out.push({ id: `GEN-LEFT-${slug}-${seq}`, code: `FOURN-${String(out.length + 1).padStart(4, '0')}`, designation: `${sous || 'Article'} ${seq}`, state: 'brouillon' });
+          }
+        }
+      }
+    } else {
+      const cap = 60;
+      for (let i = 0; i < Math.min(cap, srcList.length); i++) {
+        const src = srcList[i];
+        out.push({ id: src.id, code: `FOURN-${String(out.length + 1).padStart(4, '0')}`, designation: src.designation, state: 'brouillon' });
+      }
+    }
+    if (term) {
+      const t = term;
+      const filteredOut = out.filter(it => it.designation.toLowerCase().includes(t) || it.code.toLowerCase().includes(t));
+      this.listItemsLeft = filteredOut;
+      return;
+    }
+    if (univers || famille || sousFamille) {
+      const ctx = String(sousFamille || famille || univers || 'Article');
+      const slug = ctx.replace(/[^A-Za-z0-9]/g, '').toUpperCase() || 'GEN';
+      const minCount = 100;
+      let i = out.length;
+      while (i < minCount) {
+        const seq = String(i + 1).padStart(3, '0');
+        out.push({ id: `GEN-LEFT-${slug}-${seq}`, code: `FOURN-${String(i + 1).padStart(4, '0')}`, designation: `${ctx} ${seq}`, state: 'brouillon' });
+        i++;
+      }
+    }
+    this.listItemsLeft = out;
+  }
+
+  onFilterLeftChange(val: string): void {
+    this.leftFilterText = val;
+    this.currentPageLeft = 0;
+    const sel = this.selectedMerchNodeLeft;
+    this.buildListItemsFor('left', sel?.univers, sel?.famille, sel?.sousFamille);
+  }
+
+  onFilterRightChange(val: string): void {
+    this.rightFilterText = val;
+    this.currentPageRight = 0;
+    const sel = this.selectedMerchNodeRight;
+    this.buildListItemsFor('right', sel?.univers, sel?.famille, sel?.sousFamille);
+  }
+
+  private buildMerchTree(): void {
+    this.http.get<{ familles: { univers: string; familles: { code: string; libelle: string; sousFamilles: string[] }[] }[] }>(`/data/familles.json`)
+      .subscribe(json => {
+        const universBlocks = Array.isArray(json?.familles) ? json.familles : [];
+        const universNames: string[] = [];
+        const familiesByUnivers: Record<string, string[]> = {};
+        const sousByFamily: Record<string, string[]> = {};
+
+        for (const block of universBlocks) {
+          const universName = String(block.univers);
+          universNames.push(universName);
+          const fams = Array.isArray(block.familles) ? block.familles : [];
+          const famNames: string[] = [];
+          for (const f of fams) {
+            const famName = String(f.libelle);
+            famNames.push(famName);
+            const sous = Array.isArray(f.sousFamilles) ? f.sousFamilles.slice() : [];
+            sousByFamily[famName] = sous;
+          }
+          familiesByUnivers[universName] = famNames.sort((a, b) => a.localeCompare(b));
+        }
+
+        const uniqUnivers = Array.from(new Set(universNames)).sort((a, b) => a.localeCompare(b));
+        this.merchTreeUnivers = uniqUnivers;
+        this.familiesByUnivers = familiesByUnivers;
+        this.merchTree = sousByFamily;
+      });
+  }
+
+  isUniversExpandedLeft(univers: string): boolean { return this.expandedUniversLeft.has(univers); }
+  isUniversExpandedRight(univers: string): boolean { return this.expandedUniversRight.has(univers); }
+  isFamilyExpandedLeft(famille: string): boolean { return this.expandedFamiliesLeft.has(famille); }
+  isFamilyExpandedRight(famille: string): boolean { return this.expandedFamiliesRight.has(famille); }
+
+  toggleUniversLeft(univers: string, event?: MouseEvent): void {
+    if (event) { event.stopPropagation(); }
+    if (this.expandedUniversLeft.has(univers)) this.expandedUniversLeft.delete(univers);
+    else this.expandedUniversLeft.add(univers);
+  }
+
+  toggleUniversRight(univers: string, event?: MouseEvent): void {
+    if (event) { event.stopPropagation(); }
+    if (this.expandedUniversRight.has(univers)) this.expandedUniversRight.delete(univers);
+    else this.expandedUniversRight.add(univers);
+  }
+
+  toggleFamilyLeft(famille: string, event?: MouseEvent): void {
+    if (event) { event.stopPropagation(); }
+    if (this.expandedFamiliesLeft.has(famille)) this.expandedFamiliesLeft.delete(famille);
+    else this.expandedFamiliesLeft.add(famille);
+  }
+
+  toggleFamilyRight(famille: string, event?: MouseEvent): void {
+    if (event) { event.stopPropagation(); }
+    if (this.expandedFamiliesRight.has(famille)) this.expandedFamiliesRight.delete(famille);
+    else this.expandedFamiliesRight.add(famille);
+  }
+
+  onSelectMerchNodeLeft(univers: string, famille?: string, sousFamille?: string): void {
+    this.selectedMerchNodeLeft = { univers, famille, sousFamille };
+    this.buildListItemsFor('left', univers, famille, sousFamille);
+  }
+
+  onSelectMerchNodeRight(univers: string, famille?: string, sousFamille?: string): void {
+    this.selectedMerchNodeRight = { univers, famille, sousFamille };
+    this.buildListItemsFor('right', univers, famille, sousFamille);
+  }
+
+  private updateExcelForSelection(univers?: string, famille?: string, sousFamille?: string): void {
+    this.buildListItemsFor('left', univers, famille, sousFamille);
+    this.buildListItemsFor('right', univers, famille, sousFamille);
   }
 
   private loadSupplierCatalog(after?: () => void): void {
@@ -268,46 +560,119 @@ export class ReferencementComponent implements OnInit {
         a.designation.toLowerCase().includes(term) ||
         a.codeEan.toLowerCase().includes(term);
       const matchesFournisseur = !this.selectedFournisseur || a.fournisseurPrincipal === this.selectedFournisseur;
-      return matchesSearch && matchesFournisseur;
+      const matchesVendable = !this.vendable || a.statut === 'Actif';
+      const matchesCommandable = !this.commandable || a.stockMinimum > 0;
+      return matchesSearch && matchesFournisseur && matchesVendable && matchesCommandable;
     });
-    this.currentPage = 0;
+    this.currentPageLeft = 0;
+    this.currentPageRight = 0;
+    if (this.selectedMerchNodeLeft) {
+      this.buildListItemsFor('left', this.selectedMerchNodeLeft.univers, this.selectedMerchNodeLeft.famille, this.selectedMerchNodeLeft.sousFamille);
+    } else { this.listItemsLeft = []; }
+    if (this.selectedMerchNodeRight) {
+      this.buildListItemsFor('right', this.selectedMerchNodeRight.univers, this.selectedMerchNodeRight.famille, this.selectedMerchNodeRight.sousFamille);
+    } else { this.listItemsRight = []; }
   }
 
   resetFilters(): void {
     this.search = '';
     this.selectedFournisseur = '';
+    this.vendable = false;
+    this.commandable = false;
     this.applyFilters();
   }
 
-  get paged(): SupplierArticle[] {
-    const start = this.currentPage * this.pageSize;
-    return this.filtered.slice(start, start + this.pageSize);
+  
+
+  areAllPagedSelected(): boolean { return this.areAllPagedSelectedLeft(); }
+  areAllPagedSelectedLeft(): boolean {
+    const ids = this.listItemsLeft.map(it => it.id);
+    return ids.length > 0 && ids.every(id => this.selectedIds.has(id));
   }
 
-  areAllPagedSelected(): boolean {
-    const p = this.paged;
-    return p.length > 0 && p.every(a => this.selectedIds.has(a.id));
+  areSomePagedSelected(): boolean { return this.areSomePagedSelectedLeft(); }
+  areSomePagedSelectedLeft(): boolean {
+    const ids = this.listItemsLeft.map(it => it.id);
+    return ids.some(id => this.selectedIds.has(id)) && !this.areAllPagedSelectedLeft();
   }
 
-  areSomePagedSelected(): boolean {
-    const p = this.paged;
-    return p.some(a => this.selectedIds.has(a.id)) && !this.areAllPagedSelected();
+  areAllPagedSelectedRight(): boolean {
+    const start = this.currentPageRight * this.pageSizeRight;
+    const p = this.listItemsRight.slice(start, start + this.pageSizeRight).filter(a => this.movedIdsRight.has(a.id));
+    return p.length > 0 && p.every(a => this.selectedRightIds.has(a.id));
   }
 
-  toggleAll(): void {
-    const p = this.paged;
-    const allSelected = this.areAllPagedSelected();
-    if (allSelected) {
-      p.forEach(a => this.selectedIds.delete(a.id));
-    } else {
-      p.forEach(a => this.selectedIds.add(a.id));
-    }
+  areSomePagedSelectedRight(): boolean {
+    const start = this.currentPageRight * this.pageSizeRight;
+    const p = this.listItemsRight.slice(start, start + this.pageSizeRight).filter(a => this.movedIdsRight.has(a.id));
+    return p.some(a => this.selectedRightIds.has(a.id)) && !this.areAllPagedSelectedRight();
   }
 
-  toggleSelection(article: SupplierArticle): void {
+  toggleAll(): void { this.toggleAllLeft(); }
+  toggleAllLeft(): void {
+    const ids = this.listItemsLeft.map(it => it.id);
+    const allSelected = ids.length > 0 && ids.every(id => this.selectedIds.has(id));
+    if (allSelected) { ids.forEach(id => this.selectedIds.delete(id)); }
+    else { ids.forEach(id => this.selectedIds.add(id)); }
+  }
+
+  toggleAllRight(): void {
+    const start = this.currentPageRight * this.pageSizeRight;
+    const ids = this.listItemsRight.slice(start, start + this.pageSizeRight).map(it => it.id).filter(id => this.movedIdsRight.has(id));
+    const allSelected = ids.length > 0 && ids.every(id => this.selectedRightIds.has(id));
+    if (allSelected) { ids.forEach(id => this.selectedRightIds.delete(id)); }
+    else { ids.forEach(id => this.selectedRightIds.add(id)); }
+  }
+
+  prevPageLeft(): void {
+    this.currentPageLeft = Math.max(0, this.currentPageLeft - 1);
+  }
+
+  nextPageLeft(): void {
+    const hasNext = (this.currentPageLeft + 1) * this.pageSizeLeft < this.listItemsLeft.length;
+    if (hasNext) this.currentPageLeft += 1;
+  }
+
+  firstPageLeft(): void {
+    this.currentPageLeft = 0;
+  }
+
+  lastPageLeft(): void {
+    const last = Math.max(0, Math.floor((this.listItemsLeft.length - 1) / this.pageSizeLeft));
+    this.currentPageLeft = last;
+  }
+
+  prevPageRight(): void {
+    this.currentPageRight = Math.max(0, this.currentPageRight - 1);
+  }
+
+  nextPageRight(): void {
+    const hasNext = (this.currentPageRight + 1) * this.pageSizeRight < this.listItemsRight.length;
+    if (hasNext) this.currentPageRight += 1;
+  }
+
+  firstPageRight(): void {
+    this.currentPageRight = 0;
+  }
+
+  lastPageRight(): void {
+    const last = Math.max(0, Math.floor((this.listItemsRight.length - 1) / this.pageSizeRight));
+    this.currentPageRight = last;
+  }
+
+  toggleSelection(article: { id: string } | SupplierArticle): void {
     if (this.selectedIds.has(article.id)) this.selectedIds.delete(article.id);
     else this.selectedIds.add(article.id);
   }
+
+  toggleSelectionRight(it: { id: string }): void {
+    if (!this.movedIdsRight.has(it.id)) return;
+    if (this.selectedRightIds.has(it.id)) this.selectedRightIds.delete(it.id);
+    else this.selectedRightIds.add(it.id);
+  }
+
+  isMovedRight(id: string): boolean { return this.movedIdsRight.has(id); }
+  isRightItemSelectable(id: string): boolean { return this.movedIdsRight.has(id); }
 
   onReferencerSelection(): void {
     const count = this.selectedIds.size;
@@ -315,6 +680,84 @@ export class ReferencementComponent implements OnInit {
     // Popup d'information
     this.dialog.open(this.selectionInfoDialog, { width: '420px' });
     // TODO: intégrer API de référencement si besoin
+  }
+
+  onEnregistrer(): void {
+    if (this.movedIdsRight.size === 0) return;
+    this.dialog.open(this.enregistrerConfirmDialog, { width: '420px' });
+  }
+
+  confirmEnregistrer(): void {
+    const ids = Array.from(this.movedIdsRight);
+    this.listItemsRight = this.listItemsRight.map(it => ids.includes(it.id) ? { ...it, state: 'référencé' as const } : it);
+    ids.forEach(id => this.selectedRightIds.delete(id));
+    this.movedIdsRight.clear();
+    this.snackBar.open(`${ids.length} article(s) enregistré(s)`, 'OK', { duration: 3000 });
+  }
+
+  viewDetails(it: { id: string; code: string; designation: string }): void {
+    const art = this.articles.find(a => a.id === it.id) || this.filtered.find(a => a.id === it.id);
+    const rayon = 'Cuisine';
+    const famille = 'Electromenager';
+    const sousFamille = 'Petit-Electromenager';
+    const randomPart = Math.random().toString(36).slice(2, 7).toUpperCase();
+    const supplierCode = `SUP-${randomPart}`;
+    const supplierRef = `${it.code}`;
+    const purchasePriceHT = art?.prixAchat ?? 0;
+    const deliveryLeadDays = 3 + Math.floor(Math.random() * 12);
+    const moq = 1 + Math.floor(Math.random() * 10);
+    const supplierPackaging = 'Carton de 12';
+    const salePriceTTC = art?.prixVente ?? 0;
+    const marginPercent = salePriceTTC > 0 ? ((salePriceTTC - purchasePriceHT) / salePriceTTC) * 100 : 0;
+    const activeStatus = (art?.statut || '').toLowerCase() === 'actif' ? 'Actif' : 'Inactif';
+    const unitSale = 'Pièce';
+    const discounts = '—';
+    const stockAvailable = art?.stock ?? 0;
+    const stockMinimum = art?.stockMinimum ?? 0;
+    const location = 'Magasin A / Entrepôt Central';
+    const weightKg: number | null = null;
+    const volumeL: number | null = null;
+    const dimensions = '—';
+    const lotManagement = 'Non';
+    const barcode = art?.codeEan || '';
+    const secondarySupplier = 'Fournisseur B';
+    this.dialog.open(ArticleDetailsDialogComponent, {
+      width: '1040px',
+      height: '460px',
+      data: {
+        id: it.id,
+        code: it.code,
+        designation: it.designation,
+        supplierCode,
+        internalCode: art?.reference || it.code,
+        designationShort: art?.designation || it.designation,
+        designationLong: art?.designation || it.designation,
+        rayon,
+        famille,
+        sousFamille,
+        supplierPrincipal: art?.fournisseurPrincipal || 'Fournisseur A',
+        supplierRef,
+        purchasePriceHT,
+        deliveryLeadDays,
+        moq,
+        supplierPackaging,
+        salePriceTTC,
+        marginPercent,
+        category: rayon,
+        activeStatus,
+        unitSale,
+        discounts,
+        stockAvailable,
+        stockMinimum,
+        location,
+        weightKg,
+        volumeL,
+        dimensions,
+        lotManagement,
+        barcode,
+        secondarySupplier
+      }
+    });
   }
 
   createSupplier(): void {
@@ -414,34 +857,63 @@ export class ReferencementComponent implements OnInit {
     };
   }
 
-  confirmReferencer(): void {
-    const ids = Array.from(this.selectedIds);
-    const summaries: SelectedArticleSummary[] = this.articles
-      .filter(a => ids.includes(a.id))
-      .map(a => ({
-        id: a.id,
-        reference: a.reference,
-        designation: a.designation,
-        fournisseur: a.fournisseurPrincipal,
-        marque: a.marque,
-        famille: a.famille,
-        prixAchat: a.prixAchat
-      }));
-
-    this.selectionService.setSelection(summaries);
+  openTargetEnseigneDialog(): void {
     this.dialog.closeAll();
-    this.router.navigateByUrl('/referencement/review');
+    this.selectedTargetEnseignes = [];
+    this.dialog.open(this.targetEnseigneDialog, { width: '420px' });
   }
 
-  // Pagination helpers
-  prevPage(): void {
-    this.currentPage = Math.max(0, this.currentPage - 1);
+  confirmTargetEnseigne(): void {
+    if (!this.selectedTargetEnseignes.length) {
+      this.snackBar.open("Veuillez sélectionner l'enseigne cible", 'Fermer', { duration: 3000 });
+      return;
+    }
+    this.confirmReferencer();
   }
 
-  nextPage(): void {
-    const hasNext = (this.currentPage + 1) * this.pageSize < this.filtered.length;
-    if (hasNext) this.currentPage += 1;
+  confirmReferencer(): void {
+    if (!this.selectedMerchNodeRight?.sousFamille) {
+      this.snackBar.open('Aucune sous-famille sélectionnée — référence en brouillon', 'OK', { duration: 3000 });
+    }
+    const ids = Array.from(this.selectedIds);
+    this.assignedIds = new Set([...this.assignedIds, ...ids]);
+    const movedFromLeft = this.listItemsLeft
+      .filter(it => ids.includes(it.id))
+      .map(it => ({ ...it, state: 'brouillon' as const, enseignes: (this.selectedTargetEnseignes.length ? [...this.selectedTargetEnseignes] : (it.enseignes || [])) }));
+
+    const key = this.getRightNodeKey(this.selectedMerchNodeRight?.univers, this.selectedMerchNodeRight?.famille, this.selectedMerchNodeRight?.sousFamille);
+    const existingList = this.rightNodeLists[key] || [];
+    const updatedExisting = existingList.map(it => ids.includes(it.id) ? { ...it, state: 'brouillon' as const, enseignes: (this.selectedTargetEnseignes.length ? [...this.selectedTargetEnseignes] : (it.enseignes || [])) } : it);
+
+    const combined = [...movedFromLeft, ...updatedExisting];
+    const seen = new Set<string>();
+    const deduped: { id: string; code: string; designation: string; state?: 'brouillon' | 'référencé'; enseignes?: string[] }[] = [];
+    for (const it of combined) {
+      if (!seen.has(it.id)) { seen.add(it.id); deduped.push(it); }
+    }
+    this.rightNodeLists[key] = deduped;
+    this.listItemsRightSource = deduped;
+    const term = (this.rightFilterText || '').trim().toLowerCase();
+    const filtered = term
+      ? deduped.filter(it => it.designation.toLowerCase().includes(term) || it.code.toLowerCase().includes(term))
+      : deduped;
+    this.listItemsRight = filtered;
+
+    // Retirer de la liste gauche
+    this.listItemsLeft = this.listItemsLeft.filter(it => !ids.includes(it.id));
+
+    // Marquer tous les référencés comme déplacés à droite pour surlignage
+    ids.forEach(id => this.movedIdsRight.add(id));
+
+    this.selectedIds.clear();
+    this.dialog.closeAll();
+    const ens = this.selectedTargetEnseignes.length ? ` vers ${this.selectedTargetEnseignes.join(', ')}` : '';
+    this.snackBar.open(`${ids.length} article(s) référencé(s)${ens}`, 'OK', { duration: 3000 });
   }
+
+  
+
+  // Pagination helpers: gérés par liste gauche/droite
 
   // ===== CRUD Methods =====
   startEdit(a: SupplierArticle): void {
@@ -464,7 +936,9 @@ export class ReferencementComponent implements OnInit {
     if (!this.editingCode) return;
     const payload: Partial<PrerefArticle> = {
       Libellé: this.editDesignation,
-      PrixVenteTTC: this.editPrixVente
+      PrixVenteTTC: this.editPrixVente,
+      PrixAchatHT: this.editPrixAchat,
+      Statut: this.editStatut
     };
     this.http.put(`/api/preref-articles/${encodeURIComponent(this.editingCode)}`, payload).subscribe({
       next: (updated: any) => {
@@ -474,7 +948,9 @@ export class ReferencementComponent implements OnInit {
           this.articles[idx] = {
             ...this.articles[idx],
             designation: this.editDesignation,
-            prixVente: this.editPrixVente
+            prixVente: this.editPrixVente,
+            prixAchat: this.editPrixAchat,
+            statut: this.editStatut
           };
           this.applyFilters();
         }

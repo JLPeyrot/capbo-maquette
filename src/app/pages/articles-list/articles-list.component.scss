@@ -1043,7 +1043,7 @@
 
 .list-row {
   display: grid;
-  grid-template-columns: 56px 110px 1fr 1fr 160px 140px;
+  grid-template-columns: 56px 110px 1fr 1fr 140px 140px;
   align-items: center;
   width: 100%;
   gap: 16px;
@@ -1082,10 +1082,17 @@
   border-color: #c8e6c9;
 }
 
-.list-row .price {
+.list-row .price-col {
   justify-content: flex-end;
   font-weight: 600;
 }
+
+.list-row .sale-col {
+  justify-content: flex-end;
+  font-weight: 600;
+}
+
+/* Le contexte magasin utilise le même gabarit sans la colonne marque */
 
 .list-title {
   display: flex;
@@ -1098,11 +1105,15 @@
 
 .list-headers {
   display: grid;
-  grid-template-columns: 56px 110px 1fr 1fr 160px 140px;
+  grid-template-columns: 56px 110px 1fr 1fr 140px 140px;
   gap: 16px;
   padding: 8px 0;
   color: #555;
   font-weight: 600;
+}
+.list-headers .sale-col,
+.list-headers .price-col {
+  justify-self: end;
 }
 .headers-sep { border-top: 2px solid #ff9800; margin-bottom: 8px; }
 .list-item-row:hover { background: #fafafa; }

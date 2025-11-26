@@ -89,9 +89,6 @@
               <button mat-icon-button matTooltip="Vue en grille" [class.active]="isGridView()" (click)="setGridView()">
                 <mat-icon>grid_view</mat-icon>
               </button>
-              <button mat-icon-button matTooltip="Vue en liste" [class.active]="isListView()" (click)="setListView()">
-                <mat-icon>view_list</mat-icon>
-              </button>
             </div>
 
             <div class="selection-counter">
@@ -130,7 +127,7 @@
              class="articles-grid"
              [class.grid-view]="isGridView()"
              [class.list-view]="isListView()">
-          <div *ngFor="let article of filteredArticles" class="article-card">
+          <div *ngFor="let article of pagedArticles" class="article-card">
             <div class="article-header">
               <div class="article-checkbox">
                 <mat-checkbox [checked]="isArticleSelected(article.code)" (change)="onArticleSelect(article.code, $event.checked)"></mat-checkbox>
@@ -154,10 +151,18 @@
             <!-- Dates d'assortiment pour les articles rattachés à un tronc -->
             <div class="article-dates" *ngIf="article.trunkId">
               <div class="date-line">
-                Commandable : {{ article.commandable?.dateDebut || '-' }} - {{ article.commandable?.dateFin || '-' }}
+                <span class="date-icon">
+                  <mat-icon *ngIf="article.commandable?.dateDebut || article.commandable?.dateFin" class="date-lock">lock</mat-icon>
+                </span>
+                <span class="date-label">Commandable</span>
+                <span class="date-value">: {{ formatDateStrFR(article.commandable?.dateDebut) }} - {{ formatDateStrFR(article.commandable?.dateFin) }}</span>
               </div>
               <div class="date-line">
-                Vendable : {{ article.vendable?.dateDebut || '-' }} - {{ article.vendable?.dateFin || '-' }}
+                <span class="date-icon">
+                  <mat-icon *ngIf="article.vendable?.dateDebut || article.vendable?.dateFin" class="date-lock">lock</mat-icon>
+                </span>
+                <span class="date-label">Vendable</span>
+                <span class="date-value">: {{ formatDateStrFR(article.vendable?.dateDebut) }} - {{ formatDateStrFR(article.vendable?.dateFin) }}</span>
               </div>
             </div>
 
@@ -167,6 +172,13 @@
           </div>
         </div>
       </div>
+
+      <mat-paginator
+        [length]="filteredArticles.length"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[15]"
+        (page)="onPageChange($event)">
+      </mat-paginator>
 
         <ng-template #noArticles>
           <div class="empty-articles">

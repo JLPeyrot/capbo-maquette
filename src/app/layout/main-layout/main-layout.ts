@@ -403,6 +403,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       case 'enrichment-assortment':
         this.currentView = 'enrichment-assortment';
         this.isFocusMode = false;
+        this.router.navigate(['/enrichment-assortment']);
         break;
       case 'create-trunk':
         this.currentView = 'create-trunk';

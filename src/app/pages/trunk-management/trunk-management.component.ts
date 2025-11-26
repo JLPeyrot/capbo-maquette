@@ -131,7 +131,8 @@ export class TrunkManagementComponent implements OnInit {
       const matchesType = !formValue.trunkType 
         || trunk.type === formValue.trunkType 
         || (formValue.trunkType === 'complementaire' && trunk.type === 'TAC');
-      const matchesEnseigne = !formValue.enseigne || trunk.enseigne === formValue.enseigne;
+      const matchesEnseigne = !formValue.enseigne 
+        || String(trunk.enseigne || '').toLowerCase() === String(formValue.enseigne || '').toLowerCase();
 
       return matchesSearch && matchesType && matchesEnseigne;
     });

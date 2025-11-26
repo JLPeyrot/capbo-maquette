@@ -129,7 +129,7 @@
 
 .articles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
   gap: 16px;
 }
 
@@ -143,6 +143,7 @@
   padding: 14px;
   background: #ffffff; /* fond blanc pour une meilleure lisibilité */
   position: relative;
+  border-left: 4px solid #e53935;
 }
 
 .article-header {
@@ -177,12 +178,36 @@
   font-size: 12px;
   color: #444;
 }
-.article-dates .date-line { line-height: 18px; }
+.article-dates .date-line {
+  line-height: 18px;
+  display: grid;
+  grid-template-columns: 18px 100px 1fr;
+  column-gap: 6px;
+  align-items: center;
+}
+.article-dates .date-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.article-dates .date-label {
+  font-weight: 600;
+  color: #333;
+}
+.article-dates .date-value {
+  color: #444;
+}
+.article-dates .date-lock {
+  font-size: 14px;
+  line-height: 18px;
+  color: #666;
+  margin-right: 6px;
+}
 
 /* Layout avec sidebar gauche */
 .main-content {
   display: grid;
-  grid-template-columns: 320px 1fr 280px;
+  grid-template-columns: 360px 1fr 280px;
   gap: 16px;
 }
 
