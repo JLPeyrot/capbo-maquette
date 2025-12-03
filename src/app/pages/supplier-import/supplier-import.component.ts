@@ -39,6 +39,16 @@ export class SupplierImportComponent implements OnInit {
   totalValidated = 0;
   totalRejected = 0;
   logLines: string[] = [];
+  validatedEvents: string[] = [];
+  rejectedEvents: string[] = [];
+  private errorMessages: string[] = [
+    'erreur de type',
+    'aucune donnée',
+    'structure incorrecte',
+    'valeur hors plage',
+    'EAN invalide',
+    'format date invalide'
+  ];
 
   private importTimer?: any;
   private lineTimer?: any;
@@ -78,6 +88,8 @@ export class SupplierImportComponent implements OnInit {
     this.totalValidated = 0;
     this.totalRejected = 0;
     this.logLines = [];
+    this.validatedEvents = [];
+    this.rejectedEvents = [];
 
     const selected = this.files.filter(f => this.selectedFileIds.has(f.id));
     let index = 0;
@@ -98,13 +110,37 @@ export class SupplierImportComponent implements OnInit {
       this.logLines.push(`Début import: ${file.name} (${totalLines} lignes estimées)`);
 
       this.lineTimer = setInterval(() => {
-        // Simuler traitement
         const batch = Math.min(perTick, totalLines - this.currentProcessed);
         this.currentProcessed += batch;
-        const rejects = Math.random() < 0.1 ? Math.floor(batch * 0.2) : 0; // ~10% des ticks génèrent des rejets
+        const rejects = Math.random() < 0.1 ? Math.floor(batch * 0.2) : 0;
         this.currentRejected += rejects;
         this.totalValidated += batch - rejects;
         this.totalRejected += rejects;
+
+        const base = Math.max(1, this.currentProcessed - batch + 1);
+        const rejectedIdx = new Set<number>();
+        while (rejectedIdx.size < rejects && batch > 0) {
+          rejectedIdx.add(Math.floor(Math.random() * batch));
+        }
+
+        for (let j = 0; j < batch; j++) {
+          if (!rejectedIdx.has(j)) {
+            const line = base + j;
+            this.validatedEvents.push(`Ligne ${line} — ajouté`);
+          }
+        }
+
+        if (rejects > 0) {
+          const detailsCount = Math.min(3, rejects);
+          const rejectedArr = Array.from(rejectedIdx).sort((a, b) => a - b);
+          for (let k = 0; k < detailsCount; k++) {
+            const idx = rejectedArr[k] !== undefined ? rejectedArr[k] : Math.floor(Math.random() * Math.max(1, batch));
+            const line = base + idx;
+            const col = 1 + Math.floor(Math.random() * 30);
+            const msg = this.errorMessages[Math.floor(Math.random() * this.errorMessages.length)];
+            this.rejectedEvents.push(`Ligne ${line} - Col ${col} ${msg}`);
+          }
+        }
 
         // Avancement global basé sur progression du fichier courant et position
         const fileProgress = this.currentProcessed / totalLines;
@@ -114,6 +150,15 @@ export class SupplierImportComponent implements OnInit {
         if (this.currentProcessed >= totalLines) {
           clearInterval(this.lineTimer);
           this.logLines.push(`Terminé: ${file.name} — Traité: ${this.currentProcessed}, Rejets: ${this.currentRejected}`);
+          if (this.currentRejected > 0) {
+            const extraDetails = Math.min(5, this.currentRejected);
+            for (let k = 0; k < extraDetails; k++) {
+              const line = 1 + Math.floor(Math.random() * Math.max(1, this.currentProcessed));
+              const col = 1 + Math.floor(Math.random() * 30);
+              const msg = this.errorMessages[Math.floor(Math.random() * this.errorMessages.length)];
+              this.rejectedEvents.push(`Ligne ${line} - Col ${col} ${msg}`);
+            }
+          }
           setTimeout(processNext, 400);
         }
       }, 120);
@@ -132,25 +177,21 @@ export class SupplierImportComponent implements OnInit {
     this.selectedFileIds.clear();
   }
 
+  goToReferencement(): void {
+    const params: any = {};
+    if (this.selectedSupplier) params.fournisseur = this.selectedSupplier;
+    this.router.navigate(['/referencement'], { queryParams: params });
+  }
+
   private finishImport(): void {
     this.progress = 100;
     this.isImporting = false;
     this.logLines.push(`Import terminé — Validations totales: ${this.totalValidated}, Rejets totaux: ${this.totalRejected}`);
     this.currentFileName = '';
-    const ref = this.dialog.open(this.importResultDialog, { width: '480px' });
-    ref.afterClosed().subscribe(() => {
-      const supplier = this.selectedSupplier;
-      this.router.navigate(['/referencement'], { queryParams: { fournisseur: supplier } });
-    });
+    this.dialog.open(this.importResultDialog, { width: '480px' });
   }
 
-  cancelImport(): void {
-    if (!this.isImporting) return;
-    this.isImporting = false;
-    if (this.lineTimer) clearInterval(this.lineTimer);
-    if (this.importTimer) clearInterval(this.importTimer);
-    this.logLines.push('Import annulé par l’utilisateur');
-  }
+  
 
   private estimateLines(file: SupplierFile): number {
     return Math.max(100, Math.floor(file.sizeKb * 1.8));

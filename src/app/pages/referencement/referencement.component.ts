@@ -304,8 +304,12 @@ export class ReferencementComponent implements OnInit {
     });
     this.loadSupplierCatalog(() => {
       if (pendingFournisseur) {
+        if (!this.fournisseurOptions.includes(pendingFournisseur)) {
+          this.fournisseurOptions = [...this.fournisseurOptions, pendingFournisseur].sort();
+        }
         this.selectedFournisseur = pendingFournisseur;
       }
+      this.showAddSupplierLeft = true;
       this.applyFilters();
       // Ne pas pré-remplir les listes au chargement
     });

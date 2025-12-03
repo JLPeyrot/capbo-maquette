@@ -247,6 +247,10 @@
                 <mat-icon matListItemIcon>tune</mat-icon>
                 <div matListItemTitle>Configuration Système</div>
               </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('company-settings')">
+                <mat-icon matListItemIcon>business</mat-icon>
+                <div matListItemTitle>Paramétrage entreprise</div>
+              </mat-list-item>
             </div>
           </div>
 
@@ -679,6 +683,11 @@
       <!-- PAGE FOURNISSEURS -->
       <div *ngSwitchCase="'suppliers'" class="page-container">
         <app-suppliers [createMode]="suppliersCreateMode"></app-suppliers>
+      </div>
+
+      <!-- PAGE PARAMÉTRAGE ENTREPRISE -->
+      <div *ngSwitchCase="'company-settings'" class="page-container">
+        <app-company-settings></app-company-settings>
       </div>
 
     </div>

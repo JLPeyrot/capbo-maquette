@@ -5,36 +5,40 @@
 
   <div class="option-block">
     <mat-checkbox [(ngModel)]="commandableEnabled">Commandable</mat-checkbox>
-    <div class="dates-row" *ngIf="commandableEnabled">
+    <div class="dates-row" *ngIf="showDates && commandableEnabled">
       <mat-form-field appearance="outline" class="date-field">
         <mat-label>Date de début</mat-label>
-        <input matInput [matDatepicker]="commandableStartPicker" [(ngModel)]="commandableStart">
+        <input matInput [matDatepicker]="commandableStartPicker" [(ngModel)]="commandableStart" #commandableStartModel="ngModel" [required]="commandableEnabled">
         <mat-datepicker-toggle matIconSuffix [for]="commandableStartPicker"></mat-datepicker-toggle>
         <mat-datepicker #commandableStartPicker></mat-datepicker>
+        <div class="error-text" *ngIf="submitted && commandableEnabled && commandableStartModel.invalid">Date de début manquante</div>
       </mat-form-field>
       <mat-form-field appearance="outline" class="date-field">
-        <mat-label>Date de fin</mat-label>
-        <input matInput [matDatepicker]="commandableEndPicker" [(ngModel)]="commandableEnd">
+        <mat-label>Date de fin (optionnelle)</mat-label>
+        <input matInput [matDatepicker]="commandableEndPicker" [(ngModel)]="commandableEnd" #commandableEndModel="ngModel">
         <mat-datepicker-toggle matIconSuffix [for]="commandableEndPicker"></mat-datepicker-toggle>
         <mat-datepicker #commandableEndPicker></mat-datepicker>
+        
       </mat-form-field>
     </div>
   </div>
 
   <div class="option-block">
     <mat-checkbox [(ngModel)]="vendableEnabled">Vendable</mat-checkbox>
-    <div class="dates-row" *ngIf="vendableEnabled">
+    <div class="dates-row" *ngIf="showDates && vendableEnabled">
       <mat-form-field appearance="outline" class="date-field">
         <mat-label>Date de début</mat-label>
-        <input matInput [matDatepicker]="vendableStartPicker" [(ngModel)]="vendableStart">
+        <input matInput [matDatepicker]="vendableStartPicker" [(ngModel)]="vendableStart" #vendableStartModel="ngModel" [required]="vendableEnabled">
         <mat-datepicker-toggle matIconSuffix [for]="vendableStartPicker"></mat-datepicker-toggle>
         <mat-datepicker #vendableStartPicker></mat-datepicker>
+        <div class="error-text" *ngIf="submitted && vendableEnabled && vendableStartModel.invalid">Date de début manquante</div>
       </mat-form-field>
       <mat-form-field appearance="outline" class="date-field">
-        <mat-label>Date de fin</mat-label>
-        <input matInput [matDatepicker]="vendableEndPicker" [(ngModel)]="vendableEnd">
+        <mat-label>Date de fin (optionnelle)</mat-label>
+        <input matInput [matDatepicker]="vendableEndPicker" [(ngModel)]="vendableEnd" #vendableEndModel="ngModel">
         <mat-datepicker-toggle matIconSuffix [for]="vendableEndPicker"></mat-datepicker-toggle>
         <mat-datepicker #vendableEndPicker></mat-datepicker>
+        
       </mat-form-field>
     </div>
   </div>

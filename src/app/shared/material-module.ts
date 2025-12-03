@@ -21,6 +21,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatSliderModule } from '@angular/material/slider';
 
 // Layout
 import { MatCardModule } from '@angular/material/card';
@@ -61,6 +62,7 @@ const MaterialModules = [
   MatCheckboxModule,
   MatTabsModule,
   MatRadioModule,
+  MatSliderModule,
   MatCardModule,
   MatDividerModule,
   MatGridListModule,

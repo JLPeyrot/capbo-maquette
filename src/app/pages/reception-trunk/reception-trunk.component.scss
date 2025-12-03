@@ -111,15 +111,35 @@
   margin: 0;
 }
 
-.two-column-layout {
-  display: flex;
-  gap: 16px;
+.main-content {
+  display: grid;
+  grid-template-columns: 300px 350px 300px 350px;
+  grid-auto-rows: auto;
+  gap: 12px;
   align-items: stretch;
   margin-bottom: 24px;
 }
-.left-col { flex: 0 0 280px; display: flex; }
-.right-col { flex: 0 0 280px; display: flex; }
-.main-col { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.sidebar-left { grid-column: 1; display: flex; }
+.left-list { grid-column: 2; display: flex; }
+.sidebar-right { grid-column: 3; display: flex; }
+.right-list { grid-column: 4; display: flex; }
+.sticky { position: sticky; top: 12px; z-index: 5; }
+
+/* Cartes en pleine hauteur pour un rendu propre façon Référencement 2 */
+.sidebar-left .mat-mdc-card,
+.sidebar-right .mat-mdc-card,
+.left-list .list-card,
+.right-list .list-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-left .mat-mdc-card-content,
+.sidebar-right .mat-mdc-card-content,
+.left-list .mat-mdc-card-content,
+.right-list .mat-mdc-card-content {
+  flex: 1;
+}
 .sticky { position: sticky; top: 12px; z-index: 5; }
 
 .tree-card {
@@ -138,8 +158,8 @@
 .sf-row::before { content: ''; position: absolute; left: -14px; top: 50%; transform: translateY(-50%); width: 12px; height: 2px; background: #e0e0e0; }
 
 @media (max-width: 768px) {
-  .two-column-layout { flex-direction: column; }
-  .left-col, .right-col { flex: 1 1 auto; }
+  .main-content { grid-template-columns: 1fr; }
+  .sidebar-left, .left-list, .sidebar-right, .right-list { grid-column: 1; }
 }
 
 // STYLES DES CARTES

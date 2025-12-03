@@ -123,8 +123,10 @@
 
 /* Grille type Excel */
 .list-card { margin: 8px; border-radius: 12px; border: 2px solid #1976d2; box-shadow: none; }
-.lists-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 750px; }
+.lists-grid { display: grid; grid-template-columns: 350px 350px; gap: 12px; height: 750px; }
 .lists-grid .list-card { margin: 0; display: flex; flex-direction: column; height: 100%; }
+.lists-grid .list-card { box-sizing: border-box; }
+.lists-grid .merch-card { margin: 0; display: flex; flex-direction: column; height: 100%; }
 .lists-grid .list-card .mat-mdc-card-content { padding-bottom: 0 !important; min-height: 0; flex: 1; display: flex; }
 .list-scroll { flex: 1; min-height: 0; overflow-y: auto; }
 .list-card .mat-mdc-card-header { display: flex; align-items: center; justify-content: flex-start; gap: 8px; background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: #fff; min-height: 56px; padding: 8px 12px; }
@@ -314,7 +316,7 @@ mat-card-header textbox_list2 { order: 3; margin-left: 8px; }
 .supplier-panel { flex: 1; min-height: 0; overflow-y: auto; }
 .merch-tree-panel { flex: 1; min-height: 0; overflow-y: auto; }
 .main-col { flex: 1; display: flex; flex-direction: column; gap: 16px; height: 100%; overflow: hidden; min-height: 0; }
-.main-col .filters-card, .main-col .list-card { width: 100%; margin-left: 0; margin-right: 0; }
+.main-col .filters-card, .main-col .list-card, .main-col .merch-card { width: 100%; margin-left: 0; margin-right: 0; }
 .sticky { position: sticky; top: 12px; z-index: 5; }
 .list-scroll { overflow-y: auto; overflow-x: hidden; padding-bottom: 0; flex: 1; min-height: 0; }
 .merch-card {
@@ -405,3 +407,9 @@ mat-card-header textbox_list2 { order: 3; margin-left: 8px; }
 }
 .page-header { margin-bottom: 8px; }
 :host { display: block; height: 100vh; overflow: hidden; }
+.right-col .list-card { margin: 0; height: 750px; display: flex; flex-direction: column; box-sizing: border-box; }
+.right-col .list-card .mat-mdc-card-content { padding-bottom: 0 !important; min-height: 0; flex: 1; display: flex; }
+.blocks-row { display: flex; gap: 16px; align-items: stretch; height: 750px; }
+.blocks-row .block-merch { width: 350px; display: flex; flex-direction: column; height: 100%; }
+.blocks-row .block-list { width: 520px; display: flex; flex-direction: column; height: 100%; }
+.blocks-row .block-merch .mat-mdc-card-content, .blocks-row .block-list .mat-mdc-card-content { padding-bottom: 0 !important; min-height: 0; flex: 1; display: flex; }

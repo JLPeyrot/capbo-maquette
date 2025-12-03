@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { ArticlesListComponent } from './articles-list.component';
 
@@ -13,13 +14,15 @@ describe('ArticlesListComponent', () => {
       imports: [
         ArticlesListComponent,
         NoopAnimationsModule,
-        FormsModule
+        FormsModule,
+        RouterTestingModule
       ]
     })
     .compileComponents();
 
     fixture = TestBed.createComponent(ArticlesListComponent);
     component = fixture.componentInstance;
+    component.isStoreContext = true;
     fixture.detectChanges();
   });
 

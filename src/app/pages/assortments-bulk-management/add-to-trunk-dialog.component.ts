@@ -7,6 +7,8 @@ import { TrunksService, TrunkOption } from '../../services/trunks.service';
 
 interface AddToTrunkDialogData {
   selectedCount: number;
+  selectedTrunkId?: string | null;
+  mode?: 'levelOnly' | 'full';
 }
 
 @Component({
@@ -32,6 +34,8 @@ export class AddToTrunkDialogComponent implements OnInit {
   selectedTrunkId: string | null = null;
   selectedLevel: number | null = null;
   selectedDeploymentTypology: 'ferme' | 'mixte' | 'ouvert' = 'ferme';
+  showTrunkSelection: boolean = true;
+  showTypologySelection: boolean = true;
 
   constructor(
     private dialogRef: MatDialogRef<AddToTrunkDialogComponent>,
@@ -43,6 +47,14 @@ export class AddToTrunkDialogComponent implements OnInit {
     this.trunksService.getTrunkOptions().subscribe(options => {
       this.trunks = options;
     });
+    if (typeof this.data.selectedTrunkId !== 'undefined') {
+      this.selectedTrunkId = this.data.selectedTrunkId || null;
+      this.showTrunkSelection = false;
+    }
+    if (this.data.mode === 'levelOnly') {
+      this.showTrunkSelection = false;
+      this.showTypologySelection = false;
+    }
   }
 
   onCancel(): void {
@@ -50,7 +62,7 @@ export class AddToTrunkDialogComponent implements OnInit {
   }
 
   onConfirm(): void {
-    if (!this.selectedTrunkId || !this.selectedLevel) {
+    if ((this.showTrunkSelection && !this.selectedTrunkId) || !this.selectedLevel) {
       return;
     }
     const trunk = this.trunks.find(t => t.id === this.selectedTrunkId);

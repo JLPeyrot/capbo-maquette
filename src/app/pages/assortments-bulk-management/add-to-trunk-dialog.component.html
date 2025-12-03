@@ -1,9 +1,9 @@
-<h2 mat-dialog-title>Ajouter à un tronc</h2>
+<h2 mat-dialog-title>{{ showTrunkSelection ? 'Ajouter à un tronc' : 'Choisir le niveau d\'affectation' }}</h2>
 
 <div mat-dialog-content class="dialog-content">
   <p class="selection-info">Articles sélectionnés: {{ data.selectedCount }}</p>
 
-  <mat-form-field appearance="outline" class="full-width">
+  <mat-form-field appearance="outline" class="full-width" *ngIf="showTrunkSelection">
     <mat-label>Tronc</mat-label>
     <mat-select [(ngModel)]="selectedTrunkId" placeholder="Choisir un tronc">
       <mat-option *ngFor="let trunk of trunks" [value]="trunk.id">
@@ -21,7 +21,7 @@
     </mat-select>
   </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full-width">
+  <mat-form-field appearance="outline" class="full-width" *ngIf="showTypologySelection">
     <mat-label>Typologie de déploiement</mat-label>
     <mat-select [(ngModel)]="selectedDeploymentTypology">
       <mat-option value="ferme">Fermé</mat-option>
@@ -33,7 +33,7 @@
 
 <div mat-dialog-actions align="end" class="dialog-actions">
   <button mat-button (click)="onCancel()">Annuler</button>
-  <button mat-raised-button color="primary" class="orange-action" [disabled]="!selectedTrunkId || !selectedLevel" (click)="onConfirm()">
+  <button mat-raised-button color="primary" class="orange-action" [disabled]="(showTrunkSelection && !selectedTrunkId) || !selectedLevel" (click)="onConfirm()">
     Confirmer
   </button>
 </div>

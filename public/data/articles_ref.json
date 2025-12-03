@@ -132,7 +132,8 @@
       "libelle": "Sac aspirateur universel S-bag",
       "univers": "Électroménager",
       "famille": "Entretien",
-      "sousFamille": "Accessoires entretien"
+      "sousFamille": "Accessoires entretien",
+      "trunk_id": "6"
     },
     {
       "code": "ART0014",
@@ -154,7 +155,8 @@
       "libelle": "Téléviseur Philips LED 43 pouces",
       "univers": "Image & Son",
       "famille": "Téléviseurs",
-      "sousFamille": "Téléviseurs LED"
+      "sousFamille": "Téléviseurs LED",
+      "trunk_id": "1"
     },
     {
       "code": "ART0017",
@@ -329,14 +331,16 @@
       "libelle": "Cafetière Nespresso Vertuo Next",
       "univers": "Cuisine",
       "famille": "Petit-déjeuner",
-      "sousFamille": "Cafetières"
+      "sousFamille": "Cafetières",
+      "trunk_id": "1"
     },
     {
       "code": "ART0041",
       "libelle": "Grille-pain Moulinex Subito",
       "univers": "Cuisine",
       "famille": "Petit-déjeuner",
-      "sousFamille": "Grille-pain"
+      "sousFamille": "Grille-pain",
+      "trunk_id": "1"
     },
     {
       "code": "ART0042",
@@ -423,28 +427,32 @@
       "libelle": "Réfrigérateur américain Samsung 500L",
       "univers": "Électroménager",
       "famille": "Froid",
-      "sousFamille": "Réfrigérateur"
+      "sousFamille": "Réfrigérateur",
+      "trunk_id": "1"
     },
     {
       "code": "ART0051",
       "libelle": "Sèche-linge Siemens WT47XEH0FF",
       "univers": "Électroménager",
       "famille": "Lavage",
-      "sousFamille": "Sèche-linge"
+      "sousFamille": "Sèche-linge",
+      "trunk_id": "1"
     },
     {
       "code": "ART0052",
       "libelle": "Lave-linge hublot Bosch Serie 6",
       "univers": "Électroménager",
       "famille": "Lavage",
-      "sousFamille": "Lave-linge"
+      "sousFamille": "Lave-linge",
+      "trunk_id": "1"
     },
     {
       "code": "ART0053",
       "libelle": "Lave-linge séchant Samsung WD90T654DBN",
       "univers": "Électroménager",
       "famille": "Lavage",
-      "sousFamille": "Lave-linge séchant"
+      "sousFamille": "Lave-linge séchant",
+      "trunk_id": "6"
     },
     {
       "code": "ART0054",
@@ -458,21 +466,24 @@
       "libelle": "Réfrigérateur combiné LG 340L",
       "univers": "Électroménager",
       "famille": "Froid",
-      "sousFamille": "Réfrigérateur"
+      "sousFamille": "Réfrigérateur",
+      "trunk_id": "6"
     },
     {
       "code": "ART0056",
       "libelle": "Cave à vin Haier 46 bouteilles",
       "univers": "Électroménager",
       "famille": "Froid",
-      "sousFamille": "Cave à vin"
+      "sousFamille": "Cave à vin",
+      "trunk_id": "6"
     },
     {
       "code": "ART0057",
       "libelle": "Four encastrable Bosch Serie 8",
       "univers": "Électroménager",
       "famille": "Cuisson",
-      "sousFamille": "Fours"
+      "sousFamille": "Fours",
+      "trunk_id": "6"
     },
     {
       "code": "ART0058",
@@ -521,14 +532,16 @@
       "libelle": "Téléviseur Sony Bravia 55 pouces",
       "univers": "Image & Son",
       "famille": "Téléviseurs",
-      "sousFamille": "Téléviseurs LED"
+      "sousFamille": "Téléviseurs LED",
+      "trunk_id": "1"
     },
     {
       "code": "ART0065",
       "libelle": "Téléviseur Panasonic OLED 65 pouces",
       "univers": "Image & Son",
       "famille": "Téléviseurs",
-      "sousFamille": "Téléviseurs OLED"
+      "sousFamille": "Téléviseurs OLED",
+      "trunk_id": "1"
     },
     {
       "code": "ART0066",
@@ -641,14 +654,16 @@
       "libelle": "iPhone 15 128Go",
       "univers": "Téléphonie",
       "famille": "Smartphones",
-      "sousFamille": "iPhone"
+      "sousFamille": "iPhone",
+      "trunk_id": "6"
     },
     {
       "code": "ART0082",
       "libelle": "Samsung Galaxy A54 5G",
       "univers": "Téléphonie",
       "famille": "Smartphones",
-      "sousFamille": "Android"
+      "sousFamille": "Android",
+      "trunk_id": "6"
     },
     {
       "code": "ART0083",
@@ -708,14 +723,16 @@
       "libelle": "Cafetière Philips Senseo",
       "univers": "Cuisine",
       "famille": "Petit-déjeuner",
-      "sousFamille": "Cafetières"
+      "sousFamille": "Cafetières",
+      "trunk_id": "1"
     },
     {
       "code": "ART0091",
       "libelle": "Grille-pain Severin 2 tranches",
       "univers": "Cuisine",
       "famille": "Petit-déjeuner",
-      "sousFamille": "Grille-pain"
+      "sousFamille": "Grille-pain",
+      "trunk_id": "1"
     },
     {
       "code": "ART0092",
@@ -850,7 +867,8 @@
       "libelle": "Four encastrable Siemens iQ700",
       "univers": "Électroménager",
       "famille": "Cuisson",
-      "sousFamille": "Fours"
+      "sousFamille": "Fours",
+      "trunk_id": "6"
     },
     {
       "code": "ART0108",
@@ -1019,7 +1037,8 @@
       "libelle": "iPhone 15 Plus 256Go",
       "univers": "Téléphonie",
       "famille": "Smartphones",
-      "sousFamille": "iPhone"
+      "sousFamille": "iPhone",
+      "trunk_id": "6"
     },
     {
       "code": "ART0132",
@@ -1228,7 +1247,8 @@
       "libelle": "Four encastrable Electrolux 70L",
       "univers": "Électroménager",
       "famille": "Cuisson",
-      "sousFamille": "Fours"
+      "sousFamille": "Fours",
+      "trunk_id": "6"
     },
     {
       "code": "ART0158",

@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../shared/material-module';
 import { TextboxList1Component } from '../../components/textbox-list1/textbox-list1.component';
 import { TextboxList2Component } from '../../components/textbox-list2/textbox-list2.component';
+import { Article as SArticle } from '../../services/articles.service';
+import { ArticleListOneComponent } from '../../components/article-list-one/article-list-one.component';
+import { ArticleListTwoComponent } from '../../components/article-list-two/article-list-two.component';
 
 interface Article {
   reference: string;
@@ -19,7 +22,7 @@ interface Article {
 @Component({
   selector: 'app-reception-trunk',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, TextboxList1Component, TextboxList2Component],
+  imports: [CommonModule, FormsModule, MaterialModule, TextboxList1Component, TextboxList2Component, ArticleListOneComponent, ArticleListTwoComponent],
   templateUrl: './reception-trunk.component.html',
   styleUrls: ['./reception-trunk.component.scss']
 })
@@ -304,6 +307,63 @@ export class ReceptionTrunkComponent implements OnInit {
   isMovedRight(id: string): boolean { return this.movedIdsRight.has(id); }
   isRightItemSelectable(id: string): boolean { return this.movedIdsRight.has(id); }
 
+  get filteredArticlesLeftView(): SArticle[] {
+    return this.filteredArticles.map(a => ({
+      code: a.reference,
+      libelle: a.libelle,
+      univers: 'Électroménager',
+      famille: a.famille,
+      sousFamille: a.sousFamille
+    }));
+  }
+
+  get filteredArticlesSuperiorView(): SArticle[] {
+    return this.superiorLevelArticles.map(a => ({
+      code: a.reference,
+      libelle: a.libelle,
+      univers: 'Électroménager',
+      famille: a.famille,
+      sousFamille: a.sousFamille
+    }));
+  }
+
+  get filteredArticlesRightView(): SArticle[] {
+    const src = this.listItemsRight.filter(it => !this.rightFilterText || it.code.toLowerCase().includes(this.rightFilterText.toLowerCase()) || it.designation.toLowerCase().includes(this.rightFilterText.toLowerCase()));
+    return src.map(it => ({
+      code: it.code,
+      libelle: it.designation,
+      univers: 'Électroménager',
+      famille: '',
+      sousFamille: ''
+    }));
+  }
+
+  isArticleSelectedLeft(code: string): boolean {
+    return this.selectedIds.has(code);
+  }
+
+  onArticleSelectLeft(code: string, checked: boolean): void {
+    if (checked) this.selectedIds.add(code); else this.selectedIds.delete(code);
+  }
+
+  isArticleSelectedRight(code: string): boolean {
+    return this.movedIdsRight.has(code) && this.selectedRightIds.has(code);
+  }
+
+  onArticleSelectRight(code: string, checked: boolean): void {
+    if (!this.movedIdsRight.has(code)) return;
+    if (checked) this.selectedRightIds.add(code); else this.selectedRightIds.delete(code);
+  }
+
+  hasVendable(code: string): boolean {
+    const a = this.articles.find(x => x.reference === code) || this.superiorLevelArticles.find(x => x.reference === code);
+    return !!a?.checkedVendable;
+  }
+
+  hasCommandable(code: string): boolean {
+    const a = this.articles.find(x => x.reference === code) || this.superiorLevelArticles.find(x => x.reference === code);
+    return !!a?.checkedCommandable;
+  }
   
 
   get filteredArticles(): Article[] {

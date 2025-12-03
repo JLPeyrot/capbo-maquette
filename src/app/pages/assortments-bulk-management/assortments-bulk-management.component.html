@@ -23,7 +23,7 @@
     <!-- Sidebar gauche avec arborescence -->
     <div class="sidebar-left">
       <div class="sidebar-header">
-        <h3>Arborescence</h3>
+        <h3>Arborescence globale</h3>
         <div class="sidebar-actions">
           <button mat-icon-button matTooltip="Développer tout">
             <mat-icon>unfold_more</mat-icon>
@@ -35,14 +35,13 @@
       </div>
 
       <div class="sidebar-content">
-        <app-tree-view
+        <app-global-tree-view
           *ngIf="!isLoading && hierarchyNodes.length > 0"
           [nodes]="hierarchyNodes"
           [config]="treeConfig"
-          [selectedNodeIds]="selectedNodeIds"
           [getSelectedCountForNode]="getSelectedCountForNode.bind(this)"
           (nodeAction)="onNodeAction($event)">
-        </app-tree-view>
+        </app-global-tree-view>
 
         <div *ngIf="isLoading" class="loading-state">
           <mat-spinner diameter="40"></mat-spinner>
@@ -56,120 +55,91 @@
       </div>
     </div>
 
-    <!-- Zone principale de contenu -->
-    <div class="content-area">
-      
-      <!-- Zone de filtres et actions -->
-      <mat-card class="filters-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>filter_list</mat-icon>
-            Filtres et actions
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content class="filters-content">
-          <div class="filters-row">
-            <mat-form-field class="filter-field" appearance="outline">
-              <mat-label>Rechercher un assortiment</mat-label>
-              <input matInput [(ngModel)]="searchQuery" (ngModelChange)="applySearch()" placeholder="Nom, code, univers, famille, sous-famille">
-              <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
+    <app-article-list-one
+      *ngIf="isListView()"
+      [filteredArticles]="filteredArticles1"
+      [pageSize]="pageSizeList"
+      [currentPage]="currentPageList"
+      [allSelected]="areAllPagedSelected()"
+      [someSelected]="areSomePagedSelected()"
+      [isArticleSelected]="isArticleSelected.bind(this)"
+      [onArticleSelect]="onArticleSelect.bind(this)"
+      [hasVendable]="hasVendable.bind(this)"
+      [hasCommandable]="hasCommandable.bind(this)"
+      [firstPage]="firstPageList.bind(this)"
+      [prevPage]="prevPageList.bind(this)"
+      [nextPage]="nextPageList.bind(this)"
+      [lastPage]="lastPageList.bind(this)"
+      [toggleAll]="toggleAllPaged.bind(this)">
+    </app-article-list-one>
 
-            <div class="assigned-filters">
-              <mat-checkbox [(ngModel)]="showAssignedOnly" (change)="toggleShowAssignedOnly()" matTooltip="Inclure les assortiments rattachés à un tronc">
-                Inclure les assortiments rattachés à un tronc
-              </mat-checkbox>
-              <mat-checkbox [(ngModel)]="showOnlyAssigned" (change)="toggleShowOnlyAssigned()" matTooltip="N'afficher que les assortiments rattachés à un tronc">
-                N'afficher que les assortiments rattachés à un tronc
-              </mat-checkbox>
-            </div>
+    
 
-            <div class="action-buttons">
-              <button mat-stroked-button (click)="toggleSelectAll()">
-                <mat-icon>{{ selectAll ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-                {{ selectAll ? 'Tout désélectionner' : 'Tout sélectionner' }}
-              </button>
-              <button mat-icon-button matTooltip="Vue en grille" [class.active]="isGridView()" (click)="setGridView()">
-                <mat-icon>grid_view</mat-icon>
-              </button>
-              <button mat-icon-button matTooltip="Vue en liste" [class.active]="isListView()" (click)="setListView()">
-                <mat-icon>view_list</mat-icon>
-              </button>
-            </div>
-
-            <!-- Ligne 2: compteur séparé à droite -->
-            <div class="selection-counter">
-              <mat-icon>check_circle</mat-icon>
-              <span>{{ getSelectedCount() }} / {{ filteredArticles.length }}</span>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Liste des assortiments -->
-      <div class="articles-list">
-        <div *ngIf="filteredArticles.length > 0; else noArticles"
-             class="articles-grid"
-             [class.grid-view]="isGridView()"
-             [class.list-view]="isListView()">
-          <div *ngFor="let article of filteredArticles" class="article-card">
-            <div class="article-header">
-              <div class="article-checkbox">
-                <mat-checkbox [checked]="isArticleSelected(article.code)" (change)="onArticleSelect(article.code, $event.checked)"></mat-checkbox>
-              </div>
-              <div class="article-number">{{ article.code }}</div>
-            </div>
-
-            <div class="article-content" [ngClass]="{'list-layout': isListView(), 'grid-layout': isGridView()}">
-              <h3 class="article-title">{{ article.libelle }}</h3>
-
-              <!-- Tronc assigné -->
-              <div class="meta-pills inline" *ngIf="article.trunkId">
-                <span class="pill pill-trunk">Tronc: {{ trunkNameById[article.trunkId] || article.trunkId }}</span>
-              </div>
-
-              <!-- Typologie de déploiment -->
-              <div class="meta-pills inline" *ngIf="article.deployment_typology">
-                <span class="pill">Typologie: {{ formatDeploymentTypology(article.deployment_typology) }}</span>
-              </div>
-
-              <!-- Suppression de l’affichage du niveau -->
-
-              <!-- Attributs appliqués à l’article -->
-              <div class="meta-pills inline" *ngIf="article.attributes?.length">
-                <span class="pill pill-attribute" *ngFor="let attr of article.attributes">{{ attr }}</span>
-              </div>
-
-            </div>
-            <div class="article-level" *ngIf="article.level">
-              <em>{{ getLevelLabel(article.level) }}</em>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noArticles>
-          <div class="empty-articles">
-            <mat-icon>inventory_2</mat-icon>
-            <h3>Aucun assortiment trouvé</h3>
-            <p>Affinez votre recherche ou importez des assortiments.</p>
-          </div>
-        </ng-template>
-      </div>
+    <!-- Contrôle de transfert (flèche) -->
+    <div class="transfer-control">
+      <button mat-fab color="primary" (click)="onAddToTrunk()" [disabled]="getSelectedCount() === 0" matTooltip="Ajouter au tronc" aria-label="Ajouter au tronc">
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
     </div>
 
-    <!-- Sidebar droite: menu d’actions -->
+    <!-- Sidebar droite: sélection de tronc puis arborescence du tronc -->
     <div class="sidebar-right">
       <div class="sidebar-header">
-        <h3>Actions</h3>
+        <h3>Arborescence Tronc</h3>
+        <div class="sidebar-actions">
+          <button mat-icon-button matTooltip="Développer tout">
+            <mat-icon>unfold_more</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Réduire tout">
+            <mat-icon>unfold_less</mat-icon>
+          </button>
+        </div>
       </div>
-      <div class="sidebar-actions-list">
-        <button mat-stroked-button color="primary" class="action-btn" (click)="onAddToTrunk()">
-          <mat-icon>account_tree</mat-icon>
-          Ajouter à un tronc
-        </button>
-        
-        <!-- Actions simplifiées: ne conserver que "Ajouter à un tronc" -->
+      <div class="sidebar-content">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Choisir un tronc</mat-label>
+          <mat-select [value]="selectedTrunkIdRight" (selectionChange)="onRightTrunkSelect($event.value)">
+            <mat-option *ngFor="let opt of trunkOptions" [value]="opt.id">{{ opt.name }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <app-trunk-tree-view
+          *ngIf="selectedTrunkIdRight && rightHierarchyNodes.length > 0"
+          [nodes]="rightHierarchyNodes"
+          [config]="treeConfig"
+          [getSelectedCountForNode]="getSelectedCountForNode.bind(this)"
+          (nodeAction)="onRightNodeAction($event)">
+        </app-trunk-tree-view>
+
+        <div *ngIf="isLoading" class="loading-state">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Chargement de l'arborescence...</p>
+        </div>
+
+        <div *ngIf="selectedTrunkIdRight && !isLoading && rightHierarchyNodes.length === 0" class="empty-state">
+          <mat-icon>folder_open</mat-icon>
+          <p>Aucune donnée disponible</p>
+        </div>
       </div>
     </div>
+
+    <app-article-list-two
+      *ngIf="isListView()"
+      [filteredArticles]="filteredArticles2"
+      [pageSize]="pageSizeList2"
+      [currentPage]="currentPageList2"
+      [allSelected]="areAllPagedSelected2()"
+      [someSelected]="areSomePagedSelected2()"
+      [isArticleSelected]="isArticleSelected.bind(this)"
+      [onArticleSelect]="onArticleSelect.bind(this)"
+      [hasVendable]="hasVendable.bind(this)"
+      [hasCommandable]="hasCommandable.bind(this)"
+      [showMetaPills]="true"
+      [firstPage]="firstPageList2.bind(this)"
+      [prevPage]="prevPageList2.bind(this)"
+      [nextPage]="nextPageList2.bind(this)"
+      [lastPage]="lastPageList2.bind(this)"
+      [toggleAll]="toggleAllPaged2.bind(this)">
+    </app-article-list-two>
   </div>
 </div>

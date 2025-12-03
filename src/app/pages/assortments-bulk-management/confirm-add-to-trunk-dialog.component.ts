@@ -9,6 +9,8 @@ export interface ConfirmAddToTrunkData {
   trunkType?: string;
   level: number;
   levelLabel?: string;
+  customTitle?: string;
+  customMessage?: string;
 }
 
 @Component({

@@ -10,9 +10,9 @@
         </div>
       </div>
       <div class="header-actions">
-        <button mat-stroked-button class="back-btn-outline" (click)="cancelImport()" [disabled]="!isImporting">
-          <mat-icon>cancel</mat-icon>
-          Annuler l’import
+        <button mat-stroked-button color="primary" (click)="goToReferencement()">
+          <mat-icon>assignment</mat-icon>
+          Accéder au référencement
         </button>
       </div>
     </div>
@@ -83,26 +83,36 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div class="summary-stats">
-        <div class="stat">
-          <mat-icon>task_alt</mat-icon>
-          <div>
-            <div class="stat-label">Validations totales</div>
-            <div class="stat-value">{{ totalValidated }}</div>
+      <mat-tab-group>
+        <mat-tab label="Validés">
+          <div class="summary-stats">
+            <div class="stat">
+              <mat-icon>task_alt</mat-icon>
+              <div>
+                <div class="stat-label">Validations totales</div>
+                <div class="stat-value">{{ totalValidated }}</div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="stat">
-          <mat-icon>report</mat-icon>
-          <div>
-            <div class="stat-label">Rejets totaux</div>
-            <div class="stat-value">{{ totalRejected }}</div>
+          <div class="log-box">
+            <div class="log-line" *ngFor="let v of validatedEvents">{{ v }}</div>
           </div>
-        </div>
-      </div>
-
-      <div class="log-box">
-        <div class="log-line" *ngFor="let line of logLines">{{ line }}</div>
-      </div>
+        </mat-tab>
+        <mat-tab label="Rejetés">
+          <div class="summary-stats">
+            <div class="stat">
+              <mat-icon>report</mat-icon>
+              <div>
+                <div class="stat-label">Rejets totaux</div>
+                <div class="stat-value">{{ totalRejected }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="log-box">
+            <div class="log-line" *ngFor="let r of rejectedEvents">{{ r }}</div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
     </mat-card-content>
   </mat-card>
 

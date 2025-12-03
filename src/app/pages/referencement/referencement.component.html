@@ -407,9 +407,8 @@
       </div>
     </mat-card-content>
   </mat-card>
-  <div class="two-column-layout" *ngIf="!supplierOnly">
-    <div class="left-col">
-      <mat-card class="merch-card">
+  <div class="blocks-row" *ngIf="!supplierOnly">
+      <mat-card class="merch-card block-merch">
         <mat-card-header>
           <mat-card-title>Arborescence fournisseur</mat-card-title>
         </mat-card-header>
@@ -469,11 +468,8 @@
           </div>
         </mat-card-content>
       </mat-card>
-    </div>
-    
-    <div class="main-col">
-      <div class="lists-grid">
-      <mat-card class="list-card">
+
+      <mat-card class="list-card block-list">
         <mat-card-header>
           <div class="list-header-index">(1)</div>
           <div class="list-header-actions">
@@ -517,58 +513,7 @@
           
         </mat-card-content>
       </mat-card>
-      <mat-card class="list-card readonly">
-        <mat-card-header>
-          <div class="list-header-index">(2)</div>
-          <div class="list-header-actions">
-            <mat-checkbox 
-              [checked]="areAllPagedSelectedRight()"
-              [indeterminate]="areSomePagedSelectedRight()"
-              (change)="toggleAllRight()"
-              aria-label="Tout sélectionner">
-            </mat-checkbox>
-          </div>
-          <textbox_list2 [(value)]="rightFilterText" (valueChange)="onFilterRightChange($event)"></textbox_list2>
-          <div class="header-pager">
-            <button class="pager-btn" (click)="firstPageRight()" [disabled]="currentPageRight === 0">«</button>
-            <button class="pager-btn" (click)="prevPageRight()" [disabled]="currentPageRight === 0">‹</button>
-            <span class="pager-index">{{currentPageRight + 1}}</span>
-            <button class="pager-btn" (click)="nextPageRight()" [disabled]="(currentPageRight + 1) * pageSizeRight >= listItemsRight.length">›</button>
-            <button class="pager-btn" (click)="lastPageRight()" [disabled]="(currentPageRight + 1) * pageSizeRight >= listItemsRight.length">»</button>
-          </div>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="list-scroll">
-          <div class="article-list">
-            <div class="list-row has-state" [class.moved-highlight]="isMovedRight(it.id)" *ngFor="let it of (listItemsRight | slice:(currentPageRight*pageSizeRight):((currentPageRight+1)*pageSizeRight)); let i = index">
-              <div class="row-index">{{ currentPageRight * pageSizeRight + i + 1 }}</div>
-              <div class="select-column">
-                <mat-checkbox [disabled]="!isRightItemSelectable(it.id)" [checked]="selectedRightIds.has(it.id)" (change)="toggleSelectionRight(it)"></mat-checkbox>
-              </div>
-              <div class="code-column">{{ it.code }}</div>
-              <div class="designation-column">{{ it.designation }}</div>
-              <div class="state-column">
-                <span class="state-pill" [class.state-draft]="it.state==='brouillon'" [class.state-ref]="it.state==='référencé'">{{ it.state==='brouillon' ? 'Brouillon' : 'Référencé' }}</span>
-              </div>
-              <div class="enseigne-column" *ngIf="it.enseignes?.length">
-                <span class="enseigne-pill" *ngFor="let t of getEnseigneTags(it)" [class.enseigne-boulanger]="t==='BL'" [class.enseigne-electrodepot]="t==='ED'">{{ t }}</span>
-              </div>
-              <div class="actions-column">
-                <button mat-icon-button class="detail-btn" (click)="viewDetails(it)" aria-label="Détail">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-              </div>
-            </div>
-          </div>
-          </div>
-          
-        </mat-card-content>
-      </mat-card>
-      </div>
-      
-    </div>
-    <div class="right-col">
-      <mat-card class="merch-card">
+      <mat-card class="merch-card block-merch">
         <mat-card-header>
           <mat-card-title>Arborescence interne</mat-card-title>
         </mat-card-header>
@@ -615,7 +560,51 @@
           </div>
         </mat-card-content>
       </mat-card>
-    </div>
+
+      <mat-card class="list-card block-list">
+        <mat-card-header>
+          <div class="list-header-index">(2)</div>
+          <div class="list-header-actions">
+            <mat-checkbox 
+              [checked]="areAllPagedSelectedRight()"
+              [indeterminate]="areSomePagedSelectedRight()"
+              (change)="toggleAllRight()"
+              aria-label="Tout sélectionner">
+            </mat-checkbox>
+          </div>
+          <textbox_list2 [(value)]="rightFilterText" (valueChange)="onFilterRightChange($event)"></textbox_list2>
+          <div class="header-pager">
+            <button class="pager-btn" (click)="firstPageRight()" [disabled]="currentPageRight === 0">«</button>
+            <button class="pager-btn" (click)="prevPageRight()" [disabled]="currentPageRight === 0">‹</button>
+            <span class="pager-index">Page {{currentPageRight + 1}}</span>
+            <button class="pager-btn" (click)="nextPageRight()" [disabled]="(currentPageRight + 1) * pageSizeRight >= listItemsRight.length">›</button>
+            <button class="pager-btn" (click)="lastPageRight()" [disabled]="(currentPageRight + 1) * pageSizeRight >= listItemsRight.length">»</button>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="list-scroll">
+          <div class="article-list">
+            <div class="list-row" [class.moved-highlight]="isMovedRight(it.id)" *ngFor="let it of (listItemsRight | slice:(currentPageRight*pageSizeRight):((currentPageRight+1)*pageSizeRight)); let i = index">
+              <div class="row-index">{{ currentPageRight * pageSizeRight + i + 1 }}</div>
+              <div class="select-column">
+                <mat-checkbox [disabled]="!isRightItemSelectable(it.id)" [checked]="selectedRightIds.has(it.id)" (change)="toggleSelectionRight(it)"></mat-checkbox>
+              </div>
+              <div class="code-column">
+                {{ it.code }}
+                <span class="enseigne-tag" *ngFor="let t of getEnseigneTags(it)" [class.enseigne-tag-bl]="t==='BL'" [class.enseigne-tag-ed]="t==='ED'">{{ t }}</span>
+              </div>
+              <div class="designation-column">{{ it.designation }}</div>
+              <div class="actions-column">
+                <button mat-icon-button class="detail-btn" (click)="viewDetails(it)" aria-label="Détail">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+          </div>
+          
+        </mat-card-content>
+      </mat-card>
   </div>
 
   <!-- Dialog: Information sélection -->

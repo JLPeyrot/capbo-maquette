@@ -1,0 +1,24 @@
+.list-card { margin: 0; height: 100%; border-radius: 12px; border: 1px solid #ff8c00; box-shadow: none; }
+.list-card .mat-mdc-card-header { display: flex; align-items: center; justify-content: flex-start; gap: 6px; background: #ff8c00; color: #fff; min-height: 40px; padding: 6px 10px; }
+.list-header-index { color: #fff; font-weight: 700; font-size: 14px; line-height: 20px; margin: 0 8px; }
+.list-header-actions { display: flex; align-items: center; justify-content: center; }
+.list-header-actions .mat-mdc-checkbox { --mdc-checkbox-selected-fill-color: #fff; --mdc-checkbox-unselected-fill-color: #fff; --mdc-checkbox-selected-icon-color: #1976d2; --mdc-checkbox-unselected-icon-color: #1976d2; }
+.header-search { flex: 1; display: none; align-items: center; }
+.search-input { width: 100%; height: 22px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.2); color: #fff; font-size: 12px; padding: 0 6px; }
+.header-pager { display: flex; align-items: center; gap: 8px; margin-left: 8px; }
+.pager-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 1px 6px; }
+.pager-index { color: #fff; font-weight: 600; font-size: 12px; }
+.list-card .mat-mdc-card-content { padding-bottom: 0 !important; min-height: 0; display: flex; }
+.list-scroll { width: 100%; flex: 1; min-height: 0; }
+.article-list { display: flex; flex-direction: column; padding-bottom: 0; }
+.article-list .list-row:last-child { border-bottom: none; }
+.list-row { display: grid; grid-template-columns: 24px 40px minmax(80px, max-content) 1fr auto; align-items: center; gap: 0; padding: 0; border-bottom: 0; min-height: 16px; max-height: 26px; overflow: hidden; }
+.list-row > * { max-height: 26px; overflow: hidden; }
+.article-list .mat-mdc-checkbox { transform: scale(0.6); }
+.code-column { font-weight: 600; color: #333; font-size: 10px; line-height: 12px; white-space: nowrap; }
+.row-index { display: flex; align-items: center; justify-content: center; font-size: 10px; line-height: 12px; color: #666; }
+.designation-column { color: #555; font-size: 9px; line-height: 12px; min-width: 0; }
+.actions-column { display: flex; align-items: center; justify-content: flex-end; }
+
+.pill-vendable { background: #e8f5e9; border-color: #c8e6c9; color: #2e7d32; font-weight: 600; font-size: 10px; padding: 1px 6px; line-height: 1.4; }
+.pill-commandable { background: #fff3e0; border-color: #ffe0b2; color: #e65100; font-weight: 600; font-size: 10px; padding: 1px 6px; line-height: 1.4; }

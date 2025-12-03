@@ -1,0 +1,43 @@
+<mat-card class="list-card">
+  <mat-card-header>
+    <div class="list-header-index">(1)</div>
+    <div class="list-header-actions">
+      <mat-checkbox 
+        [checked]="allSelected"
+        [indeterminate]="someSelected"
+        (change)="toggleAll()"
+        aria-label="Tout sélectionner">
+      </mat-checkbox>
+    </div>
+    <div class="header-search">
+      <input class="search-input" [value]="searchTerm" (input)="emitSearch($any($event.target).value)" placeholder="" />
+    </div>
+    <div class="header-pager">
+      <button class="pager-btn" (click)="firstPage()" [disabled]="currentPage === 0">«</button>
+      <button class="pager-btn" (click)="prevPage()" [disabled]="currentPage === 0">‹</button>
+      <span class="pager-index">Page {{currentPage + 1}}</span>
+      <button class="pager-btn" (click)="nextPage()" [disabled]="(currentPage + 1) * pageSize >= filteredArticles.length">›</button>
+      <button class="pager-btn" (click)="lastPage()" [disabled]="(currentPage + 1) * pageSize >= filteredArticles.length">»</button>
+    </div>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="list-scroll">
+      <div class="article-list">
+        <div class="list-row" *ngFor="let article of (filteredArticles | slice:(currentPage*pageSize):((currentPage+1)*pageSize)); let i = index">
+          <div class="row-index">{{ currentPage * pageSize + i + 1 }}</div>
+          <div class="select-column">
+            <mat-checkbox [checked]="isArticleSelected(article.code)" (change)="onArticleSelect(article.code, $event.checked)"></mat-checkbox>
+          </div>
+          <div class="code-column">{{ article.code }}</div>
+          <div class="designation-column">{{ article.libelle }}</div>
+          <div class="actions-column" *ngIf="showMetaPills">
+            <div class="meta-pills inline">
+              <span *ngIf="hasVendable(article.code)" class="pill pill-vendable">V</span>
+              <span *ngIf="hasCommandable(article.code)" class="pill pill-commandable">C</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>
