@@ -10,21 +10,15 @@ import { Router, ActivatedRoute } from '@angular/router';
 // Import des composants de pages
 import { ArticlesListComponent } from '../../pages/articles-list/articles-list.component';
 import { CreateArticleComponent } from '../../pages/create-article/create-article.component';
-import { SuppliersComponent } from '../../pages/suppliers/suppliers.component';
 import { ReceptionTrunkComponent } from '../../pages/reception-trunk/reception-trunk.component';
-import { TrunkSelectionComponent } from '../../pages/trunk-selection/trunk-selection.component';
-import { TrunkListComponent } from '../../pages/trunk-list/trunk-list.component';
-import { CreateAssortmentsComponent } from '../../pages/create-assortments/create-assortments.component';
-import { EnrichmentAssortmentComponent } from '../../pages/enrichment-assortment/enrichment-assortment.component';
-import { TrunkAssortmentsComponent } from '../../pages/trunk-assortments/trunk-assortments.component';
 import { AlertPopupComponent, AlertData } from '../../shared/components/alert-popup/alert-popup.component';
 import { CreateTrunkComponent } from '../../pages/create-trunk/create-trunk.component';
 import { TrunkManagementComponent } from '../../pages/trunk-management/trunk-management.component';
 import { TrunkControlComponent } from '../../pages/trunk-control/trunk-control.component';
 import { DataPageComponent } from '../../pages/data-page/data-page.component';
 import { AssortmentsBulkManagementComponent } from '../../pages/assortments-bulk-management/assortments-bulk-management.component';
+import { AssortmentsManagementComponent } from '../../pages/assortments-management/assortments-management.component';
 import { ReferencementComponent } from '../../pages/referencement/referencement.component';
-import { ReferencementReviewComponent } from '../../pages/referencement-review/referencement-review.component';
 import { SupplierImportComponent } from '../../pages/supplier-import/supplier-import.component';
 import { ReferencementArticleComponent } from '../../pages/referencement-article/referencement-article.component';
 import { CompanySettingsComponent } from '../../pages/company-settings/company-settings.component';
@@ -59,20 +53,14 @@ interface ExpandedGroups {
       FormsModule,
       ArticlesListComponent,  // Import du composant liste des articles
       CreateArticleComponent,  // AJOUT de l'import du composant création
-      SuppliersComponent,
       ReceptionTrunkComponent,
-      TrunkSelectionComponent,  // Import du composant sélection de tronc
-      TrunkListComponent,  // Import du composant liste des troncs
-      CreateAssortmentsComponent,
-      EnrichmentAssortmentComponent,
-      TrunkAssortmentsComponent,
       CreateTrunkComponent,
       TrunkManagementComponent,
       TrunkControlComponent,
       DataPageComponent,
       AssortmentsBulkManagementComponent,
+      AssortmentsManagementComponent,
       ReferencementComponent,
-      ReferencementReviewComponent,
       SupplierImportComponent,
       ReferencementArticleComponent,
       CompanySettingsComponent,
@@ -103,9 +91,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   };
   
   // AJOUT : État de navigation
-  suppliersCreateMode: boolean = false;
   referencementSupplierOnly: boolean = false;
-  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'suppliers' | 'reception-trunk' | 'trunk-selection' | 'trunk-list' | 'create-assortments' | 'enrichment-assortment' | 'trunk-assortments' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'assortments-bulk-management' | 'data-page' | 'referencement' | 'referencement-review' | 'supplier-import' | 'referencement-article' | 'local-articles' | 'company-settings' = 'dashboard';
+  currentView: 'dashboard' | 'articles' | 'articles-list' | 'create-article' | 'edit-article' | 'create-order' | 'reception-trunk' | 'create-trunk' | 'trunk-management' | 'trunk-control' | 'assortments-bulk-management' | 'assortments-management' | 'data-page' | 'referencement' | 'supplier-import' | 'referencement-article' | 'local-articles' | 'company-settings' = 'dashboard';
   
   // NOUVEAU : Mode focus
   isFocusMode: boolean = false;
@@ -247,7 +234,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     console.log('Route actuelle:', url);
     
     if (url.includes('/referencement/review')) {
-      this.currentView = 'referencement-review';
+      this.currentView = 'referencement';
       this.isFocusMode = false;
     } else if (url.includes('/referencement-article')) {
       this.currentView = 'referencement-article';
@@ -257,29 +244,22 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       this.isFocusMode = false;
       const supplierOnlyParam = this.route.snapshot.queryParamMap.get('supplierOnly');
       this.referencementSupplierOnly = supplierOnlyParam === '1' || supplierOnlyParam === 'true';
-    } else 
-    if (url.includes('/trunk-selection')) {
-      this.currentView = 'trunk-selection';
+    } else if (url.includes('/trunk-selection')) {
+      // page supprimée
+      this.currentView = 'trunk-management';
       this.isFocusMode = false;
-    } else if (url.includes('/trunk-assortments')) {
-      this.currentView = 'trunk-assortments';
-      this.isFocusMode = false;
+      this.router.navigate(['/trunk-management']);
     } else if (url.includes('/assortment-trunk')) {
       // ancienne route, ne rien faire
       this.currentView = 'trunk-management';
       this.isFocusMode = false;
     } else if (url.includes('/add-assortments')) {
-      // ancienne page, basculer vers create-assortments
-      this.currentView = 'create-assortments';
+      // ancienne page supprimée, rediriger vers gestion des assortiments
+      this.currentView = 'assortments-management';
       this.isFocusMode = false;
+      this.router.navigate(['/assortments-management']);
     } else if (url.includes('/reception-trunk')) {
       this.currentView = 'reception-trunk';
-      this.isFocusMode = false;
-    } else if (url.includes('/create-assortments')) {
-      this.currentView = 'create-assortments';
-      this.isFocusMode = false;
-    } else if (url.includes('/enrichment-assortment')) {
-      this.currentView = 'enrichment-assortment';
       this.isFocusMode = false;
     } else if (url.includes('/create-trunk')) {
       this.currentView = 'create-trunk';
@@ -367,49 +347,30 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         this.currentView = 'create-article';
         this.isFocusMode = true; // Création = mode focus
         break;
-      case 'suppliers':
-        this.currentView = 'suppliers';
-        this.isFocusMode = false;
-        this.suppliersCreateMode = false;
-        break;
-      case 'suppliers-create':
-        this.currentView = 'suppliers';
-        this.isFocusMode = true;
-        this.suppliersCreateMode = true;
-        break;
+      
       case 'assortment-trunk':
         // route supprimée, rediriger vers gestion des troncs
         this.currentView = 'trunk-management';
         this.isFocusMode = false;
         this.router.navigate(['/trunk-management']);
         break;
-      case 'trunk-list':
-        this.currentView = 'trunk-list';
-        this.isFocusMode = false;
-        break;
       case 'reception-trunk':
         this.currentView = 'reception-trunk';
         this.isFocusMode = false;
         break;
       case 'trunk-selection':
-        this.currentView = 'trunk-selection';
+        // page supprimée, rediriger vers gestion des assortiments ou troncs
+        this.currentView = 'trunk-management';
         this.isFocusMode = false;
+        this.router.navigate(['/trunk-management']);
         break;
       case 'add-assortments':
-        // page supprimée, rediriger vers création d’assortiments
-        this.currentView = 'create-assortments';
+        // page supprimée, rediriger vers gestion des assortiments
+        this.currentView = 'assortments-management';
         this.isFocusMode = false;
-        this.router.navigate(['/create-assortments']);
+        this.router.navigate(['/assortments-management']);
         break;
-      case 'create-assortments':
-        this.currentView = 'create-assortments';
-        this.isFocusMode = false;
-        break;
-      case 'enrichment-assortment':
-        this.currentView = 'enrichment-assortment';
-        this.isFocusMode = false;
-        this.router.navigate(['/enrichment-assortment']);
-        break;
+      
       case 'create-trunk':
         this.currentView = 'create-trunk';
         this.isFocusMode = false;
@@ -424,6 +385,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
         break;
       case 'assortments-bulk':
         this.currentView = 'assortments-bulk-management';
+        this.isFocusMode = false;
+        break;
+      case 'assortments-management':
+        this.currentView = 'assortments-management';
         this.isFocusMode = false;
         break;
       case 'company-settings':

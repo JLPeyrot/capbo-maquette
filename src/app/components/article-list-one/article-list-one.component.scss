@@ -12,12 +12,17 @@
 .list-scroll { width: 100%; flex: 1; min-height: 0; }
 .article-list { display: flex; flex-direction: column; padding-bottom: 0; }
 .article-list .list-row:last-child { border-bottom: none; }
-.list-row { display: grid; grid-template-columns: 24px 40px minmax(80px, max-content) 1fr auto; align-items: center; gap: 0; padding: 0; border-bottom: 0; min-height: 16px; max-height: 26px; overflow: hidden; }
+.list-row { display: grid; grid-template-columns: 40px minmax(80px, max-content) 1fr 160px 120px 18px 18px; align-items: center; gap: 0; padding: 0; border-bottom: 0; min-height: 16px; max-height: 26px; overflow: hidden; }
 .list-row > * { max-height: 26px; overflow: hidden; }
 .article-list .mat-mdc-checkbox { transform: scale(0.6); }
 .code-column { font-weight: 600; color: #333; font-size: 10px; line-height: 12px; white-space: nowrap; }
-.row-index { display: flex; align-items: center; justify-content: center; font-size: 10px; line-height: 12px; color: #666; }
 .designation-column { color: #555; font-size: 9px; line-height: 12px; min-width: 0; }
+.trunk-name-column { color: #333; font-size: 10px; line-height: 12px; white-space: nowrap; }
+.assort-type-column { color: #333; font-size: 10px; line-height: 12px; white-space: nowrap; }
+.c-column, .v-column { display: flex; align-items: center; justify-content: center; }
+.badge { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 8px; font-size: 10px; font-weight: 600; line-height: 1; }
+.badge-c { background: #fff3e0; border: 1px solid #ffe0b2; color: #e65100; }
+.badge-v { background: #e8f5e9; border: 1px solid #c8e6c9; color: #2e7d32; }
 .actions-column { display: flex; align-items: center; justify-content: flex-end; }
 
 .pill-vendable { background: #e8f5e9; border-color: #c8e6c9; color: #2e7d32; font-weight: 600; font-size: 10px; padding: 1px 6px; line-height: 1.4; }

@@ -16,6 +16,8 @@ export class ArticleListOneComponent {
   @Input() currentPage: number = 0;
   @Input() allSelected: boolean = false;
   @Input() someSelected: boolean = false;
+  @Input() trunkNameById?: Record<string, string>;
+  @Input() getAssortTypeShort?: (article: Article) => string;
   @Input() isArticleSelected!: (code: string) => boolean;
   @Input() onArticleSelect!: (code: string, checked: boolean) => void;
   @Input() hasVendable!: (code: string) => boolean;

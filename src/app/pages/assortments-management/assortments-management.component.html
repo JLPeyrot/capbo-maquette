@@ -1,0 +1,163 @@
+<div class="bulk-assortments-container">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <mat-icon class="page-icon">view_list</mat-icon>
+        <div>
+          <h1>Gestion des assortiments [10]</h1>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="sidebar-left">
+      <div class="sidebar-header">
+        <h3>Arborescence</h3>
+      </div>
+      <div class="sidebar-content">
+        <app-global-tree-view
+          *ngIf="!isLoading && hierarchyNodes.length > 0"
+          [nodes]="hierarchyNodes"
+          [config]="treeConfig"
+          [getSelectedCountForNode]="undefined"
+          (nodeAction)="onNodeAction($event)">
+        </app-global-tree-view>
+
+        <div *ngIf="isLoading" class="loading-state">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Chargement de l'arborescence...</p>
+        </div>
+
+        <div *ngIf="!isLoading && hierarchyNodes.length === 0" class="empty-state">
+          <mat-icon>folder_open</mat-icon>
+          <p>Aucune donnée disponible</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-bar">
+      <span class="filters-title">Filtres</span>
+      <mat-form-field appearance="outline" class="assort-types">
+        <mat-select [(ngModel)]="selectedAssortTypes" multiple (selectionChange)="onFiltersChange()" placeholder="Types d'assortiments">
+          <mat-option value="permanent">Permanent</mat-option>
+          <mat-option value="promotionnel">Promotionnel</mat-option>
+          <mat-option value="catalogue">Catalogue</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-checkbox [(ngModel)]="filterCommandable" (change)="onFiltersChange()">Commandable</mat-checkbox>
+      <mat-checkbox [(ngModel)]="filterVendable" (change)="onFiltersChange()">Vendable</mat-checkbox>
+      <mat-checkbox [(ngModel)]="includeAssignedToTrunk" (change)="onFiltersChange()">Inclure affectés à des troncs</mat-checkbox>
+      <mat-checkbox [(ngModel)]="onlyNonAssorted" (change)="onFiltersChange()">Non assortis</mat-checkbox>
+    </div>
+
+    <app-article-list-one
+      [filteredArticles]="filteredArticles"
+      [pageSize]="pageSizeList"
+      [currentPage]="currentPageList"
+      [allSelected]="areAllPagedSelected()"
+      [someSelected]="areSomePagedSelected()"
+      [trunkNameById]="trunkNameById"
+      [getAssortTypeShort]="getAssortTypeShort.bind(this)"
+      [isArticleSelected]="isArticleSelected.bind(this)"
+      [onArticleSelect]="onArticleSelect.bind(this)"
+      [hasVendable]="hasVendable.bind(this)"
+      [hasCommandable]="hasCommandable.bind(this)"
+      [firstPage]="firstPage.bind(this)"
+      [prevPage]="prevPage.bind(this)"
+      [nextPage]="nextPage.bind(this)"
+      [lastPage]="lastPage.bind(this)"
+      [toggleAll]="toggleAllPaged.bind(this)"
+      [searchTerm]="searchTerm"
+      [onSearchChange]="onSearchChange.bind(this)"
+      [showMetaPills]="false">
+    </app-article-list-one>
+
+    <div class="sidebar-right">
+      <div class="sidebar-header">
+        <h3>Actions</h3>
+      </div>
+      <div class="sidebar-content">
+        <mat-card class="actions-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>settings</mat-icon>
+              Global
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="actions-group">
+              <button mat-stroked-button color="primary" (click)="changeDeploymentTypology()">
+                <mat-icon>account_tree</mat-icon>
+                Typologie de déploiement
+              </button>
+              <button mat-stroked-button color="primary" (click)="changeType()">
+                <mat-icon>tune</mat-icon>
+                Modifier type
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="actions-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>shopping_cart</mat-icon>
+              Commandable
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="actions-group">
+              <button mat-stroked-button color="primary" (click)="changeStartDate()">
+                <mat-icon>calendar_today</mat-icon>
+                Date de début
+              </button>
+              <button mat-stroked-button color="primary" (click)="changeEndDate()">
+                <mat-icon>event</mat-icon>
+                Date de fin
+              </button>
+              <button mat-stroked-button color="primary" (click)="editPurchaseConditions()">
+                <mat-icon>receipt_long</mat-icon>
+                Conditions d'achat
+              </button>
+              <button mat-stroked-button color="primary" (click)="editDeliveryCadence()">
+                <mat-icon>schedule</mat-icon>
+                Cadencier livraison
+              </button>
+              <button mat-stroked-button color="primary" (click)="editStockThreshold()">
+                <mat-icon>inventory_2</mat-icon>
+                Seuil de stockage
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="actions-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>sell</mat-icon>
+              Vendable
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="actions-group">
+              <button mat-stroked-button color="primary" (click)="changeStartDate()">
+                <mat-icon>calendar_today</mat-icon>
+                Date de début
+              </button>
+              <button mat-stroked-button color="primary" (click)="changeEndDate()">
+                <mat-icon>event</mat-icon>
+                Date de fin
+              </button>
+              <button mat-stroked-button color="primary" (click)="editSellStatus()">
+                <mat-icon>toggle_on</mat-icon>
+                Gestion du statut
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

@@ -66,14 +66,6 @@
                 <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
                 <div matListItemTitle>Commandes Fournisseurs</div>
               </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('suppliers')">
-                <mat-icon matListItemIcon>business</mat-icon>
-                <div matListItemTitle>Fournisseurs</div>
-              </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('suppliers-create')">
-                <mat-icon matListItemIcon>person_add</mat-icon>
-                <div matListItemTitle>Créer un fournisseur</div>
-              </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('receipts')">
                 <mat-icon matListItemIcon>local_shipping</mat-icon>
                 <div matListItemTitle>Réceptions</div>
@@ -138,22 +130,18 @@
               <span>ASSORTIMENTS</span>
               <mat-icon class="expand-icon" [class.expanded]="expandedGroups.assortments">expand_more</mat-icon>
             </button>
-            <div class="submenu" [class.expanded]="expandedGroups.assortments">
-              <mat-list-item class="submenu-item" (click)="navigateTo('create-trunk')">
-                <mat-icon matListItemIcon>account_tree</mat-icon>
-                <div matListItemTitle>Création d'un tronc</div>
-              </mat-list-item>
+          <div class="submenu" [class.expanded]="expandedGroups.assortments">
               <mat-list-item class="submenu-item" (click)="navigateTo('trunk-management')">
                 <mat-icon matListItemIcon>manage_accounts</mat-icon>
                 <div matListItemTitle>Gestion des Troncs</div>
               </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('create-assortments')">
-                <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
-                <div matListItemTitle>Création d'assortiment</div>
-              </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('assortments-bulk')">
                 <mat-icon matListItemIcon>playlist_add_check_circle</mat-icon>
-                <div matListItemTitle>Gestion en masse des assortiments</div>
+                <div matListItemTitle>Affecter assortiments</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('assortments-management')">
+                <mat-icon matListItemIcon>view_list</mat-icon>
+                <div matListItemTitle>Gestion assortiment</div>
               </mat-list-item>
             </div>
           </div>
@@ -310,14 +298,6 @@
                 <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
                 <div matListItemTitle>Commandes Fournisseurs</div>
               </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('suppliers')">
-                <mat-icon matListItemIcon>business</mat-icon>
-                <div matListItemTitle>Fournisseurs</div>
-              </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('suppliers-create')">
-                <mat-icon matListItemIcon>person_add</mat-icon>
-                <div matListItemTitle>Créer un fournisseur</div>
-              </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('receipts')">
                 <mat-icon matListItemIcon>local_shipping</mat-icon>
                 <div matListItemTitle>Réceptions</div>
@@ -380,21 +360,17 @@
               <mat-icon class="expand-icon" [class.expanded]="expandedGroups.assortments">expand_more</mat-icon>
             </button>
             <div class="submenu" [class.expanded]="expandedGroups.assortments">
-              <mat-list-item class="submenu-item" (click)="navigateTo('create-trunk')">
-                <mat-icon matListItemIcon>add_box</mat-icon>
-                <div matListItemTitle>Création de tronc</div>
-              </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('trunk-management')">
                 <mat-icon matListItemIcon>dashboard</mat-icon>
                 <div matListItemTitle>Gestion des troncs</div>
               </mat-list-item>
-              <mat-list-item class="submenu-item" (click)="navigateTo('create-assortments')">
-                <mat-icon matListItemIcon>playlist_add</mat-icon>
-                <div matListItemTitle>Création d'assortiments</div>
-              </mat-list-item>
               <mat-list-item class="submenu-item" (click)="navigateTo('assortments-bulk')">
                 <mat-icon matListItemIcon>tune</mat-icon>
-                <div matListItemTitle>Gestion en masse des assortiments</div>
+                <div matListItemTitle>Affecter assortiments</div>
+              </mat-list-item>
+              <mat-list-item class="submenu-item" (click)="navigateTo('assortments-management')">
+                <mat-icon matListItemIcon>view_list</mat-icon>
+                <div matListItemTitle>Gestion assortiment</div>
               </mat-list-item>
             </div>
           </div>
@@ -590,10 +566,7 @@
         <app-create-article (goBack)="exitFocusMode()" [isFocusMode]="isFocusMode"></app-create-article>
       </div>
 
-      <!-- PAGE SUPPLIERS -->
-      <div *ngSwitchCase="'suppliers'" class="page-container">
-        <app-suppliers></app-suppliers>
-      </div>
+      
 
       <!-- PAGE ASSORTMENT TRUNK -->
 
@@ -602,32 +575,18 @@
         <app-reception-trunk></app-reception-trunk>
       </div>
 
-      <!-- PAGE TRUNK SELECTION -->
-      <div *ngSwitchCase="'trunk-selection'" class="page-container">
-        <app-trunk-selection></app-trunk-selection>
-      </div>
+      
 
       <!-- PAGE ADD ASSORTMENTS (mode normal avec navigation) -->
 
-      <!-- PAGE TRUNK LIST -->
-      <div *ngSwitchCase="'trunk-list'" class="page-container">
-        <app-trunk-list></app-trunk-list>
-      </div>
+      
 
-      <!-- PAGE CREATE ASSORTMENTS -->
-      <div *ngSwitchCase="'create-assortments'" class="page-container">
-        <app-create-assortments></app-create-assortments>
-      </div>
 
       <!-- PAGE ENRICHMENT ASSORTMENT -->
-      <div *ngSwitchCase="'enrichment-assortment'" class="page-container">
-        <app-enrichment-assortment></app-enrichment-assortment>
-      </div>
+      
 
       <!-- PAGE TRUNK ASSORTMENTS -->
-      <div *ngSwitchCase="'trunk-assortments'" class="page-container">
-        <app-trunk-assortments></app-trunk-assortments>
-      </div>
+      
 
       <!-- PAGE CREATE TRUNK -->
       <div *ngSwitchCase="'create-trunk'" class="page-container">
@@ -648,6 +607,10 @@
       <div *ngSwitchCase="'assortments-bulk-management'" class="page-container">
         <app-assortments-bulk-management></app-assortments-bulk-management>
       </div>
+      <!-- PAGE ASSORTMENTS MANAGEMENT -->
+      <div *ngSwitchCase="'assortments-management'" class="page-container">
+        <app-assortments-management></app-assortments-management>
+      </div>
 
       <!-- PAGE DE DONNÉES -->
       <div *ngSwitchCase="'data-page'" class="page-container">
@@ -665,10 +628,7 @@
       </div>
 
 
-      <!-- PAGE RÉFÉRENCEMENT REVIEW -->
-      <div *ngSwitchCase="'referencement-review'" class="page-container">
-        <app-referencement-review></app-referencement-review>
-      </div>
+      
 
       <!-- PAGE IMPORT FOURNISSEURS -->
       <div *ngSwitchCase="'supplier-import'" class="page-container">
@@ -680,10 +640,7 @@
         <app-referencement-article></app-referencement-article>
       </div>
 
-      <!-- PAGE FOURNISSEURS -->
-      <div *ngSwitchCase="'suppliers'" class="page-container">
-        <app-suppliers [createMode]="suppliersCreateMode"></app-suppliers>
-      </div>
+      
 
       <!-- PAGE PARAMÉTRAGE ENTREPRISE -->
       <div *ngSwitchCase="'company-settings'" class="page-container">

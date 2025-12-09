@@ -24,18 +24,15 @@
     <div class="list-scroll">
       <div class="article-list">
         <div class="list-row" *ngFor="let article of (filteredArticles | slice:(currentPage*pageSize):((currentPage+1)*pageSize)); let i = index">
-          <div class="row-index">{{ currentPage * pageSize + i + 1 }}</div>
           <div class="select-column">
             <mat-checkbox [checked]="isArticleSelected(article.code)" (change)="onArticleSelect(article.code, $event.checked)"></mat-checkbox>
           </div>
           <div class="code-column">{{ article.code }}</div>
           <div class="designation-column">{{ article.libelle }}</div>
-          <div class="actions-column" *ngIf="showMetaPills">
-            <div class="meta-pills inline">
-              <span *ngIf="hasVendable(article.code)" class="pill pill-vendable">V</span>
-              <span *ngIf="hasCommandable(article.code)" class="pill pill-commandable">C</span>
-            </div>
-          </div>
+          <div class="trunk-name-column" *ngIf="article.trunkId">{{ trunkNameById?.[article.trunkId] || article.trunkId }}</div>
+          <div class="assort-type-column">{{ getAssortTypeShort ? getAssortTypeShort(article) : '' }}</div>
+          <div class="c-column"><span class="badge badge-c" *ngIf="hasCommandable(article.code)">C</span></div>
+          <div class="v-column"><span class="badge badge-v" *ngIf="hasVendable(article.code)">V</span></div>
         </div>
       </div>
     </div>

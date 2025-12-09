@@ -16,7 +16,7 @@ export const routes: Routes = [
   },
   {
     path: 'referencement/review',
-    component: MainLayoutComponent
+    redirectTo: 'referencement'
   },
   {
     path: 'referencement-article',
@@ -31,8 +31,9 @@ export const routes: Routes = [
     component: MainLayoutComponent
   },
   {
+    // page supprimée
     path: 'trunk-selection',
-    component: MainLayoutComponent
+    redirectTo: 'trunk-management'
   },
   {
     path: 'assortment-trunk',
@@ -40,23 +41,26 @@ export const routes: Routes = [
   },
   {
     path: 'add-assortments',
-    redirectTo: 'create-assortments'
+    redirectTo: 'assortments-management'
   },
   {
+    // page supprimée
     path: 'trunk-list',
-    component: MainLayoutComponent
+    redirectTo: 'trunk-management'
   },
+  // page supprimée: redirection
   {
     path: 'create-assortments',
-    component: MainLayoutComponent
+    redirectTo: 'assortments-management'
   },
   {
     path: 'enrichment-assortment',
-    component: MainLayoutComponent
+    redirectTo: 'assortments-management'
   },
   {
+    // page supprimée
     path: 'trunk-assortments/:id',
-    component: MainLayoutComponent
+    redirectTo: 'trunk-management'
   },
   {
     path: 'create-trunk',
