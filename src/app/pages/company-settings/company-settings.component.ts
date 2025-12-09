@@ -1,4 +1,5 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../shared/material-module';
@@ -11,12 +12,14 @@ import { MaterialModule } from '../../shared/material-module';
   styleUrls: ['./company-settings.component.scss']
 })
 export class CompanySettingsComponent {
-  sliders: { value: number; name: string }[] = [{ value: 500, name: '' }];
+  sliders: { value: number; name: string }[] = [];
   min = 0;
   max = 500;
   step = 1;
+  defaultMaxName: string = '';
   dragIndex: number | null = null;
   @ViewChild('track') trackEl!: ElementRef<HTMLDivElement>;
+  constructor(private snackBar: MatSnackBar) {}
 
   formatArea(value: number): string {
     return `${value} m²`;
@@ -80,7 +83,7 @@ export class CompanySettingsComponent {
   }
 
   removeSlider(index: number): void {
-    if (index <= 0) return;
+    if (index < 0 || index >= this.sliders.length) return;
     this.sliders.splice(index, 1);
     this.updateMax();
   }
@@ -88,5 +91,14 @@ export class CompanySettingsComponent {
   private updateMax(): void {
     const last = this.sliders[this.sliders.length - 1]?.value ?? this.min + 1;
     this.max = Math.max(this.min + 1, last + 50);
+  }
+
+  saveSettings(): void {
+    const sizes = [{ value: this.min, name: this.defaultMaxName }, ...this.sliders];
+    const payload = { min: this.min, sizes };
+    try {
+      localStorage.setItem('company-store-sizes', JSON.stringify(payload));
+      this.snackBar.open('Paramètres enregistrés', 'Fermer', { duration: 3000 });
+    } catch {}
   }
 }

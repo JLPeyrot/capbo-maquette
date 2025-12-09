@@ -23,6 +23,15 @@
           </div>
         </div>
         <div class="values-table">
+          <div class="value-row">
+            <mat-form-field appearance="outline" class="value-field">
+              <input matInput type="number" [value]="min" disabled>
+              <span matTextSuffix>m²</span>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="name-field">
+              <input matInput type="text" placeholder="Nom" [(ngModel)]="defaultMaxName">
+            </mat-form-field>
+          </div>
           <div class="value-row" *ngFor="let s of sliders; let i = index">
             <mat-form-field appearance="outline" class="value-field">
               <input matInput type="number" [min]="min" [max]="max" [step]="step" [(ngModel)]="sliders[i].value" (ngModelChange)="onValueChange(i, $event)">
@@ -31,12 +40,15 @@
             <mat-form-field appearance="outline" class="name-field">
               <input matInput type="text" placeholder="Nom" [(ngModel)]="sliders[i].name">
             </mat-form-field>
-            <button mat-icon-button class="delete-btn" *ngIf="i > 0" (click)="removeSlider(i)" aria-label="Supprimer">
+            <button mat-icon-button class="delete-btn" (click)="removeSlider(i)" aria-label="Supprimer">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
         </div>
       </div>
     </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-flat-button color="primary" (click)="saveSettings()">Enregistrer</button>
+    </mat-card-actions>
   </mat-card>
 </div>

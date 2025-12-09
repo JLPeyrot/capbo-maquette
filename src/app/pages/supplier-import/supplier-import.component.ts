@@ -178,6 +178,7 @@ export class SupplierImportComponent implements OnInit {
   }
 
   goToReferencement(): void {
+    if (this.isImporting || this.progress < 100) return;
     const params: any = {};
     if (this.selectedSupplier) params.fournisseur = this.selectedSupplier;
     this.router.navigate(['/referencement'], { queryParams: params });
