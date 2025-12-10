@@ -1,18 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../shared/material-module';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule, DateAdapter } from '@angular/material/core';
 import { ArticlesService, Article } from '../../services/articles.service';
 import { TrunksService, TrunkOption } from '../../services/trunks.service';
 import { TrunkHierarchyNode, TreeNodeAction, TreeViewConfig } from '../../interfaces/trunk-hierarchy.interface';
 import { GlobalTreeViewComponent } from '../../components/global-tree-view/global-tree-view.component';
 import { ArticleListOneComponent } from '../../components/article-list-one/article-list-one.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-assortments-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, GlobalTreeViewComponent, ArticleListOneComponent],
+  imports: [CommonModule, FormsModule, MaterialModule, GlobalTreeViewComponent, ArticleListOneComponent, MatDatepickerModule, MatNativeDateModule],
   templateUrl: './assortments-management.component.html',
   styleUrls: ['./assortments-management.component.scss']
 })
@@ -41,10 +45,35 @@ export class AssortmentsManagementComponent implements OnInit {
   selectedAssortTypes: string[] = [];
 
   trunkNameById: Record<string, string> = {};
+  @ViewChild('deploymentTypologyDialog') deploymentTypologyDialog!: TemplateRef<any>;
+  deploymentTypology: 'Ouvert' | 'Mixte' | 'Fermé' = 'Fermé';
+  private typologyDialogRef: MatDialogRef<any> | undefined;
+  @ViewChild('assortTypeDialog') assortTypeDialog!: TemplateRef<any>;
+  private typeDialogRef: MatDialogRef<any> | undefined;
+  assortmentType: 'permanent' | 'promotionnel' | 'catalogue' = 'permanent';
+  @ViewChild('levelDialog') levelDialog!: TemplateRef<any>;
+  private levelDialogRef: MatDialogRef<any> | undefined;
+  selectedLevel?: number;
+  trunkLevelLabels: Record<number, string> = {};
+  @ViewChild('startDateDialog') startDateDialog!: TemplateRef<any>;
+  @ViewChild('endDateDialog') endDateDialog!: TemplateRef<any>;
+  private startDateDialogRef: MatDialogRef<any> | undefined;
+  private endDateDialogRef: MatDialogRef<any> | undefined;
+  startDate: Date | null = null;
+  endDate: Date | null = null;
+  @ViewChild('deliveryCadenceDialog') deliveryCadenceDialog!: TemplateRef<any>;
+  private deliveryCadenceDialogRef: MatDialogRef<any> | undefined;
+  deliveryCadence: { lundi: boolean; mardi: boolean; mercredi: boolean; jeudi: boolean; vendredi: boolean; samedi: boolean; dimanche: boolean } = { lundi: false, mardi: false, mercredi: false, jeudi: false, vendredi: false, samedi: false, dimanche: false };
+  @ViewChild('stockThresholdDialog') stockThresholdDialog!: TemplateRef<any>;
+  private stockThresholdDialogRef: MatDialogRef<any> | undefined;
+  stockMin: number = 0;
+  stockMax: number = 0;
+  stockBackup: number = 0;
 
-  constructor(private articles: ArticlesService, private snackBar: MatSnackBar, private trunks: TrunksService) {}
+  constructor(private articles: ArticlesService, private snackBar: MatSnackBar, private trunks: TrunksService, private dialog: MatDialog, private http: HttpClient, private dateAdapter: DateAdapter<Date>) {}
 
   ngOnInit(): void {
+    this.articles.setTrunkName('Boulanger');
     this.articles.getHierarchy().subscribe(nodes => {
       this.hierarchyNodes = nodes || [];
       this.isLoading = false;
@@ -58,6 +87,8 @@ export class AssortmentsManagementComponent implements OnInit {
       (options || []).forEach(opt => { map[opt.id] = opt.name; });
       this.trunkNameById = map;
     });
+    this.loadTrunkLevelLabels();
+    this.dateAdapter.setLocale('fr-FR');
   }
 
   onNodeAction(evt: TreeNodeAction): void {
@@ -225,19 +256,100 @@ export class AssortmentsManagementComponent implements OnInit {
   }
 
   changeStartDate(): void {
-    this.snackBar.open('Modifier la date de début', undefined, { duration: 2000 });
+    this.startDate = null;
+    this.startDateDialogRef = this.dialog.open(this.startDateDialog, { width: '420px' });
+  }
+  applyStartDate(): void {
+    this.startDateDialogRef?.close();
+    this.startDateDialogRef = undefined;
+  }
+  cancelStartDate(): void {
+    this.startDateDialogRef?.close();
+    this.startDateDialogRef = undefined;
   }
 
   changeEndDate(): void {
-    this.snackBar.open('Modifier la date de fin', undefined, { duration: 2000 });
+    this.endDate = null;
+    this.endDateDialogRef = this.dialog.open(this.endDateDialog, { width: '420px' });
+  }
+  applyEndDate(): void {
+    this.endDateDialogRef?.close();
+    this.endDateDialogRef = undefined;
+  }
+  cancelEndDate(): void {
+    this.endDateDialogRef?.close();
+    this.endDateDialogRef = undefined;
   }
 
   changeDeploymentTypology(): void {
-    this.snackBar.open('Modifier la typologie de déploiement', undefined, { duration: 2000 });
+    this.typologyDialogRef = this.dialog.open(this.deploymentTypologyDialog, { width: '420px' });
+  }
+
+  applyDeploymentTypology(): void {
+    this.typologyDialogRef?.close();
+    this.typologyDialogRef = undefined;
+  }
+
+  cancelDeploymentTypology(): void {
+    this.typologyDialogRef?.close();
+    this.typologyDialogRef = undefined;
   }
 
   changeType(): void {
-    this.snackBar.open('Modifier type', undefined, { duration: 2000 });
+    this.typeDialogRef = this.dialog.open(this.assortTypeDialog, { width: '420px' });
+  }
+  applyChangeType(): void {
+    this.typeDialogRef?.close();
+    this.typeDialogRef = undefined;
+  }
+  cancelChangeType(): void {
+    this.typeDialogRef?.close();
+    this.typeDialogRef = undefined;
+  }
+
+  editLevel(): void {
+    if (!Object.keys(this.trunkLevelLabels).length) this.loadTrunkLevelLabels();
+    const items = this.getLevelItems();
+    this.selectedLevel = items[0]?.level;
+    this.levelDialogRef = this.dialog.open(this.levelDialog, { width: '420px' });
+  }
+  applyEditLevel(): void {
+    this.levelDialogRef?.close();
+    this.levelDialogRef = undefined;
+  }
+  cancelEditLevel(): void {
+    this.levelDialogRef?.close();
+    this.levelDialogRef = undefined;
+  }
+
+  private loadTrunkLevelLabels(): void {
+    this.http.get<{ trunkLevels: { level: number; label: string }[] }>("/data/trunk-levels.json").subscribe(json => {
+      const map: Record<number, string> = {};
+      const items = (json?.trunkLevels || []).slice().sort((a, b) => a.level - b.level);
+      items.forEach(i => { map[Number(i.level)] = String(i.label); });
+      if (!Object.keys(map).length) {
+        [1,2,3,4,5].forEach(l => { map[l] = this.getFallbackLabel(l); });
+      }
+      this.trunkLevelLabels = map;
+    }, () => {
+      const map: Record<number, string> = {};
+      [1,2,3,4,5].forEach(l => { map[l] = this.getFallbackLabel(l); });
+      this.trunkLevelLabels = map;
+    });
+  }
+
+  private getFallbackLabel(level: number): string {
+    if (level === 1) return 'Mini';
+    if (level === 2) return 'classic';
+    if (level === 3) return 'grand';
+    if (level === 4) return 'géant';
+    if (level === 5) return 'maxi';
+    return `Niveau ${level}`;
+  }
+
+  getLevelItems(): { level: number; label: string }[] {
+    const entries = Object.entries(this.trunkLevelLabels).map(([k, v]) => ({ level: Number(k), label: String(v) }));
+    return entries.sort((a, b) => a.level - b.level);
   }
 
   editPurchaseConditions(): void {
@@ -245,14 +357,46 @@ export class AssortmentsManagementComponent implements OnInit {
   }
 
   editDeliveryCadence(): void {
-    this.snackBar.open('Cadencier livraison', undefined, { duration: 2000 });
+    this.deliveryCadenceDialogRef = this.dialog.open(this.deliveryCadenceDialog, { width: '420px' });
+  }
+  applyDeliveryCadence(): void {
+    this.deliveryCadenceDialogRef?.close();
+    this.deliveryCadenceDialogRef = undefined;
+  }
+  cancelDeliveryCadence(): void {
+    this.deliveryCadenceDialogRef?.close();
+    this.deliveryCadenceDialogRef = undefined;
   }
 
   editStockThreshold(): void {
-    this.snackBar.open('Seuil de stockage', undefined, { duration: 2000 });
+    this.stockThresholdDialogRef = this.dialog.open(this.stockThresholdDialog, { width: '420px' });
+  }
+
+  applyStockThreshold(): void {
+    this.stockThresholdDialogRef?.close();
+    this.stockThresholdDialogRef = undefined;
+  }
+
+  cancelStockThreshold(): void {
+    this.stockThresholdDialogRef?.close();
+    this.stockThresholdDialogRef = undefined;
+  }
+
+  toInt(x: any): number {
+    const n = Number(x);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.floor(n));
   }
 
   editSellStatus(): void {
     this.snackBar.open('Gestion du statut', undefined, { duration: 2000 });
+  }
+
+  createCommandable(): void {
+    this.snackBar.open('Créer Commandable', undefined, { duration: 2000 });
+  }
+
+  createVendable(): void {
+    this.snackBar.open('Créer Vendable', undefined, { duration: 2000 });
   }
 }

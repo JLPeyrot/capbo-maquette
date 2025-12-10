@@ -76,8 +76,8 @@
 
     <div class="sidebar-right">
       <div class="sidebar-header">
-        <h3>Actions</h3>
-      </div>
+        <h3>Paramétrage</h3>
+        </div>
       <div class="sidebar-content">
         <mat-card class="actions-card">
           <mat-card-header>
@@ -95,6 +95,10 @@
               <button mat-stroked-button color="primary" (click)="changeType()">
                 <mat-icon>tune</mat-icon>
                 Modifier type
+              </button>
+              <button mat-stroked-button color="primary" (click)="editLevel()">
+                <mat-icon>signal_cellular_alt</mat-icon>
+                Modifier niveau
               </button>
             </div>
           </mat-card-content>
@@ -129,6 +133,9 @@
                 <mat-icon>inventory_2</mat-icon>
                 Seuil de stockage
               </button>
+              <button mat-flat-button class="green-button" (click)="createCommandable()">
+                Créer Commandable
+              </button>
             </div>
           </mat-card-content>
         </mat-card>
@@ -154,6 +161,9 @@
                 <mat-icon>toggle_on</mat-icon>
                 Gestion du statut
               </button>
+              <button mat-flat-button class="green-button" (click)="createVendable()">
+                Créer Vendable
+              </button>
             </div>
           </mat-card-content>
         </mat-card>
@@ -161,3 +171,146 @@
     </div>
   </div>
 </div>
+
+<ng-template #deploymentTypologyDialog>
+  <h2 mat-dialog-title>
+    <mat-icon>account_tree</mat-icon>
+    Typologie de déploiement
+  </h2>
+  <mat-dialog-content class="dialog-content">
+    <mat-radio-group [(ngModel)]="deploymentTypology">
+      <mat-radio-button value="Ouvert">Ouvert</mat-radio-button>
+      <mat-radio-button value="Mixte">Mixte</mat-radio-button>
+      <mat-radio-button value="Fermé">Fermé</mat-radio-button>
+    </mat-radio-group>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cancelDeploymentTypology()">Annuler</button>
+    <button mat-flat-button color="primary" (click)="applyDeploymentTypology()">Valider</button>
+  </mat-dialog-actions>
+</ng-template>
+
+<ng-template #assortTypeDialog>
+  <h2 mat-dialog-title>
+    <mat-icon>tune</mat-icon>
+    Type d'assortiment
+  </h2>
+  <mat-dialog-content class="dialog-content">
+    <mat-radio-group [(ngModel)]="assortmentType">
+      <mat-radio-button value="permanent">Permanent</mat-radio-button>
+      <mat-radio-button value="promotionnel">Promotionnel</mat-radio-button>
+      <mat-radio-button value="catalogue">Catalogue</mat-radio-button>
+    </mat-radio-group>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cancelChangeType()">Annuler</button>
+    <button mat-flat-button color="primary" (click)="applyChangeType()">Valider</button>
+  </mat-dialog-actions>
+</ng-template>
+
+<ng-template #stockThresholdDialog>
+  <h2 mat-dialog-title>
+    <mat-icon>inventory_2</mat-icon>
+    Seuil de stockage
+  </h2>
+  <mat-dialog-content class="dialog-content">
+    <div class="stocks-row">
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Stock mini</mat-label>
+        <input matInput type="number" [(ngModel)]="stockMin" (ngModelChange)="stockMin = toInt($event)" inputmode="numeric" pattern="\d*" min="0" step="1">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Stock maxi</mat-label>
+        <input matInput type="number" [(ngModel)]="stockMax" (ngModelChange)="stockMax = toInt($event)" inputmode="numeric" pattern="\d*" min="0" step="1">
+      </mat-form-field>
+    </div>
+    <div class="stocks-row">
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Stock de sécurité</mat-label>
+        <input matInput type="number" [(ngModel)]="stockBackup" (ngModelChange)="stockBackup = toInt($event)" inputmode="numeric" pattern="\d*" min="0" step="1">
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cancelStockThreshold()">Annuler</button>
+    <button mat-flat-button color="primary" (click)="applyStockThreshold()">Valider</button>
+  </mat-dialog-actions>
+</ng-template>
+
+<ng-template #deliveryCadenceDialog>
+  <h2 mat-dialog-title>
+    <mat-icon>schedule</mat-icon>
+    Cadencier de livraison
+  </h2>
+  <mat-dialog-content class="dialog-content">
+    <div class="cadence-grid">
+      <mat-checkbox [(ngModel)]="deliveryCadence.lundi">L</mat-checkbox>
+      <mat-checkbox [(ngModel)]="deliveryCadence.mardi">M</mat-checkbox>
+      <mat-checkbox [(ngModel)]="deliveryCadence.mercredi">M</mat-checkbox>
+      <mat-checkbox [(ngModel)]="deliveryCadence.jeudi">J</mat-checkbox>
+      <mat-checkbox [(ngModel)]="deliveryCadence.vendredi">V</mat-checkbox>
+      <mat-checkbox [(ngModel)]="deliveryCadence.samedi">S</mat-checkbox>
+      <mat-checkbox [(ngModel)]="deliveryCadence.dimanche">D</mat-checkbox>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cancelDeliveryCadence()">Annuler</button>
+    <button mat-flat-button color="primary" (click)="applyDeliveryCadence()">Valider</button>
+  </mat-dialog-actions>
+</ng-template>
+
+<ng-template #levelDialog>
+  <h2 mat-dialog-title>
+    <mat-icon>signal_cellular_alt</mat-icon>
+    Niveau de tronc
+  </h2>
+  <mat-dialog-content class="dialog-content">
+    <mat-radio-group [(ngModel)]="selectedLevel">
+      <mat-radio-button *ngFor="let item of getLevelItems()" [value]="item.level">
+        {{ item.label }}
+      </mat-radio-button>
+    </mat-radio-group>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cancelEditLevel()">Annuler</button>
+    <button mat-flat-button color="primary" [disabled]="!selectedLevel" (click)="applyEditLevel()">Valider</button>
+  </mat-dialog-actions>
+</ng-template>
+
+<ng-template #startDateDialog>
+  <h2 mat-dialog-title>
+    <mat-icon>calendar_today</mat-icon>
+    Date de début
+  </h2>
+  <mat-dialog-content class="dialog-content">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Date de début</mat-label>
+      <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" placeholder="JJ/MM/AAAA">
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cancelStartDate()">Annuler</button>
+    <button mat-flat-button color="primary" [disabled]="!startDate" (click)="applyStartDate()">Valider</button>
+  </mat-dialog-actions>
+</ng-template>
+
+<ng-template #endDateDialog>
+  <h2 mat-dialog-title>
+    <mat-icon>event</mat-icon>
+    Date de fin
+  </h2>
+  <mat-dialog-content class="dialog-content">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Date de fin</mat-label>
+      <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" placeholder="JJ/MM/AAAA">
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cancelEndDate()">Annuler</button>
+    <button mat-flat-button color="primary" [disabled]="!endDate" (click)="applyEndDate()">Valider</button>
+  </mat-dialog-actions>
+</ng-template>

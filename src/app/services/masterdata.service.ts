@@ -19,6 +19,14 @@ import {
 export class MasterdataService {
   private masterDataSubject = new BehaviorSubject<MasterData | null>(null);
   public masterData$ = this.masterDataSubject.asObservable();
+  private supplierOptionsSubject = new BehaviorSubject<string[]>([
+    'Samsung France',
+    'BSH Électroménager',
+    'Philips Domestic',
+    'TCL Europe',
+    'Fournisseur A'
+  ]);
+  public supplierOptions$ = this.supplierOptionsSubject.asObservable();
 
   constructor(private http: HttpClient) {
     this.loadMasterData();
@@ -493,5 +501,14 @@ export class MasterdataService {
    */
   refreshMasterData(): void {
     this.loadMasterData();
+  }
+
+  getSupplierOptions(): Observable<string[]> {
+    return this.supplierOptions$;
+  }
+
+  setSupplierOptions(options: string[]): void {
+    const uniq = Array.from(new Set(options.filter(x => !!x)));
+    this.supplierOptionsSubject.next(uniq.sort());
   }
 }

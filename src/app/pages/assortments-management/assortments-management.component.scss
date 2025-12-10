@@ -47,6 +47,11 @@
 .actions-card { margin-bottom: 12px; }
 .actions-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
+.green-button {
+  --mdc-filled-button-container-color: #2e7d32;
+  --mdc-filled-button-label-text-color: #ffffff;
+}
+
 .loading-state, .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; color: #666; }
 .empty-state mat-icon { font-size: 40px; margin-bottom: 8px; }
 

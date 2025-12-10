@@ -329,7 +329,7 @@ export class AssortmentsBulkManagementComponent implements OnInit, OnDestroy {
       }
       let arr = [] as Article[];
       if (!filter) {
-        arr = trunkId ? base : [];
+        arr = base;
       } else {
         arr = base.filter(article => {
           if (filter.univers && article.univers !== filter.univers) return false;

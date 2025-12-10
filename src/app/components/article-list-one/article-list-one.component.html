@@ -27,10 +27,13 @@
           <div class="select-column">
             <mat-checkbox [checked]="isArticleSelected(article.code)" (change)="onArticleSelect(article.code, $event.checked)"></mat-checkbox>
           </div>
-          <div class="code-column">{{ article.code }}</div>
+          <div class="code-column" (click)="openAssortmentDialog(article)">{{ article.code }}</div>
           <div class="designation-column">{{ article.libelle }}</div>
           <div class="trunk-name-column" *ngIf="article.trunkId">{{ trunkNameById?.[article.trunkId] || article.trunkId }}</div>
           <div class="assort-type-column">{{ getAssortTypeShort ? getAssortTypeShort(article) : '' }}</div>
+          <div class="typology-column">
+            <mat-icon *ngIf="article.deployment_typology">{{ getDeploymentTypologyIcon(article) }}</mat-icon>
+          </div>
           <div class="c-column"><span class="badge badge-c" *ngIf="hasCommandable(article.code)">C</span></div>
           <div class="v-column"><span class="badge badge-v" *ngIf="hasVendable(article.code)">V</span></div>
         </div>
