@@ -420,7 +420,8 @@
       "libelle": "Four micro-ondes Panasonic NN-SN686S",
       "univers": "Électroménager",
       "famille": "Cuisson",
-      "sousFamille": "Micro-ondes"
+      "sousFamille": "Micro-ondes",
+      "trunk_id": "4"
     },
     {
       "code": "ART0050",
@@ -459,7 +460,8 @@
       "libelle": "Congélateur coffre Whirlpool 270L",
       "univers": "Électroménager",
       "famille": "Froid",
-      "sousFamille": "Congélateur"
+      "sousFamille": "Congélateur",
+      "trunk_id": "4"
     },
     {
       "code": "ART0055",

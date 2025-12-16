@@ -339,6 +339,13 @@ export class ReferencementComponent implements OnInit {
     this.showAddSupplierLeft = false;
   }
 
+  onSelectSupplierLeft(name: string): void {
+    this.selectedFournisseur = name || '';
+    this.leftSuppliers = this.selectedFournisseur ? [this.selectedFournisseur] : [];
+    this.suppliersExpandedLeft = new Set(this.leftSuppliers);
+    this.applyFilters();
+  }
+
   toggleSupplierLeft(name: string): void {
     if (this.suppliersExpandedLeft.has(name)) this.suppliersExpandedLeft.delete(name);
     else this.suppliersExpandedLeft.add(name);

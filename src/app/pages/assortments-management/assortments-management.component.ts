@@ -1,5 +1,5 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, TemplateRef, ViewChild, Injector } from '@angular/core';
+import { CommonModule, NgComponentOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../shared/material-module';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -10,13 +10,16 @@ import { TrunkHierarchyNode, TreeNodeAction, TreeViewConfig } from '../../interf
 import { GlobalTreeViewComponent } from '../../components/global-tree-view/global-tree-view.component';
 import { ArticleListOneComponent } from '../../components/article-list-one/article-list-one.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
+import { AssortmentDialogComponent } from '../articles-list/assortment-dialog.component';
+import { MasterdataService } from '../../services/masterdata.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-assortments-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, GlobalTreeViewComponent, ArticleListOneComponent, MatDatepickerModule, MatNativeDateModule],
+  imports: [CommonModule, NgComponentOutlet, FormsModule, MaterialModule, GlobalTreeViewComponent, ArticleListOneComponent, MatDatepickerModule, MatNativeDateModule, AssortmentDialogComponent],
   templateUrl: './assortments-management.component.html',
   styleUrls: ['./assortments-management.component.scss']
 })
@@ -70,10 +73,27 @@ export class AssortmentsManagementComponent implements OnInit {
   stockMax: number = 0;
   stockBackup: number = 0;
 
-  constructor(private articles: ArticlesService, private snackBar: MatSnackBar, private trunks: TrunksService, private dialog: MatDialog, private http: HttpClient, private dateAdapter: DateAdapter<Date>) {}
+  cmdType: 'Permanent' | 'Promotionnel' | 'Catalogue' = 'Permanent';
+  cmdTypology: 'Ouvert' | 'Mixte' | 'Fermé' = 'Fermé';
+  vendType: 'Permanent' | 'Promotionnel' | 'Catalogue' = 'Permanent';
+  vendTypology: 'Ouvert' | 'Mixte' | 'Fermé' = 'Fermé';
+  sellFlowEndDate: Date | null = null;
+  sellReturnEndDate: Date | null = null;
+
+  suppliers: Array<{ search: string; name: string; pcb: number; moq: number; cadence: { lundi: boolean; mardi: boolean; mercredi: boolean; jeudi: boolean; vendredi: boolean; samedi: boolean; dimanche: boolean } }>
+    = [ { search: '', name: '', pcb: 0, moq: 0, cadence: { lundi: false, mardi: false, mercredi: false, jeudi: false, vendredi: false, samedi: false, dimanche: false } } ];
+
+  supplierSearch: string = '';
+  selectedSupplier: string = '';
+  pcb: number = 0;
+  moq: number = 0;
+  supplierOptions$: Observable<string[]> | undefined;
+
+  constructor(private articles: ArticlesService, private snackBar: MatSnackBar, private trunks: TrunksService, private dialog: MatDialog, private http: HttpClient, private dateAdapter: DateAdapter<Date>, private injector: Injector, private masterdata: MasterdataService) {}
 
   ngOnInit(): void {
     this.articles.setTrunkName('Boulanger');
+    this.supplierOptions$ = this.masterdata.supplierOptions$;
     this.articles.getHierarchy().subscribe(nodes => {
       this.hierarchyNodes = nodes || [];
       this.isLoading = false;
@@ -187,6 +207,7 @@ export class AssortmentsManagementComponent implements OnInit {
     if (checked) this.selectedArticles.add(code);
     else this.selectedArticles.delete(code);
   }
+
 
   hasVendable(code: string): boolean {
     const a = this.allArticles.find(x => x.code === code);
@@ -398,5 +419,33 @@ export class AssortmentsManagementComponent implements OnInit {
 
   createVendable(): void {
     this.snackBar.open('Créer Vendable', undefined, { duration: 2000 });
+  }
+
+  selectedArticleForParam: Article | null = null;
+  dialogInjector: Injector | null = null;
+  assortmentDialogComponent = AssortmentDialogComponent;
+
+  onCodeClick(article: Article): void {
+    this.selectedArticleForParam = article;
+    this.dialogInjector = Injector.create({
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: { article: { reference: article.code } } },
+        { provide: MatDialogRef, useValue: { close: () => {} } },
+      ],
+      parent: this.injector
+    });
+  }
+
+  clearParametrage(): void {
+    this.selectedArticleForParam = null;
+    this.dialogInjector = null;
+  }
+
+  addSupplier(): void {
+    this.suppliers = [ ...this.suppliers, { search: '', name: '', pcb: 0, moq: 0, cadence: { lundi: false, mardi: false, mercredi: false, jeudi: false, vendredi: false, samedi: false, dimanche: false } } ];
+  }
+
+  removeSupplier(index: number): void {
+    this.suppliers = this.suppliers.filter((_, i) => i !== index);
   }
 }

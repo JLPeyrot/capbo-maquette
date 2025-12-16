@@ -71,14 +71,18 @@
       [toggleAll]="toggleAllPaged.bind(this)"
       [searchTerm]="searchTerm"
       [onSearchChange]="onSearchChange.bind(this)"
+      [onCodeClick]="onCodeClick.bind(this)"
       [showMetaPills]="false">
     </app-article-list-one>
 
     <div class="sidebar-right">
       <div class="sidebar-header">
         <h3>Paramétrage</h3>
-        </div>
-      <div class="sidebar-content">
+        <button *ngIf="selectedArticleForParam" mat-icon-button (click)="clearParametrage()" aria-label="Fermer">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="sidebar-content" *ngIf="!selectedArticleForParam">
         <mat-card class="actions-card">
           <mat-card-header>
             <mat-card-title>
@@ -105,68 +109,219 @@
         </mat-card>
 
         <mat-card class="actions-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>shopping_cart</mat-icon>
-              Commandable
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="actions-group">
-              <button mat-stroked-button color="primary" (click)="changeStartDate()">
-                <mat-icon>calendar_today</mat-icon>
-                Date de début
-              </button>
-              <button mat-stroked-button color="primary" (click)="changeEndDate()">
-                <mat-icon>event</mat-icon>
-                Date de fin
-              </button>
-              <button mat-stroked-button color="primary" (click)="editPurchaseConditions()">
-                <mat-icon>receipt_long</mat-icon>
-                Conditions d'achat
-              </button>
-              <button mat-stroked-button color="primary" (click)="editDeliveryCadence()">
-                <mat-icon>schedule</mat-icon>
-                Cadencier livraison
-              </button>
-              <button mat-stroked-button color="primary" (click)="editStockThreshold()">
-                <mat-icon>inventory_2</mat-icon>
-                Seuil de stockage
-              </button>
-              <button mat-flat-button class="green-button" (click)="createCommandable()">
-                Créer Commandable
-              </button>
-            </div>
-          </mat-card-content>
+          <h4>Commandable</h4>
+          <div class="actions-group">
+            <button mat-stroked-button color="primary" (click)="changeStartDate()">
+              <mat-icon>calendar_today</mat-icon>
+              Date de début
+            </button>
+            <button mat-stroked-button color="primary" (click)="changeEndDate()">
+              <mat-icon>event</mat-icon>
+              Date de fin
+            </button>
+            <button mat-stroked-button color="primary" (click)="editPurchaseConditions()">
+              <mat-icon>receipt_long</mat-icon>
+              Conditions d'achat
+            </button>
+            <button mat-stroked-button color="primary" (click)="editDeliveryCadence()">
+              <mat-icon>schedule</mat-icon>
+              Cadencier livraison
+            </button>
+            <button mat-stroked-button color="primary" (click)="editStockThreshold()">
+              <mat-icon>inventory_2</mat-icon>
+              Seuil de stockage
+            </button>
+            <button mat-flat-button class="green-button" (click)="createCommandable()">
+              Créer Commandable
+            </button>
+          </div>
         </mat-card>
 
         <mat-card class="actions-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>sell</mat-icon>
-              Vendable
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="actions-group">
-              <button mat-stroked-button color="primary" (click)="changeStartDate()">
-                <mat-icon>calendar_today</mat-icon>
-                Date de début
-              </button>
-              <button mat-stroked-button color="primary" (click)="changeEndDate()">
-                <mat-icon>event</mat-icon>
-                Date de fin
-              </button>
-              <button mat-stroked-button color="primary" (click)="editSellStatus()">
-                <mat-icon>toggle_on</mat-icon>
-                Gestion du statut
-              </button>
-              <button mat-flat-button class="green-button" (click)="createVendable()">
-                Créer Vendable
-              </button>
-            </div>
-          </mat-card-content>
+          <h4>Vendable</h4>
+          <div class="actions-group">
+            <button mat-stroked-button color="primary" (click)="changeStartDate()">
+              <mat-icon>calendar_today</mat-icon>
+              Date de début
+            </button>
+            <button mat-stroked-button color="primary" (click)="changeEndDate()">
+              <mat-icon>event</mat-icon>
+              Date de fin
+            </button>
+            <button mat-stroked-button color="primary" (click)="editSellStatus()">
+              <mat-icon>toggle_on</mat-icon>
+              Gestion du statut
+            </button>
+            <button mat-flat-button class="green-button" (click)="createVendable()">
+              Créer Vendable
+            </button>
+          </div>
         </mat-card>
+      </div>
+      <div class="sidebar-content" *ngIf="selectedArticleForParam">
+        <mat-tab-group>
+          
+          <mat-tab label="Commandable">
+            <div class="tab-content">
+              <div class="general-block">
+                <h4>Général</h4>
+                <div class="form-grid">
+                  <mat-form-field appearance="outline" floatLabel="always" class="field">
+                    <mat-label>Type</mat-label>
+                    <mat-select [(ngModel)]="cmdType">
+                      <mat-option value="Permanent">Permanent</mat-option>
+                      <mat-option value="Promotionnel">Promotionnel</mat-option>
+                      <mat-option value="Catalogue">Catalogue</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" floatLabel="always" class="field">
+                    <mat-label>Typologie de déploiement</mat-label>
+                    <mat-select [(ngModel)]="cmdTypology">
+                      <mat-option value="Ouvert">Ouvert</mat-option>
+                      <mat-option value="Mixte">Mixte</mat-option>
+                      <mat-option value="Fermé">Fermé</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="date-row">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Date de début</mat-label>
+                    <input matInput [matDatepicker]="startPickerCmd" [(ngModel)]="startDate" placeholder="JJ/MM/AAAA">
+                    <mat-datepicker-toggle matSuffix [for]="startPickerCmd"></mat-datepicker-toggle>
+                    <mat-datepicker #startPickerCmd></mat-datepicker>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Date de fin</mat-label>
+                    <input matInput [matDatepicker]="endPickerCmd" [(ngModel)]="endDate" placeholder="JJ/MM/AAAA">
+                    <mat-datepicker-toggle matSuffix [for]="endPickerCmd"></mat-datepicker-toggle>
+                    <mat-datepicker #endPickerCmd></mat-datepicker>
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="stocks-row">
+                <mat-form-field appearance="outline" class="field">
+                  <mat-label>Stock mini</mat-label>
+                  <input matInput type="number" [(ngModel)]="stockMin" (ngModelChange)="stockMin = toInt($event)" inputmode="numeric" pattern="\\d*" min="0" step="1">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="field">
+                  <mat-label>Stock maxi</mat-label>
+                  <input matInput type="number" [(ngModel)]="stockMax" (ngModelChange)="stockMax = toInt($event)" inputmode="numeric" pattern="\\d*" min="0" step="1">
+                </mat-form-field>
+              </div>
+              <div class="stocks-row">
+                <mat-form-field appearance="outline" class="field">
+                  <mat-label>Stock de sécurité</mat-label>
+                  <input matInput type="number" [(ngModel)]="stockBackup" (ngModelChange)="stockBackup = toInt($event)" inputmode="numeric" pattern="\\d*" min="0" step="1">
+                </mat-form-field>
+              </div>
+              <h4>Fournisseur</h4>
+              <div class="supplier-header">
+                <div class="spacer"></div>
+                <button mat-icon-button color="primary" (click)="addSupplier()">
+                  <mat-icon>add_circle</mat-icon>
+                </button>
+              </div>
+              <div class="supplier-list">
+                <div class="supplier-card" *ngFor="let sup of suppliers; let i = index">
+                  <div class="supplier-actions">
+                    <button mat-icon-button color="warn" (click)="removeSupplier(i)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                  <div class="supplier-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Fournisseur</mat-label>
+                      <input matInput [(ngModel)]="sup.search" [matAutocomplete]="autoSupplier">
+                      <mat-autocomplete #autoSupplier="matAutocomplete" (optionSelected)="sup.name = $event.option.value">
+                        <mat-option *ngFor="let opt of (supplierOptions$ | async)" [value]="opt">{{ opt }}</mat-option>
+                      </mat-autocomplete>
+                    </mat-form-field>
+                  </div>
+                  <div class="supplier-row">
+                    <mat-form-field appearance="outline" class="field">
+                      <mat-label>PCB</mat-label>
+                      <input matInput type="number" [(ngModel)]="sup.pcb" (ngModelChange)="sup.pcb = toInt($event)" inputmode="numeric" pattern="\\d*" min="0" step="1">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="field">
+                      <mat-label>MOQ</mat-label>
+                      <input matInput type="number" [(ngModel)]="sup.moq" (ngModelChange)="sup.moq = toInt($event)" inputmode="numeric" pattern="\\d*" min="0" step="1">
+                    </mat-form-field>
+                  </div>
+                  <div class="cadence-grid">
+                    <mat-checkbox [(ngModel)]="sup.cadence.lundi">L</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="sup.cadence.mardi">M</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="sup.cadence.mercredi">M</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="sup.cadence.jeudi">J</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="sup.cadence.vendredi">V</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="sup.cadence.samedi">S</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="sup.cadence.dimanche">D</mat-checkbox>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          </mat-tab>
+          <mat-tab label="Vendable">
+            <div class="tab-content">
+              <div class="general-block">
+                <h4>Général</h4>
+                <div class="form-grid">
+                  <mat-form-field appearance="outline" floatLabel="always" class="field">
+                    <mat-label>Type</mat-label>
+                    <mat-select [(ngModel)]="cmdType">
+                      <mat-option value="Permanent">Permanent</mat-option>
+                      <mat-option value="Promotionnel">Promotionnel</mat-option>
+                      <mat-option value="Catalogue">Catalogue</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" floatLabel="always" class="field">
+                    <mat-label>Typologie de déploiement</mat-label>
+                    <mat-select [(ngModel)]="cmdTypology">
+                      <mat-option value="Ouvert">Ouvert</mat-option>
+                      <mat-option value="Mixte">Mixte</mat-option>
+                      <mat-option value="Fermé">Fermé</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="date-row">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Date de début</mat-label>
+                    <input matInput [matDatepicker]="startPickerVend" [(ngModel)]="startDate" placeholder="JJ/MM/AAAA">
+                    <mat-datepicker-toggle matSuffix [for]="startPickerVend"></mat-datepicker-toggle>
+                    <mat-datepicker #startPickerVend></mat-datepicker>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Date de fin</mat-label>
+                    <input matInput [matDatepicker]="endPickerVend" [(ngModel)]="endDate" placeholder="JJ/MM/AAAA">
+                    <mat-datepicker-toggle matSuffix [for]="endPickerVend"></mat-datepicker-toggle>
+                    <mat-datepicker #endPickerVend></mat-datepicker>
+                  </mat-form-field>
+                </div>
+              </div>
+              <h4>Cycle de vie</h4>
+              <div class="date-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Date de fin d'écoulement</mat-label>
+                  <input matInput [matDatepicker]="sellFlowPickerInline" [(ngModel)]="sellFlowEndDate" placeholder="JJ/MM/AAAA">
+                  <mat-datepicker-toggle matSuffix [for]="sellFlowPickerInline"></mat-datepicker-toggle>
+                  <mat-datepicker #sellFlowPickerInline></mat-datepicker>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Date de fin de retour</mat-label>
+                  <input matInput [matDatepicker]="sellReturnPickerInline" [(ngModel)]="sellReturnEndDate" placeholder="JJ/MM/AAAA">
+                  <mat-datepicker-toggle matSuffix [for]="sellReturnPickerInline"></mat-datepicker-toggle>
+                  <mat-datepicker #sellReturnPickerInline></mat-datepicker>
+                </mat-form-field>
+              </div>
+              <div class="status-row">
+                <button mat-stroked-button color="primary" (click)="editSellStatus()">
+                  <mat-icon>toggle_on</mat-icon>
+                  Gestion du statut
+                </button>
+              </div>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
       </div>
     </div>
   </div>

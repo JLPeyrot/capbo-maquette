@@ -32,6 +32,7 @@ export class ArticleListOneComponent {
   @Input() searchTerm: string = '';
   @Input() onSearchChange!: (term: string) => void;
   @Input() showMetaPills: boolean = false;
+  @Input() onCodeClick?: (article: Article) => void;
   emitSearch(term: string): void {
     if (this.onSearchChange) this.onSearchChange(term);
   }

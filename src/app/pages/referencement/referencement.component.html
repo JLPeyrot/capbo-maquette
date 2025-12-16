@@ -415,14 +415,9 @@
         <mat-card-content>
           <div class="supplier-panel">
             <div class="add-supplier-row">
-              <button mat-stroked-button color="primary" (click)="showAddSupplierLeft = !showAddSupplierLeft">
-                <mat-icon>add</mat-icon>
-                Ajouter un fournisseur
-              </button>
-              <mat-form-field *ngIf="showAddSupplierLeft" appearance="fill" class="supplier-select">
-                <mat-select placeholder="Choisir un fournisseur" (selectionChange)="addLeftSupplier($event.value)">
-                  <mat-option [value]="'__ALL__'">Tous les fournisseurs</mat-option>
-                  <mat-option *ngFor="let opt of availableLeftSuppliers" [value]="opt">{{ opt }}</mat-option>
+              <mat-form-field appearance="fill" class="supplier-select">
+                <mat-select placeholder="Choisir un fournisseur" [(ngModel)]="selectedFournisseur" (selectionChange)="onSelectSupplierLeft($event.value)">
+                  <mat-option *ngFor="let opt of fournisseurOptions" [value]="opt">{{ opt }}</mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
