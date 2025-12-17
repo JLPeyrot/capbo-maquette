@@ -1,9 +1,0 @@
-{
-  "trunkLevels": [
-    { "level": 1, "label": "Mini" },
-    { "level": 2, "label": "classic" },
-    { "level": 3, "label": "grand" },
-    { "level": 4, "label": "géant" },
-    { "level": 5, "label": "maxi" }
-  ]
-}
